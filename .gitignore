@@ -1,0 +1,17 @@
+# Node / Vite project
+node_modules/
+dist/
+*.log
+
+# Env files
+.env*
+!.env.example
+
+# Editor / OS
+.vscode/
+.DS_Store
+
+# Legacy heavy folders (if copied accidentally)
+DreamMix-Prompt-Generator/
+src-tauri/
+supabase/
