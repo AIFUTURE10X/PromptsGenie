@@ -1,0 +1,17 @@
+# Node
+node_modules/
+dist/
+*.log
+
+# Env
+.env*
+!.env.example
+
+# Editor
+.vscode/
+.DS_Store
+
+# Legacy heavy folders (if copied accidentally)
+DreamMix-Prompt-Generator/
+src-tauri/
+supabase/
