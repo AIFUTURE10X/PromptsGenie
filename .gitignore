@@ -1,7 +1,12 @@
 # Node / Vite project
 node_modules/
 dist/
+.vite/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
 # Env files
 .env*
@@ -9,7 +14,9 @@ dist/
 
 # Editor / OS
 .vscode/
+.idea/
 .DS_Store
+*.swp
 
 # Legacy heavy folders (if copied accidentally)
 DreamMix-Prompt-Generator/
