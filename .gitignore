@@ -1,13 +1,13 @@
-# Node
+# Node / Vite project
 node_modules/
 dist/
 *.log
 
-# Env
+# Env files
 .env*
 !.env.example
 
-# Editor
+# Editor / OS
 .vscode/
 .DS_Store
 
