@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image → Prompt Generator</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            line-height: 1.5;
+        }
+        .container {
+            background: #f5f5f5;
+            padding: 2rem;
+            border-radius: 8px;
+        }
+        .input-group {
+            margin-bottom: 1rem;
+        }
+        button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            display: none;
+        }
+        .error {
+            color: #cc0000;
+            margin-top: 1rem;
+            display: none;
+        }
+        .loading {
+            display: none;
+            margin-top: 1rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Image → Prompt Generator</h1>
+        <p>Upload an image to generate a concise prompt using Google Gemini 2.0 Flash.</p>
+        
+        <div class="input-group">
+            <input type="file" id="imageInput" accept="image/*">
+        </div>
+        
+        <button id="generateBtn" disabled>Generate Prompt</button>
+        
+        <div id="loading" class="loading">Generating prompt...</div>
+        <div id="error" class="error"></div>
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const result = document.getElementById('result');
+
+        // Validate file selection
+        imageInput.addEventListener('change', () => {
+            const file = imageInput.files[0];
+            if (!file) {
+                generateBtn.disabled = true;
+                error.textContent = 'Please select an image file.';
+                error.style.display = 'block';
+                return;
+            }
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                generateBtn.disabled = true;
+                error.textContent = 'Please select a valid image file.';
+                error.style.display = 'block';
+                return;
+            }
+
+            // Validate file size (5MB limit)
+            if (file.size > 5 * 1024 * 1024) {
+                generateBtn.disabled = true;
+                error.textContent = 'Image size must be less than 5MB.';
+                error.style.display = 'block';
+                return;
+            }
+
+            generateBtn.disabled = false;
+            error.style.display = 'none';
+        });
+
+        // Handle generate button click
+        generateBtn.addEventListener('click', async () => {
+            const file = imageInput.files[0];
+            if (!file) return;
+
+            // Reset UI state
+            loading.style.display = 'block';
+            error.style.display = 'none';
+            result.style.display = 'none';
+            generateBtn.disabled = true;
+
+            try {
+                // Create form data
+                const formData = new FormData();
+                formData.append('image', file);
+
+                // Send request
+                const apiUrl = window.location.origin + '/analyze';
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    let errorMessage = 'Failed to generate prompt';
+                    if (data.error) {
+                        errorMessage = data.error;
+                        if (response.status === 401) {
+                            errorMessage = 'API key not configured. Please check your server configuration.';
+                        } else if (response.status === 413) {
+                            errorMessage = 'Image file is too large. Maximum size is 5MB.';
+                        }
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                if (!data.prompt) {
+                    throw new Error('No prompt generated. Please try again with a different image.');
+                }
+
+                // Show result
+                result.textContent = data.prompt;
+                result.style.display = 'block';
+            } catch (err) {
+                // Show error
+                error.textContent = err.message;
+                error.style.display = 'block';
+            } finally {
+                // Reset UI state
+                loading.style.display = 'none';
+                generateBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
