@@ -9,7 +9,8 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),
     },
   },
-  base: '/',
+  // Use repo base when building for GitHub Pages project site
+  base: process.env.NODE_ENV === 'production' ? '/Genie-Prompt-Generator/' : '/',
   server: {
     port: 8085,
     open: true,
