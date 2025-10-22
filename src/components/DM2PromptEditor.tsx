@@ -9,9 +9,12 @@ interface DM2PromptEditorProps {
   initialText?: string;
   onResizeStart?: () => void;
   onResizeEnd?: (height: number) => void;
+  // Added: allow App to control/read speed mode
+  initialSpeedMode?: SpeedMode;
+  onSpeedModeChange?: (mode: SpeedMode) => void;
 }
 
-export default function DM2PromptEditor({ onSend, onClear, initialText, onResizeStart, onResizeEnd }: DM2PromptEditorProps) {
+export default function DM2PromptEditor({ onSend, onClear, initialText, onResizeStart, onResizeEnd, initialSpeedMode, onSpeedModeChange }: DM2PromptEditorProps) {
   const [rewriteStyle, setRewriteStyle] = useState<RewriteStyle>('Descriptive');
   const [speedMode, setSpeedMode] = useState<SpeedMode>('Fast');
   const [autoRefine, setAutoRefine] = useState<boolean>(true);
@@ -25,6 +28,13 @@ export default function DM2PromptEditor({ onSend, onClear, initialText, onResize
       setText(initialText);
     }
   }, [initialText]);
+
+  // Sync incoming speed mode from parent if provided
+  useEffect(() => {
+    if (typeof initialSpeedMode !== 'undefined') {
+      setSpeedMode(initialSpeedMode);
+    }
+  }, [initialSpeedMode]);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const dragState = useRef({
@@ -135,6 +145,7 @@ export default function DM2PromptEditor({ onSend, onClear, initialText, onResize
   };
 
   const handleClear = () => {
+    // Clear only the editor controls and text
     setText('');
     setDraft(false);
     setPromptCount(1);
@@ -142,6 +153,11 @@ export default function DM2PromptEditor({ onSend, onClear, initialText, onResize
     setSpeedMode('Fast');
     setRewriteStyle('Descriptive');
     setEditorHeight(200);
+    onSpeedModeChange?.('Fast');
+  };
+
+  const handleClearAll = () => {
+    // Delegate full app-wide clearing to parent
     onClear?.();
   };
 
@@ -175,7 +191,7 @@ export default function DM2PromptEditor({ onSend, onClear, initialText, onResize
           {(['Fast', 'Quality'] as SpeedMode[]).map((m) => (
             <button
               key={m}
-              onClick={() => setSpeedMode(m)}
+              onClick={() => { setSpeedMode(m); onSpeedModeChange?.(m); }}
               className={`px-3 py-1 rounded-full text-xs border-2 border-border dark:border-dark-border transition ${
                 speedMode === m ? 'bg-brand-accent text-white' : 'bg-panel-secondary dark:bg-dark-panel-secondary text-text-primary dark:text-dark-text-primary'
               }`}
@@ -255,6 +271,9 @@ export default function DM2PromptEditor({ onSend, onClear, initialText, onResize
           ref={textareaRef}
           value={text}
           onChange={(e) => setText(e.target.value)}
+          onPointerDown={onTextAreaPointerDown}
+          onPointerMove={onTextAreaPointerMove}
+          onPointerUp={onTextAreaPointerUp}
           className="mt-2 w-full rounded-lg bg-dark-background/70 text-dark-text-primary placeholder:text-dark-text-secondary border-2 border-dark-border p-3 text-[12px] resize-none overflow-y-auto no-scrollbar cursor-text"
           style={{ height: editorHeight }}
           placeholder="Enter your prompt here..."
@@ -276,12 +295,21 @@ export default function DM2PromptEditor({ onSend, onClear, initialText, onResize
 
       {/* Footer buttons */}
       <div className="mt-auto pt-2 flex items-center justify-between">
-        <button
-          onClick={handleClear}
-          className="px-2 py-1 text-sm rounded-lg bg-background dark:bg-dark-background border-2 border-border dark:border-dark-border text-text-primary dark:text-dark-text-primary"
-        >
-          Clear
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleClear}
+            className="px-2 py-1 text-sm rounded-lg bg-background dark:bg-dark-background border-2 border-border dark:border-dark-border text-text-primary dark:text-dark-text-primary"
+          >
+            Clear
+          </button>
+          <button
+            onClick={handleClearAll}
+            className="px-2 py-1 text-sm rounded-lg bg-background dark:bg-dark-background border-2 border-border dark:border-dark-border text-text-primary dark:text-dark-text-primary"
+            title="Clear all panels: editor, images, and prompt"
+          >
+            Clear All
+          </button>
+        </div>
         <button
           disabled={isSendDisabled}
           onClick={handleSend}

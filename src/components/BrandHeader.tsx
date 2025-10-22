@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import SupabaseStatus from "./SupabaseStatus";
 
 interface BrandHeaderProps {
   title?: string;
@@ -54,9 +53,7 @@ export default function BrandHeader({
             <span className="text-[11px] text-text-secondary dark:text-dark-text-secondary">{subtitle}</span>
           </div>
         </div>
-        <div className="ml-auto">
-          <SupabaseStatus />
-        </div>
+        {/* Removed SupabaseStatus badges from header */}
       </div>
     </header>
   );

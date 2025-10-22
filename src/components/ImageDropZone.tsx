@@ -95,7 +95,11 @@ export default function ImageDropZone({ onFiles, isAnalyzing = false, autoAnalyz
 
       <div className="flex flex-col h-full">
         <div className="flex items-center justify-between">
-          <p className="text-sm text-text-secondary dark:text-dark-text-secondary">Drag & drop or click to upload</p>
+          <div className="flex flex-col">
+            <span className="text-sm font-medium text-text-primary dark:text-dark-text-primary">Upload Images</span>
+            <span className="text-[11px] text-text-secondary dark:text-dark-text-secondary">Drag & drop or click</span>
+            <span className="text-[11px] text-text-secondary dark:text-dark-text-secondary">Images only</span>
+          </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
               <span className="text-xs text-text-secondary dark:text-dark-text-secondary">Auto Analyze</span>
@@ -125,7 +129,6 @@ export default function ImageDropZone({ onFiles, isAnalyzing = false, autoAnalyz
             )}
           </div>
         </div>
-        <p className="text-xs mt-1 text-text-secondary dark:text-dark-text-secondary">Images only</p>
 
         {selected.length === 0 ? (
           <div className="flex-1 flex items-center justify-center">
