@@ -10,7 +10,7 @@ interface Props {
 }
 
 const CurrentPromptPanel: React.FC<Props> = ({ prompt, source, onCopy, onEdit, onClear, onRegenerate }) => {
-  const devBadge = source ? (
+  const devBadge = source && source !== "gemini-mm" ? (
     <span
       className={
         "ml-2 inline-block px-2 py-0.5 text-xs rounded-full border " +
