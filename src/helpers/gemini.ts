@@ -10,11 +10,13 @@ export async function generateWithImagesREST({
   model = "gemini-2.5-flash",
   text,
   imageDataUrls = [],
+  signal,
 }: {
   apiKey: string;
   model?: string;
   text: string;
   imageDataUrls: string[];
+  signal?: AbortSignal;
 }): Promise<string> {
   if (!apiKey) throw new Error("Gemini API key not configured");
 
@@ -32,6 +34,7 @@ export async function generateWithImagesREST({
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ contents: [{ role: "user", parts }] }),
+    signal,
   });
 
   if (!res.ok) {
@@ -42,6 +45,17 @@ export async function generateWithImagesREST({
 
   const data = await res.json();
   const partsOut = data?.candidates?.[0]?.content?.parts || [];
-  const textOut = partsOut.map((p: any) => p.text).filter(Boolean).join("\n");
+  let textOut = "";
+  for (const p of partsOut) {
+    if (p?.text) {
+      textOut = String(p.text).trim();
+      break;
+    }
+  }
+  if (!textOut) {
+    textOut = partsOut.map((p: any) => p?.text ?? "").join("").trim();
+  }
+  // Strip common headings/prefixes if the model returns them
+  textOut = textOut.replace(/^(?:Final\s*Prompt:|Prompt:)\s*/i, "").trim();
   return textOut || "";
 }

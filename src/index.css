@@ -138,44 +138,44 @@ All colors MUST be HSL.
     font-family: 'Alumni Sans Pinstripe', sans-serif;
   }
 
-  /* Panel height increased by 20% across breakpoints */
+  /* Panel height increased by an additional 30% across breakpoints */
   .panel-standard-height {
-    height: 346px;
+    height: 468px;
   }
   @media (min-width: 640px) {
-    .panel-standard-height { height: 403px; }
+    .panel-standard-height { height: 546px; }
   }
   @media (min-width: 768px) {
-    .panel-standard-height { height: 461px; }
+    .panel-standard-height { height: 624px; }
   }
   @media (min-width: 1024px) {
-    .panel-standard-height { height: 518px; }
+    .panel-standard-height { height: 702px; }
   }
   @media (min-width: 1280px) {
-    .panel-standard-height { height: 576px; }
+    .panel-standard-height { height: 780px; }
   }
 
   /* Hide scrollbars while retaining scroll behavior */
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* Auto-growing panel: keeps minimum height per breakpoint, expands with content */
+  /* Auto-growing panel: keeps minimum height per breakpoint, expands with content (30% more) */
   .panel-auto-height {
-    min-height: 346px;
+    min-height: 468px;
     height: auto;
     align-self: start;
   }
   @media (min-width: 640px) {
-    .panel-auto-height { min-height: 403px; }
+    .panel-auto-height { min-height: 546px; }
   }
   @media (min-width: 768px) {
-    .panel-auto-height { min-height: 461px; }
+    .panel-auto-height { min-height: 624px; }
   }
   @media (min-width: 1024px) {
-    .panel-auto-height { min-height: 518px; }
+    .panel-auto-height { min-height: 702px; }
   }
   @media (min-width: 1280px) {
-    .panel-auto-height { min-height: 576px; }
+    .panel-auto-height { min-height: 780px; }
   }
 
   @keyframes slow-spin {

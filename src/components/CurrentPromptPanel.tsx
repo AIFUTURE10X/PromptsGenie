@@ -10,25 +10,17 @@ interface Props {
 }
 
 const CurrentPromptPanel: React.FC<Props> = ({ prompt, source, onCopy, onEdit, onClear, onRegenerate }) => {
-  const devBadge = source ? (
+  const devBadge = source && source !== "gemini-mm" ? (
     <span
       className={
         "ml-2 inline-block px-2 py-0.5 text-xs rounded-full border " +
         (source === "edge"
           ? "bg-green-200 text-green-900 border-green-300 dark:bg-green-900/40 dark:text-green-200"
-          : source === "gemini-mm"
-          ? "bg-indigo-200 text-indigo-900 border-indigo-300 dark:bg-indigo-900/40 dark:text-indigo-200"
           : "bg-yellow-200 text-yellow-900 border-yellow-300 dark:bg-yellow-900/40 dark:text-yellow-200")
       }
-      title={
-        source === "edge"
-          ? "Supabase Edge function"
-          : source === "gemini-mm"
-          ? "Gemini multimodal"
-          : "Gemini text"
-      }
+      title={source === "edge" ? "Supabase Edge function" : "Gemini text"}
     >
-      {source === "edge" ? "Edge" : source === "gemini-mm" ? "Gemini (MM)" : "Gemini (Text)"}
+      {source === "edge" ? "Edge" : "Gemini (Text)"}
     </span>
   ) : null;
 

@@ -5,9 +5,12 @@ interface ImageDropZoneProps {
   isAnalyzing?: boolean;
   autoAnalyze?: boolean;
   onToggleAutoAnalyze?: (value: boolean) => void;
+  onReanalyze?: () => void;
+  onCancelAnalyze?: () => void;
+  className?: string;
 }
 
-export default function ImageDropZone({ onFiles, isAnalyzing = false, autoAnalyze = true, onToggleAutoAnalyze }: ImageDropZoneProps) {
+export default function ImageDropZone({ onFiles, isAnalyzing = false, autoAnalyze = true, onToggleAutoAnalyze, onReanalyze, onCancelAnalyze, className }: ImageDropZoneProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [selected, setSelected] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
@@ -58,7 +61,7 @@ export default function ImageDropZone({ onFiles, isAnalyzing = false, autoAnalyz
 
   return (
     <div
-      className="relative h-full w-full bg-panel dark:bg-dark-panel rounded-xl border-2 border-border dark:border-dark-border p-4 select-none"
+      className={`relative h-full w-full rounded-xl border-2 border-border dark:border-dark-border p-4 select-none ${className ?? 'bg-panel dark:bg-dark-panel'}`}
       onDragOver={(e) => e.preventDefault()}
       onDrop={handleDrop}
       onClick={handleClick}
@@ -72,7 +75,7 @@ export default function ImageDropZone({ onFiles, isAnalyzing = false, autoAnalyz
         >
           <div className="flex flex-col items-center gap-3">
             {previews[0] ? (
-              <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-border dark:border-dark-border shadow-sm">
+              <div className="w-[9.6rem] h-[9.6rem] rounded-full overflow-hidden border-2 border-border dark:border-dark-border shadow-sm">
                 <img
                   src={previews[0]}
                   alt="Analyzing image"
@@ -89,27 +92,48 @@ export default function ImageDropZone({ onFiles, isAnalyzing = false, autoAnalyz
             <div className="px-3 py-1.5 rounded-md bg-background dark:bg-dark-background border-2 border-border dark:border-dark-border text-xs text-text-primary dark:text-dark-text-primary">
               Analyzing…
             </div>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onCancelAnalyze?.(); }}
+              className="px-3 py-1 text-xs rounded-md bg-background dark:bg-dark-background border-2 border-border dark:border-dark-border text-text-primary dark:text-dark-text-primary hover:bg-accent hover:text-accent-foreground"
+              aria-label="Cancel analyze"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}
 
       <div className="flex flex-col h-full">
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-text-secondary dark:text-dark-text-secondary">Drag & drop or click to upload</p>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1">
-              <span className="text-xs text-text-secondary dark:text-dark-text-secondary">Auto Analyze</span>
+        <div className="flex items-center justify-between gap-2 flex-nowrap">
+          <div className="flex flex-col">
+            <span className="text-sm font-medium text-text-primary dark:text-dark-text-primary">Subject +</span>
+            <span className="text-[11px] text-text-secondary dark:text-dark-text-secondary">Drag & drop or click</span>
+          </div>
+
+          {selected.length > 0 && !isAnalyzing && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onReanalyze?.(); }}
+              className="px-2 py-0.5 text-[11px] rounded-md bg-background dark:bg-dark-background border-2 border-border dark:border-dark-border text-text-primary dark:text-dark-text-primary hover:bg-accent hover:text-accent-foreground"
+            >
+              {autoAnalyze ? 'Reanalyze' : 'Analyze'}
+            </button>
+          )}
+
+          <div className="flex items-center gap-2 flex-nowrap">
+            <div className="inline-flex flex-shrink-0 rounded-full border-2 border-border dark:border-dark-border overflow-hidden">
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onToggleAutoAnalyze?.(true); }}
-                className={`px-2 py-1 text-xs rounded-md border-2 ${autoAnalyze ? 'bg-brand-accent text-white border-brand-accent' : 'bg-background dark:bg-dark-background border-border dark:border-dark-border text-text-primary dark:text-dark-text-primary'}`}
+                className={`${autoAnalyze ? 'bg-brand-accent text-white' : 'bg-background dark:bg-dark-background text-text-primary dark:text-dark-text-primary'} px-3 py-0.5 text-[11px]`}
               >
                 On
               </button>
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onToggleAutoAnalyze?.(false); }}
-                className={`px-2 py-1 text-xs rounded-md border-2 ${!autoAnalyze ? 'bg-brand-accent text-white border-brand-accent' : 'bg-background dark:bg-dark-background border-border dark:border-dark-border text-text-primary dark:text-dark-text-primary'}`}
+                className={`${!autoAnalyze ? 'bg-brand-accent text-white' : 'bg-background dark:bg-dark-background text-text-primary dark:text-dark-text-primary'} px-3 py-0.5 text-[11px]`}
               >
                 Off
               </button>
@@ -118,7 +142,7 @@ export default function ImageDropZone({ onFiles, isAnalyzing = false, autoAnalyz
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); clearSelection(); }}
-                className="px-2 py-1 text-xs rounded-md bg-background dark:bg-dark-background border-2 border-border dark:border-dark-border text-text-primary dark:text-dark-text-primary"
+                className="px-2 py-0.5 text-[11px] rounded-md bg-background dark:bg-dark-background border-2 border-border dark:border-dark-border text-text-primary dark:text-dark-text-primary"
               >
                 Clear ({selected.length})
               </button>
@@ -129,13 +153,21 @@ export default function ImageDropZone({ onFiles, isAnalyzing = false, autoAnalyz
 
         {selected.length === 0 ? (
           <div className="flex-1 flex items-center justify-center">
-            <p className="text-xs text-text-secondary dark:text-dark-text-secondary">No images selected</p>
+            <div className="flex items-center gap-2 text-text-primary dark:text-dark-text-primary" role="img" aria-label="Person plus">
+              <svg viewBox="0 0 24 24" className="w-10 h-10" xmlns="http://www.w3.org/2000/svg" fill="none">
+                <circle cx="12" cy="8" r="3" stroke="currentColor" strokeWidth="2" />
+                <path d="M5 20c0-3.5 3.5-5 7-5s7 1.5 7 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              <svg viewBox="0 0 24 24" className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none">
+                <path d="M12 6v12M6 12h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </div>
           </div>
         ) : (
           <div className="mt-3 grid grid-cols-3 gap-2 overflow-y-auto">
             {previews.map((src, idx) => (
               <div key={src} className="relative rounded-md overflow-hidden border-2 border-border dark:border-dark-border">
-                <img src={src} alt={`Selected ${idx + 1}`} className="w-full h-24 object-cover" />
+                <img src={src} alt={`Selected ${idx + 1}`} className="w-full h-[9.6rem] object-cover" />
               </div>
             ))}
           </div>

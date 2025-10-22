@@ -9,9 +9,10 @@ interface DM2PromptEditorProps {
   initialText?: string;
   onResizeStart?: () => void;
   onResizeEnd?: (height: number) => void;
+  isGenerating?: boolean;
 }
 
-export default function DM2PromptEditor({ onSend, onClear, initialText, onResizeStart, onResizeEnd }: DM2PromptEditorProps) {
+export default function DM2PromptEditor({ onSend, onClear, initialText, onResizeStart, onResizeEnd, isGenerating = false }: DM2PromptEditorProps) {
   const [rewriteStyle, setRewriteStyle] = useState<RewriteStyle>('Descriptive');
   const [speedMode, setSpeedMode] = useState<SpeedMode>('Fast');
   const [autoRefine, setAutoRefine] = useState<boolean>(true);
@@ -264,10 +265,14 @@ export default function DM2PromptEditor({ onSend, onClear, initialText, onResize
           onPointerDown={onGripPointerDown}
           onPointerMove={onGripPointerMove}
           onPointerUp={onGripPointerUp}
-          className="mt-1 h-4 w-full rounded-md bg-panel-secondary dark:bg-dark-panel-secondary border-2 border-border dark:border-dark-border flex items-center justify-center cursor-ns-resize select-none"
+          className="mt-1 h-4 w-full rounded-md bg-panel-secondary dark:bg-dark-panel-secondary border-2 border-border dark:border-dark-border cursor-ns-resize select-none"
           style={{ touchAction: 'none' }}
         >
-          <div className="w-10 h-[2px] rounded bg-border dark:bg-dark-border" />
+          <div className="grid grid-cols-3 h-full w-full pointer-events-none">
+            <div className="h-full bg-background dark:bg-dark-background border-r border-border dark:border-dark-border"></div>
+            <div className="h-full bg-background dark:bg-dark-background border-x border-border dark:border-dark-border"></div>
+            <div className="h-full bg-background dark:bg-dark-background border-l border-border dark:border-dark-border"></div>
+          </div>
         </div>
 
       </div>
@@ -282,13 +287,23 @@ export default function DM2PromptEditor({ onSend, onClear, initialText, onResize
         >
           Clear
         </button>
-        <button
-          disabled={isSendDisabled}
-          onClick={handleSend}
-          className="px-3 py-1 text-sm rounded-lg bg-brand-accent hover:bg-brand-accent/90 text-white font-medium disabled:opacity-60"
-        >
-          Send
-        </button>
+        <div className="relative inline-block group">
+          <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-20">
+            <div className="px-2 py-1 rounded-md bg-[#417D9B] text-white text-[11px] shadow-md w-[180px] text-center leading-tight">
+              <div className="whitespace-nowrap">Generate for a</div>
+              <div className="whitespace-nowrap">Quality Prompt Output</div>
+            </div>
+          </div>
+          <button
+            disabled={isSendDisabled || isGenerating}
+            onClick={handleSend}
+            aria-label="Generate for a Quality Prompt Output"
+            aria-busy={isGenerating}
+            className={`px-3 py-1 text-sm rounded-lg text-white font-medium transition-transform duration-150 active:scale-95 ${isGenerating ? 'bg-brand-accent animate-pulse cursor-wait opacity-90' : 'bg-brand-accent hover:bg-brand-accent/90'} disabled:opacity-60`}
+          >
+            Send
+          </button>
+        </div>
       </div>
     </div>
   );
