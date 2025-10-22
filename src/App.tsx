@@ -7,6 +7,9 @@ import { generateWithImagesREST } from "./helpers/gemini";
 import BackgroundCanvas from "./components/BackgroundCanvas";
 import BrandHeader from "./components/BrandHeader";
 
+// Local type to coordinate speed across components
+type SpeedMode = 'Fast' | 'Quality';
+
 function App() {
   const [prompt, setPrompt] = useState("");
   const [editorSeed, setEditorSeed] = useState<string>("");
@@ -16,67 +19,73 @@ function App() {
   const [autoAnalyze, setAutoAnalyze] = useState(true);
   const [editorExpanded, setEditorExpanded] = useState(false);
   const [lastSource, setLastSource] = useState<"edge" | "gemini-mm" | "gemini-text" | undefined>(undefined);
+  const [speedMode, setSpeedMode] = useState<SpeedMode>('Fast');
 
-  const fileToDataUrl = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+  // Resize/compress images to speed up requests
+  const fileToOptimizedDataUrl = async (
+    file: File,
+    opts: { maxDim: number; quality: number; mimeType?: string } = { maxDim: 1024, quality: 0.7, mimeType: 'image/jpeg' }
+  ): Promise<string> => {
+    try {
+      const blobUrl = URL.createObjectURL(file);
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = reject;
+        image.src = blobUrl;
+      });
+      const { width, height } = img;
+      const scale = Math.min(1, opts.maxDim / Math.max(width, height));
+      const targetW = Math.max(1, Math.round(width * scale));
+      const targetH = Math.max(1, Math.round(height * scale));
+      const canvas = document.createElement('canvas');
+      canvas.width = targetW;
+      canvas.height = targetH;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Canvas 2D unavailable');
+      ctx.drawImage(img, 0, 0, targetW, targetH);
+      const dataUrl = canvas.toDataURL(opts.mimeType || 'image/jpeg', opts.quality);
+      URL.revokeObjectURL(blobUrl);
+      return dataUrl;
+    } catch (e) {
+      console.warn('Image optimization failed, falling back to raw DataURL:', e);
+      return await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
   };
 
-  // ADD: Instrumented image upload handler for timing/error logs
+  const getImageDataUrls = async (files: File[], mode: SpeedMode): Promise<string[]> => {
+    const cfg = mode === 'Quality'
+      ? { maxDim: 1600, quality: 0.85, mimeType: 'image/jpeg' }
+      : { maxDim: 1024, quality: 0.7, mimeType: 'image/jpeg' };
+    const urls = await Promise.all(files.map((f) => fileToOptimizedDataUrl(f, cfg)));
+    console.log(`Optimized ${files.length} image(s) for ${mode} mode. First length:`, urls[0]?.length ?? 0);
+    return urls;
+  };
+
+  // Image upload handler: only store images, let effect do analysis
   const handleImageFiles = async (files: File[]) => {
-    if (!files || files.length === 0) return;
-
-    console.log('Starting analysis...');
-    setIsAnalyzing(true);
-
-    try {
-      console.log('Converting files to data URLs...');
-      const imageDataUrls = await Promise.all(files.map(fileToDataUrl));
-      console.log('Data URLs created:', imageDataUrls.length);
-
-      console.log('Calling Gemini directly (no edge)...');
-      const startTime = Date.now();
-
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY!;
-      const mmModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE || "gemini-1.5-pro-latest";
-      const enhancedPrompt = await generateWithImagesREST({
-        apiKey,
-        model: mmModel,
-        text: "Analyze these images in detail and create a comprehensive, descriptive prompt based on what you see.",
-        imageDataUrls,
-      });
-
-      const endTime = Date.now();
-      console.log(`Analysis took ${endTime - startTime}ms`);
-      console.log('Enhanced prompt:', enhancedPrompt);
-
-      setPrompt(enhancedPrompt);
-      setEditorSeed(enhancedPrompt);
-      setLastSource('gemini-mm');
-    } catch (error: any) {
-      console.error('FULL ERROR:', error);
-      alert(`Error: ${error?.message || String(error)}`);
-    } finally {
-      console.log('Analysis complete');
-      setIsAnalyzing(false);
-    }
-
-    // Keep images in state for subsequent operations (e.g., manual Send)
+    if (!files) return;
     setImages(files);
   };
 
   const handleSend = async (finalPrompt: string) => {
     setIsGenerating(true);
     try {
-      const imagesDataUrls = await Promise.all(images.map(fileToDataUrl));
+      const imagesDataUrls = await getImageDataUrls(images, speedMode);
       if (imagesDataUrls.length) {
         const apiKey = import.meta.env.VITE_GEMINI_API_KEY!;
-        const mmModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE || "gemini-1.5-pro-latest";
-        const directMm = await generateWithImagesREST({ apiKey, model: mmModel, text: finalPrompt, imageDataUrls: imagesDataUrls });
+        const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
+        const mmModel = envModel || "gemini-2.0-flash"; // ensure 2.0 flash fallback
+        const genCfg = speedMode === 'Quality'
+          ? { maxOutputTokens: 384, temperature: 0.95 }
+          : { maxOutputTokens: 160, temperature: 0.7 };
+        console.log("Gemini MM model (send):", mmModel, "config:", genCfg);
+        const directMm = await generateWithImagesREST({ apiKey, model: mmModel, text: finalPrompt, imageDataUrls: imagesDataUrls, generationConfig: genCfg });
         setPrompt(directMm);
         setEditorSeed(directMm);
         setLastSource("gemini-mm");
@@ -95,19 +104,29 @@ function App() {
     }
   };
 
-  // Auto-analyze images when they are added
+  // Auto-analyze images when they are added, honoring Speed Mode
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
       if (!autoAnalyze || images.length === 0) return;
       setIsAnalyzing(true);
       try {
-        const imageDataUrls = await Promise.all(images.map(fileToDataUrl));
+        const imageDataUrls = await getImageDataUrls(images, speedMode);
         const apiKey = import.meta.env.VITE_GEMINI_API_KEY!;
-        const model = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE || "gemini-1.5-pro-latest";
-        const instruction =
+        const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
+        const model = envModel || "gemini-2.0-flash"; // ensure 2.0 flash fallback
+        const genCfg = speedMode === 'Quality'
+          ? { maxOutputTokens: 384, temperature: 0.95 }
+          : { maxOutputTokens: 160, temperature: 0.7 };
+        console.log("Gemini MM model (auto):", model, "config:", genCfg);
+
+        const instructionFast =
           "You are a professional prompt engineer. Analyze the input image and produce a single, vivid, 1–2 sentence prompt suitable for image generation models. Include subject, setting, style, lighting, composition, lens, and mood. Don't invent details not visible.";
-        const analyzedDirect = await generateWithImagesREST({ apiKey, model, text: instruction, imageDataUrls });
+        const instructionQuality =
+          "Analyze these images in detail and create a comprehensive, descriptive prompt based on what you see. Expand important details (subject, context, style, lighting, composition, lens, mood, constraints). Return only the improved prompt.";
+        const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
+
+        const analyzedDirect = await generateWithImagesREST({ apiKey, model, text: instruction, imageDataUrls, generationConfig: genCfg });
         if (!cancelled) {
           setPrompt(analyzedDirect);
           setEditorSeed(analyzedDirect);
@@ -123,7 +142,7 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [images, autoAnalyze]);
+  }, [images, autoAnalyze, speedMode]);
 
   const handleClearAll = () => {
     setPrompt("");
@@ -191,6 +210,8 @@ function App() {
           <div className={editorExpanded ? "panel-auto-height" : "panel-standard-height"}>
             <DM2PromptEditor
               initialText={editorSeed}
+              initialSpeedMode={speedMode}
+              onSpeedModeChange={setSpeedMode}
               onSend={handleSend}
               onClear={() => { handleClearAll(); setEditorExpanded(false); }}
               onResizeStart={() => setEditorExpanded(true)}

@@ -1,47 +1,68 @@
-export function dataUrlToInlineData(dataUrl: string) {
-  const m = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
-  if (!m) return null;
-  // REST v1 (ai.google.dev) accepts camelCase when using JSON; Node SDK uses the same shape.
-  return { mimeType: m[1], data: m[2] };
-}
+import type { ImagePart, TextPart } from "../types/gemini";
 
-export async function generateWithImagesREST({
-  apiKey,
-  model = "gemini-2.5-flash",
-  text,
-  imageDataUrls = [],
-}: {
+export interface GenerateWithImagesRESTArgs {
   apiKey: string;
-  model?: string;
+  model: string; // e.g., "gemini-2.0-flash"
   text: string;
   imageDataUrls: string[];
-}): Promise<string> {
-  if (!apiKey) throw new Error("Gemini API key not configured");
+  generationConfig?: {
+    temperature?: number;
+    topP?: number;
+    topK?: number;
+    maxOutputTokens?: number;
+  };
+}
 
-  const parts: any[] = [{ text }];
+export async function generateWithImagesREST({ apiKey, model, text, imageDataUrls, generationConfig }: GenerateWithImagesRESTArgs): Promise<string> {
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
-  for (const url of imageDataUrls) {
-    if (typeof url !== "string") continue;
-    const inline = dataUrlToInlineData(url);
-    if (inline) parts.push({ inlineData: inline });
-  }
+  const parts: (TextPart | ImagePart)[] = [
+    { text },
+    ...imageDataUrls.map((dataUrl) => {
+      const [header, base64] = dataUrl.split(",");
+      const mime = header.replace("data:", "").replace(";base64", "");
+      return {
+        inlineData: {
+          mimeType: mime,
+          data: base64,
+        },
+      } as ImagePart;
+    }),
+  ];
 
-  const endpoint = `https://generativelanguage.googleapis.com/v1/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+  const genCfg = {
+    temperature: 0.9,
+    topP: 0.9,
+    topK: 40,
+    maxOutputTokens: 512,
+    ...(generationConfig ?? {}),
+  };
+
+  const body = {
+    contents: [{ role: "user", parts }],
+    generationConfig: genCfg,
+  };
 
   const res = await fetch(endpoint, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ contents: [{ role: "user", parts }] }),
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": apiKey,
+    },
+    body: JSON.stringify(body),
   });
 
   if (!res.ok) {
-    let errJson: any = {};
-    try { errJson = await res.json(); } catch {}
-    throw new Error(`Gemini REST error ${res.status}: ${JSON.stringify(errJson, null, 2)}`);
+    const txt = await res.text();
+    console.error("Gemini REST error", res.status, txt);
+    throw new Error(`Gemini REST error ${res.status}: ${txt}`);
   }
 
-  const data = await res.json();
-  const partsOut = data?.candidates?.[0]?.content?.parts || [];
-  const textOut = partsOut.map((p: any) => p.text).filter(Boolean).join("\n");
-  return textOut || "";
+  const json = await res.json();
+  const candidates = json?.candidates || [];
+  const textOut = candidates[0]?.content?.parts?.map((p: any) => p.text).join("\n") || "";
+  return textOut.trim();
 }
+
+// Helper default model; ensure it aligns to 2.0 flash if the caller passes empty
+export const DEFAULT_GEMINI_IMAGE_MODEL = "gemini-2.0-flash";
