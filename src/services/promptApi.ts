@@ -2,7 +2,7 @@ export async function generateWithGemini(inputText: string, model?: string, allo
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
   console.log('Gemini API Key exists:', Boolean(apiKey));
   console.log('Gemini API Key length:', apiKey?.length ?? 0);
-  const isPlaceholderKey = !!apiKey && /VITE_GEMINI_API/i.test(apiKey);
+  const isPlaceholderKey = !!apiKey && (apiKey.includes('YOUR_API_KEY') || apiKey.includes('PLACEHOLDER') || apiKey === 'VITE_GEMINI_API_KEY');
   if (!apiKey || isPlaceholderKey) {
     console.warn('Gemini API key missing or placeholder; using generic fallback');
     if (allowFallback) {
@@ -82,7 +82,7 @@ export async function generateWithGeminiImages(inputText: string, imageDataUrls:
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
   console.log('Gemini API Key exists:', Boolean(apiKey));
   console.log('Gemini API Key length:', apiKey?.length ?? 0);
-  const isPlaceholderKey = !!apiKey && /VITE_GEMINI_API/i.test(apiKey);
+  const isPlaceholderKey = !!apiKey && (apiKey.includes('YOUR_API_KEY') || apiKey.includes('PLACEHOLDER') || apiKey === 'VITE_GEMINI_API_KEY');
   if (!apiKey || isPlaceholderKey) {
     console.warn('Gemini API key missing or placeholder; using generic fallback');
     if (allowFallback) {
@@ -92,7 +92,7 @@ export async function generateWithGeminiImages(inputText: string, imageDataUrls:
     throw new Error('Missing or placeholder VITE_GEMINI_API_KEY');
   }
 
-  const chosenModel = model || (import.meta.env.VITE_GEMINI_MODEL_IMAGE as string | undefined) || 'gemini-2.5-flash';
+  const chosenModel = model || (import.meta.env.VITE_GEMINI_MODEL_IMAGE as string | undefined) || 'gemini-1.5-flash';
   console.log('Gemini images: Using model:', chosenModel);
   console.log('Gemini images: Input text length:', inputText?.length ?? 0);
   console.log('Gemini images: Image count:', imageDataUrls.length);

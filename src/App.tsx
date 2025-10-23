@@ -18,7 +18,16 @@ function App() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [autoAnalyze, setAutoAnalyze] = useState(true);
   const [editorExpanded, setEditorExpanded] = useState(false);
-  const [lastSource, setLastSource] = useState<"edge" | "gemini-mm" | "gemini-text" | undefined>(undefined);
+  const [lastSource, setLastSource] = useState<"edge" | "gemini-mm" | "gemini-text" | "subject" | "scene" | "style" | undefined>(undefined);
+  
+  // Debug logging for state changes
+  useEffect(() => {
+    console.log("🔄 Prompt state changed:", prompt ? `"${prompt.substring(0, 50)}..."` : "EMPTY");
+  }, [prompt]);
+
+  useEffect(() => {
+    console.log("🔄 LastSource state changed:", lastSource);
+  }, [lastSource]);
   const [speedMode, setSpeedMode] = useState<SpeedMode>('Fast');
   
   // State for independent image analysis
@@ -95,7 +104,7 @@ function App() {
       if (imagesDataUrls.length) {
         const apiKey = import.meta.env.VITE_GEMINI_API_KEY!;
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
-        const mmModel = envModel || "gemini-2.0-flash"; // ensure 2.0 flash fallback
+        const mmModel = envModel || "gemini-1.5-flash"; // ensure 1.5 flash fallback
         const genCfg = speedMode === 'Quality'
           ? { maxOutputTokens: 384, temperature: 0.95 }
           : { maxOutputTokens: 160, temperature: 0.7 };
@@ -129,7 +138,7 @@ function App() {
         const imageDataUrls = await getImageDataUrls(images, speedMode);
         const apiKey = import.meta.env.VITE_GEMINI_API_KEY!;
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
-        const model = envModel || "gemini-2.0-flash"; // ensure 2.0 flash fallback
+        const model = envModel || "gemini-1.5-flash"; // ensure 1.5 flash fallback
         const genCfg = speedMode === 'Quality'
           ? { maxOutputTokens: 384, temperature: 0.95 }
           : { maxOutputTokens: 160, temperature: 0.7 };
@@ -169,7 +178,7 @@ function App() {
         const imageDataUrls = await getImageDataUrls(subjectImages, speedMode);
         const apiKey = import.meta.env.VITE_GEMINI_API_KEY!;
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
-        const model = envModel || "gemini-2.0-flash";
+        const model = envModel || "gemini-1.5-flash";
         const genCfg = speedMode === 'Quality'
           ? { maxOutputTokens: 384, temperature: 0.95 }
           : { maxOutputTokens: 160, temperature: 0.7 };
@@ -208,7 +217,7 @@ function App() {
         const imageDataUrls = await getImageDataUrls(sceneImages, speedMode);
         const apiKey = import.meta.env.VITE_GEMINI_API_KEY!;
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
-        const model = envModel || "gemini-2.0-flash";
+        const model = envModel || "gemini-1.5-flash";
         const genCfg = speedMode === 'Quality'
           ? { maxOutputTokens: 384, temperature: 0.95 }
           : { maxOutputTokens: 160, temperature: 0.7 };
@@ -315,7 +324,7 @@ function App() {
       const imageDataUrls = await getImageDataUrls(images, speedMode);
       const apiKey = import.meta.env.VITE_GEMINI_API_KEY!;
       const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
-      const model = envModel || "gemini-2.0-flash";
+      const model = envModel || "gemini-1.5-flash";
       const genCfg = speedMode === 'Quality'
         ? { maxOutputTokens: 384, temperature: 0.95 }
         : { maxOutputTokens: 160, temperature: 0.7 };
@@ -338,14 +347,71 @@ function App() {
   };
 
   // Manual trigger functions for independent analysis
+  // Test function to verify API key works
+  const testApiKey = async (apiKey: string) => {
+    try {
+      const testModel = import.meta.env.VITE_GEMINI_MODEL_TEXT || "gemini-1.5-flash";
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${testModel}:generateContent`;
+      
+      console.log("🔧 Testing API with model:", testModel);
+      console.log("🔧 Test endpoint:", endpoint);
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey,
+        },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: 'Hello' }] }],
+          generationConfig: { maxOutputTokens: 10 }
+        })
+      });
+      
+      if (response.ok) {
+        console.log("✅ API Key test successful");
+        return true;
+      } else {
+        const errorText = await response.text();
+        console.error("❌ API Key test failed:", response.status, errorText);
+        
+        // Provide specific error messages
+        if (response.status === 429) {
+          alert("API quota exceeded. Please check your Gemini API quota limits or try again later.");
+        } else if (response.status === 401) {
+          alert("Authentication failed. Please check your Gemini API key.");
+        } else if (response.status === 403) {
+          alert("Access forbidden. Please verify your API key has the necessary permissions.");
+        } else {
+          alert(`API test failed with status ${response.status}. Please check your API key and try again.`);
+        }
+        return false;
+      }
+    } catch (error) {
+      console.error("❌ API Key test error:", error);
+      alert("Network error during API test. Please check your internet connection and try again.");
+      return false;
+    }
+  };
+
   const runSubjectAnalysis = async () => {
+    console.log("🔍 runSubjectAnalysis called, subjectImages.length:", subjectImages.length);
     if (subjectImages.length === 0) return;
     setIsAnalyzingSubject(true);
     try {
       const imageDataUrls = await getImageDataUrls(subjectImages, speedMode);
       const apiKey = import.meta.env.VITE_GEMINI_API_KEY!;
       const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
-      const model = envModel || "gemini-2.0-flash";
+      const model = envModel || "gemini-1.5-flash";
+      
+      console.log("🔍 Environment variables:");
+      console.log("  - VITE_GEMINI_API_KEY present:", !!apiKey, "length:", apiKey?.length || 0);
+      console.log("  - VITE_GEMINI_API_KEY starts with:", apiKey?.substring(0, 10) + "...");
+      console.log("  - VITE_GEMINI_MODEL_IMAGES:", import.meta.env.VITE_GEMINI_MODEL_IMAGES);
+      console.log("  - VITE_GEMINI_MODEL_IMAGE:", import.meta.env.VITE_GEMINI_MODEL_IMAGE);
+      console.log("  - Final model used:", model);
+      console.log("🔍 Image data URLs count:", imageDataUrls.length);
+      
       const genCfg = speedMode === 'Quality'
         ? { maxOutputTokens: 384, temperature: 0.95 }
         : { maxOutputTokens: 160, temperature: 0.7 };
@@ -356,12 +422,27 @@ function App() {
         "Analyze these images in detail and create a comprehensive, descriptive prompt based on what you see. Focus specifically on the subject/main character - expand important details (appearance, pose, expression, clothing, accessories, distinctive features). Return only the improved prompt.";
       const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
 
+      console.log("🔍 About to call generateWithImagesREST for subject analysis");
       const analyzedSubject = await generateWithImagesREST({ apiKey, model, text: instruction, imageDataUrls, generationConfig: genCfg });
+      console.log("🔍 Subject analysis result:", analyzedSubject);
+      console.log("🔍 Setting prompt to:", analyzedSubject);
       setPrompt(analyzedSubject);
       setEditorSeed(analyzedSubject);
       setLastSource("subject");
+      console.log("🔍 Subject analysis complete, prompt and source set");
     } catch (e2) {
-      console.error("Subject analysis failed", e2);
+      console.error("🚨 Subject analysis failed:", e2);
+      
+      // More specific error handling
+      if (e2.message && e2.message.includes('429')) {
+        alert(`API Rate Limit Exceeded: You've hit your Gemini API quota. Even with paid tier, you may have daily/hourly limits. Please wait a few minutes and try again, or check your Google AI Studio usage dashboard.`);
+      } else if (e2.message && e2.message.includes('401')) {
+        alert(`API Authentication Error: Please check your VITE_GEMINI_API_KEY in the .env file.`);
+      } else if (e2.message && e2.message.includes('403')) {
+        alert(`API Access Forbidden: Your API key may not have access to the Gemini model. Check your Google AI Studio permissions.`);
+      } else {
+        alert(`Subject analysis failed: ${e2.message || e2}`);
+      }
     } finally {
       setIsAnalyzingSubject(false);
     }
@@ -374,7 +455,7 @@ function App() {
       const imageDataUrls = await getImageDataUrls(sceneImages, speedMode);
       const apiKey = import.meta.env.VITE_GEMINI_API_KEY!;
       const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
-      const model = envModel || "gemini-2.0-flash";
+      const model = envModel || "gemini-1.5-flash";
       const genCfg = speedMode === 'Quality'
         ? { maxOutputTokens: 384, temperature: 0.95 }
         : { maxOutputTokens: 160, temperature: 0.7 };

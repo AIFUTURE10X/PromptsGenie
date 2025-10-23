@@ -14,13 +14,20 @@ export interface GenerateWithImagesRESTArgs {
 }
 
 export async function generateWithImagesREST({ apiKey, model, text, imageDataUrls, generationConfig }: GenerateWithImagesRESTArgs): Promise<string> {
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+  const endpoint = `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${apiKey}`;
+  
+  console.log("🔧 Gemini API Request Details:");
+  console.log("  - Model:", model);
+  console.log("  - Endpoint:", endpoint);
+  console.log("  - Images count:", imageDataUrls.length);
+  console.log("  - Text prompt length:", text.length);
 
   const parts: (TextPart | ImagePart)[] = [
     { text },
-    ...imageDataUrls.map((dataUrl) => {
+    ...imageDataUrls.map((dataUrl, index) => {
       const [header, base64] = dataUrl.split(",");
       const mime = header.replace("data:", "").replace(";base64", "");
+      console.log(`  - Image ${index + 1}: ${mime}, size: ${(base64.length * 0.75 / 1024).toFixed(1)}KB`);
       return {
         inlineData: {
           mimeType: mime,
@@ -47,7 +54,6 @@ export async function generateWithImagesREST({ apiKey, model, text, imageDataUrl
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-goog-api-key": apiKey,
     },
     body: JSON.stringify(body),
   });
@@ -64,5 +70,5 @@ export async function generateWithImagesREST({ apiKey, model, text, imageDataUrl
   return textOut.trim();
 }
 
-// Helper default model; ensure it aligns to 2.0 flash if the caller passes empty
-export const DEFAULT_GEMINI_IMAGE_MODEL = "gemini-2.0-flash";
+// Helper default model; using 1.5-flash for better stability and quota availability
+export const DEFAULT_GEMINI_IMAGE_MODEL = "gemini-1.5-flash";

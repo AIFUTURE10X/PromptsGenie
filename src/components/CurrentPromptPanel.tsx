@@ -2,7 +2,7 @@ import React from "react";
 
 interface Props {
   prompt: string;
-  source?: "edge" | "gemini-mm" | "gemini-text";
+  source?: "edge" | "gemini-mm" | "gemini-text" | "subject" | "scene" | "style";
   onCopy: () => void;
   onEdit: () => void;
   onClear: () => void;
@@ -10,25 +10,70 @@ interface Props {
 }
 
 const CurrentPromptPanel: React.FC<Props> = ({ prompt, source, onCopy, onEdit, onClear, onRegenerate }) => {
-  const devBadge = source && source !== "gemini-mm" ? (
+  console.log("📋 CurrentPromptPanel render - prompt:", prompt ? `"${prompt.substring(0, 50)}..."` : "EMPTY", "source:", source);
+  const getBadgeStyles = (source: string) => {
+    switch (source) {
+      case "edge":
+        return "bg-green-200 text-green-900 border-green-300 dark:bg-green-900/40 dark:text-green-200";
+      case "gemini-mm":
+        return "bg-indigo-200 text-indigo-900 border-indigo-300 dark:bg-indigo-900/40 dark:text-indigo-200";
+      case "gemini-text":
+        return "bg-yellow-200 text-yellow-900 border-yellow-300 dark:bg-yellow-900/40 dark:text-yellow-200";
+      case "subject":
+        return "bg-purple-200 text-purple-900 border-purple-300 dark:bg-purple-900/40 dark:text-purple-200";
+      case "scene":
+        return "bg-teal-200 text-teal-900 border-teal-300 dark:bg-teal-900/40 dark:text-teal-200";
+      case "style":
+        return "bg-orange-200 text-orange-900 border-orange-300 dark:bg-orange-900/40 dark:text-orange-200";
+      default:
+        return "bg-gray-200 text-gray-900 border-gray-300 dark:bg-gray-900/40 dark:text-gray-200";
+    }
+  };
+
+  const getBadgeLabel = (source: string) => {
+    switch (source) {
+      case "edge":
+        return "Edge";
+      case "gemini-mm":
+        return "Gemini (MM)";
+      case "gemini-text":
+        return "Gemini (Text)";
+      case "subject":
+        return "Subject Analysis";
+      case "scene":
+        return "Scene Analysis";
+      case "style":
+        return "Style Analysis";
+      default:
+        return source;
+    }
+  };
+
+  const getBadgeTitle = (source: string) => {
+    switch (source) {
+      case "edge":
+        return "Supabase Edge function";
+      case "gemini-mm":
+        return "Gemini multimodal";
+      case "gemini-text":
+        return "Gemini text";
+      case "subject":
+        return "Generated from Subject Analysis";
+      case "scene":
+        return "Generated from Scene Analysis";
+      case "style":
+        return "Generated from Style Analysis";
+      default:
+        return source;
+    }
+  };
+
+  const devBadge = source ? (
     <span
-      className={
-        "ml-2 inline-block px-2 py-0.5 text-xs rounded-full border " +
-        (source === "edge"
-          ? "bg-green-200 text-green-900 border-green-300 dark:bg-green-900/40 dark:text-green-200"
-          : source === "gemini-mm"
-          ? "bg-indigo-200 text-indigo-900 border-indigo-300 dark:bg-indigo-900/40 dark:text-indigo-200"
-          : "bg-yellow-200 text-yellow-900 border-yellow-300 dark:bg-yellow-900/40 dark:text-yellow-200")
-      }
-      title={
-        source === "edge"
-          ? "Supabase Edge function"
-          : source === "gemini-mm"
-          ? "Gemini multimodal"
-          : "Gemini text"
-      }
+      className={`ml-2 inline-block px-2 py-0.5 text-xs rounded-full border ${getBadgeStyles(source)}`}
+      title={getBadgeTitle(source)}
     >
-      {source === "edge" ? "Edge" : source === "gemini-mm" ? "Gemini (MM)" : "Gemini (Text)"}
+      {getBadgeLabel(source)}
     </span>
   ) : null;
 

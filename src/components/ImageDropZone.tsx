@@ -191,7 +191,7 @@ export default function ImageDropZone({
             <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
             
             {/* Card Content */}
-            <div className="relative bg-panel-secondary dark:bg-dark-panel-secondary border border-purple-500/30 rounded-xl p-2.5 h-full flex flex-col">
+            <div className="relative bg-panel-secondary dark:bg-dark-panel-secondary border border-purple-500/30 rounded-xl p-2.5 h-44 flex flex-col">
               {/* Header */}
               <div className="flex items-center gap-2 mb-2">
                 <div className="p-1.5 bg-purple-500/20 rounded-lg">
@@ -204,7 +204,7 @@ export default function ImageDropZone({
 
               {/* Drop Zone */}
               <div
-                className={`relative border-2 border-dashed rounded-lg p-2.5 text-center transition-all duration-300 cursor-pointer flex-1 flex flex-col justify-center ${
+                className={`relative border-2 border-dashed rounded-lg p-2.5 text-center transition-all duration-300 cursor-pointer flex-1 flex flex-col justify-center overflow-hidden ${
                   isSubjectDragOver
                     ? 'border-purple-400 bg-purple-500/10'
                     : 'border-purple-500/40 hover:border-purple-400 hover:bg-purple-500/5'
@@ -225,17 +225,17 @@ export default function ImageDropZone({
                 
                 {!isAnalyzingSubject && (
                   subjectPreview ? (
-                    <div className="flex flex-col items-center space-y-2">
-                      <div className="relative">
+                    <div className="flex items-center justify-between p-2 space-x-3">
+                      <p className="text-xs text-purple-300 flex-shrink-0">
+                        {subjectImages.length} image{subjectImages.length !== 1 ? 's' : ''} selected
+                      </p>
+                      <div className="relative flex justify-center flex-1">
                         <img 
                           src={subjectPreview} 
                           alt="Subject Preview" 
-                          className="max-w-full max-h-24 object-contain rounded"
+                          className="max-w-full max-h-12 object-contain rounded"
                         />
                       </div>
-                      <p className="text-xs text-purple-300">
-                        {subjectImages.length} image{subjectImages.length !== 1 ? 's' : ''} selected
-                      </p>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center space-y-1">
@@ -293,7 +293,7 @@ export default function ImageDropZone({
             <div className="absolute -inset-0.5 bg-gradient-to-r from-teal-500 to-green-600 rounded-xl blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
             
             {/* Card Content */}
-            <div className="relative bg-panel-secondary dark:bg-dark-panel-secondary border border-teal-500/30 rounded-xl p-2.5 h-full flex flex-col">
+            <div className="relative bg-panel-secondary dark:bg-dark-panel-secondary border border-teal-500/30 rounded-xl p-2.5 h-44 flex flex-col">
               {/* Header */}
               <div className="flex items-center gap-2 mb-2">
                 <div className="p-1.5 bg-teal-500/20 rounded-lg">
@@ -306,7 +306,7 @@ export default function ImageDropZone({
 
               {/* Drop Zone */}
               <div
-                className={`relative border-2 border-dashed rounded-lg p-2.5 text-center transition-all duration-300 cursor-pointer flex-1 flex flex-col justify-center ${
+                className={`relative border-2 border-dashed rounded-lg p-2.5 text-center transition-all duration-300 cursor-pointer flex-1 flex flex-col justify-center overflow-hidden ${
                   isSceneDragOver
                     ? 'border-teal-400 bg-teal-500/10'
                     : 'border-teal-500/40 hover:border-teal-400 hover:bg-teal-500/5'
@@ -327,17 +327,17 @@ export default function ImageDropZone({
                 
                 {!isAnalyzingScene && (
                   scenePreview ? (
-                    <div className="flex flex-col items-center space-y-2">
-                      <div className="relative">
+                    <div className="flex items-center justify-between p-2 space-x-3">
+                      <p className="text-xs text-teal-300 flex-shrink-0">
+                        {sceneImages.length} image{sceneImages.length !== 1 ? 's' : ''} selected
+                      </p>
+                      <div className="relative flex justify-center flex-1">
                         <img 
                           src={scenePreview} 
                           alt="Scene Preview" 
-                          className="max-w-full max-h-24 object-contain rounded"
+                          className="max-w-full max-h-12 object-contain rounded"
                         />
                       </div>
-                      <p className="text-xs text-teal-300">
-                        {sceneImages.length} image{sceneImages.length !== 1 ? 's' : ''} selected
-                      </p>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center space-y-1">
@@ -395,7 +395,7 @@ export default function ImageDropZone({
             <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
             
             {/* Card Content */}
-            <div className="relative bg-panel-secondary dark:bg-dark-panel-secondary border border-orange-500/30 rounded-xl p-2.5 h-full flex flex-col">
+            <div className="relative bg-panel-secondary dark:bg-dark-panel-secondary border border-orange-500/30 rounded-xl p-2.5 h-44 flex flex-col">
               {/* Header */}
               <div className="flex items-center gap-2 mb-2">
                 <div className="p-1.5 bg-orange-500/20 rounded-lg">
@@ -408,7 +408,7 @@ export default function ImageDropZone({
 
               {/* Drop Zone */}
               <div
-                className={`relative border-2 border-dashed rounded-lg p-2.5 text-center transition-all duration-300 cursor-pointer flex-1 flex flex-col justify-center ${
+                className={`relative border-2 border-dashed rounded-lg p-2.5 text-center transition-all duration-300 cursor-pointer flex-1 flex flex-col justify-center overflow-hidden ${
                   isStyleDragOver
                     ? 'border-orange-400 bg-orange-500/10'
                     : 'border-orange-500/40 hover:border-orange-400 hover:bg-orange-500/5'
@@ -429,17 +429,17 @@ export default function ImageDropZone({
                 
                 {!isAnalyzingStyle && (
                   stylePreview ? (
-                    <div className="flex flex-col items-center space-y-2">
-                      <div className="relative">
+                    <div className="flex items-center justify-between p-2 space-x-3">
+                      <p className="text-xs text-orange-300 flex-shrink-0">
+                        {styleImages.length} image{styleImages.length !== 1 ? 's' : ''} selected
+                      </p>
+                      <div className="relative flex justify-center flex-1">
                         <img 
                           src={stylePreview} 
                           alt="Style Preview" 
-                          className="max-w-full max-h-24 object-contain rounded"
+                          className="max-w-full max-h-12 object-contain rounded"
                         />
                       </div>
-                      <p className="text-xs text-orange-300">
-                        {styleImages.length} image{styleImages.length !== 1 ? 's' : ''} selected
-                      </p>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center space-y-1">
