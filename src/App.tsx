@@ -6,6 +6,7 @@ import { generateWithGemini } from "./services/promptApi";
 import { generateWithImagesREST } from "./helpers/gemini";
 import BackgroundCanvas from "./components/BackgroundCanvas";
 import BrandHeader from "./components/BrandHeader";
+import { composePrompt } from "./lib/utils";
 
 // Local type to coordinate speed across components
 type SpeedMode = 'Fast' | 'Quality';
@@ -20,6 +21,13 @@ function App() {
   const [editorExpanded, setEditorExpanded] = useState(false);
   const [lastSource, setLastSource] = useState<"edge" | "gemini-mm" | "gemini-text" | undefined>(undefined);
   const [speedMode, setSpeedMode] = useState<SpeedMode>('Fast');
+  // New: style/scene support
+  const [styleFile, setStyleFile] = useState<File | undefined>(undefined);
+  const [sceneFile, setSceneFile] = useState<File | undefined>(undefined);
+  const [styleDesc, setStyleDesc] = useState<string>("");
+  const [sceneDesc, setSceneDesc] = useState<string>("");
+  const [useStyle, setUseStyle] = useState<boolean>(true);
+  const [useScene, setUseScene] = useState<boolean>(true);
 
   // Resize/compress images to speed up requests
   const fileToOptimizedDataUrl = async (
@@ -73,9 +81,22 @@ function App() {
     setImages(files);
   };
 
+  // New: role handlers wired to ImageDropZone
+  const handleStyleFile = (file?: File) => setStyleFile(file);
+  const handleSceneFile = (file?: File) => setSceneFile(file);
+
   const handleSend = async (finalPrompt: string) => {
     setIsGenerating(true);
     try {
+      // Compose prompt with optional style/scene descriptors
+      const composed = composePrompt({
+        userText: finalPrompt,
+        style: styleDesc,
+        scene: sceneDesc,
+        useStyle,
+        useScene,
+      });
+
       const imagesDataUrls = await getImageDataUrls(images, speedMode);
       if (imagesDataUrls.length) {
         const apiKey = import.meta.env.VITE_GEMINI_API_KEY!;
@@ -85,13 +106,13 @@ function App() {
           ? { maxOutputTokens: 384, temperature: 0.95 }
           : { maxOutputTokens: 160, temperature: 0.7 };
         console.log("Gemini MM model (send):", mmModel, "config:", genCfg);
-        const directMm = await generateWithImagesREST({ apiKey, model: mmModel, text: finalPrompt, imageDataUrls: imagesDataUrls, generationConfig: genCfg });
+        const directMm = await generateWithImagesREST({ apiKey, model: mmModel, text: composed, imageDataUrls: imagesDataUrls, generationConfig: genCfg });
         setPrompt(directMm);
         setEditorSeed(directMm);
         setLastSource("gemini-mm");
       } else {
         const textModel = import.meta.env.VITE_GEMINI_MODEL_TEXT || "gemini-1.5-flash";
-        const directResult = await generateWithGemini(finalPrompt, textModel, false);
+        const directResult = await generateWithGemini(composed, textModel, false);
         setPrompt(directResult);
         setEditorSeed(directResult);
         setLastSource("gemini-text");
@@ -104,7 +125,7 @@ function App() {
     }
   };
 
-  // Auto-analyze images when they are added, honoring Speed Mode
+  // Auto-analyze images when they are added, honoring Speed Mode (existing behavior)
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
@@ -144,10 +165,72 @@ function App() {
     };
   }, [images, autoAnalyze, speedMode]);
 
+  // New: auto-analyze Style
+  useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      if (!autoAnalyze || !styleFile) { setStyleDesc(""); return; }
+      setIsAnalyzing(true);
+      try {
+        const cfg = speedMode === 'Quality'
+          ? { maxOutputTokens: 196, temperature: 0.9 }
+          : { maxOutputTokens: 120, temperature: 0.7 };
+        const apiKey = import.meta.env.VITE_GEMINI_API_KEY!;
+        const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
+        const model = envModel || "gemini-2.0-flash";
+        const url = await fileToOptimizedDataUrl(styleFile, speedMode === 'Quality' ? { maxDim: 1600, quality: 0.85 } : { maxDim: 1024, quality: 0.7 });
+        const instruction = speedMode === 'Quality'
+          ? "Extract detailed style/aesthetic descriptors visible in the image: medium, technique, palette, lighting, composition, mood, lens. Return a concise phrase, comma-separated."
+          : "Extract concise style descriptors: medium, technique, palette, lighting, composition, mood. Return a short comma-separated phrase.";
+        const out = await generateWithImagesREST({ apiKey, model, text: instruction, imageDataUrls: [url], generationConfig: cfg });
+        if (!cancelled) setStyleDesc(out);
+      } catch (e) {
+        console.error("Style analyze failed", e);
+      } finally {
+        if (!cancelled) setIsAnalyzing(false);
+      }
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [styleFile, autoAnalyze, speedMode]);
+
+  // New: auto-analyze Scene
+  useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      if (!autoAnalyze || !sceneFile) { setSceneDesc(""); return; }
+      setIsAnalyzing(true);
+      try {
+        const cfg = speedMode === 'Quality'
+          ? { maxOutputTokens: 196, temperature: 0.9 }
+          : { maxOutputTokens: 120, temperature: 0.7 };
+        const apiKey = import.meta.env.VITE_GEMINI_API_KEY!;
+        const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
+        const model = envModel || "gemini-2.0-flash";
+        const url = await fileToOptimizedDataUrl(sceneFile, speedMode === 'Quality' ? { maxDim: 1600, quality: 0.85 } : { maxDim: 1024, quality: 0.7 });
+        const instruction = speedMode === 'Quality'
+          ? "Extract detailed scene/environment descriptors visible in the image: location, time, atmosphere, weather, lighting, mood, depth cues. Return a concise phrase, comma-separated."
+          : "Extract concise scene descriptors: location, time, atmosphere, weather, lighting, mood. Return a short comma-separated phrase.";
+        const out = await generateWithImagesREST({ apiKey, model, text: instruction, imageDataUrls: [url], generationConfig: cfg });
+        if (!cancelled) setSceneDesc(out);
+      } catch (e) {
+        console.error("Scene analyze failed", e);
+      } finally {
+        if (!cancelled) setIsAnalyzing(false);
+      }
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [sceneFile, autoAnalyze, speedMode]);
+
   const handleClearAll = () => {
     setPrompt("");
     setEditorSeed("");
     setImages([]);
+    setStyleFile(undefined);
+    setSceneFile(undefined);
+    setStyleDesc("");
+    setSceneDesc("");
     setLastSource(undefined);
   };
 
@@ -203,6 +286,8 @@ function App() {
               isAnalyzing={isAnalyzing}
               autoAnalyze={autoAnalyze}
               onToggleAutoAnalyze={setAutoAnalyze}
+              onStyleFile={handleStyleFile}
+              onSceneFile={handleSceneFile}
             />
           </div>
 
@@ -216,6 +301,13 @@ function App() {
               onClear={() => { handleClearAll(); setEditorExpanded(false); }}
               onResizeStart={() => setEditorExpanded(true)}
               onResizeEnd={() => setEditorExpanded(true)}
+              // New: chips/toggles
+              styleDesc={styleDesc}
+              sceneDesc={sceneDesc}
+              useStyle={useStyle}
+              useScene={useScene}
+              onToggleStyle={setUseStyle}
+              onToggleScene={setUseScene}
             />
           </div>
 
