@@ -523,7 +523,6 @@ function App() {
   const handleClearGeneral = () => {
     setImages([]);
   };
->>>>>>> prompts-genie-latest-version
 
   const handleClearAll = () => {
     setPrompt("");

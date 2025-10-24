@@ -492,7 +492,6 @@ export default function ImageDropZone({
           </div>
 
         </div>
->>>>>>> prompts-genie-latest-version
     </div>
   );
 }
