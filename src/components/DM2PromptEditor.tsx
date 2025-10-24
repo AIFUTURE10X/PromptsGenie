@@ -273,7 +273,7 @@ export default function DM2PromptEditor({ onSend, onClear, initialText, onResize
       </div>
 
       {/* Textarea */}
-      <div>
+      <div className="-mt-1">
         <label className="text-xs text-text-secondary dark:text-dark-text-secondary">Enter your prompt here...</label>
         <textarea
           ref={textareaRef}
@@ -282,7 +282,7 @@ export default function DM2PromptEditor({ onSend, onClear, initialText, onResize
           onPointerDown={onTextAreaPointerDown}
           onPointerMove={onTextAreaPointerMove}
           onPointerUp={onTextAreaPointerUp}
-          className="mt-2 w-full rounded-lg bg-dark-background/70 text-dark-text-primary placeholder:text-dark-text-secondary border-2 border-dark-border p-3 text-[12px] resize-none overflow-y-auto no-scrollbar cursor-text"
+          className="w-full rounded-lg bg-dark-background/70 text-dark-text-primary placeholder:text-dark-text-secondary border-2 border-dark-border mt-1 pt-0 px-2 pb-2 text-[12px] resize-none overflow-y-auto no-scrollbar cursor-text"
           style={{ height: editorHeight }}
           placeholder="Enter your prompt here..."
         />

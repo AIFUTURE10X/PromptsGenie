@@ -42,6 +42,11 @@ function App() {
   const [autoAnalyzeScene, setAutoAnalyzeScene] = useState(false);
   const [autoAnalyzeStyle, setAutoAnalyzeStyle] = useState(false);
   
+  // Store individual analysis results
+  const [subjectAnalysis, setSubjectAnalysis] = useState<string>('');
+  const [sceneAnalysis, setSceneAnalysis] = useState<string>('');
+  const [styleAnalysis, setStyleAnalysis] = useState<string>('');
+  
   // Preview states for image thumbnails
   const [subjectPreview, setSubjectPreview] = useState<string | undefined>(undefined);
   const [scenePreview, setScenePreview] = useState<string | undefined>(undefined);
@@ -154,8 +159,8 @@ function App() {
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
         const model = envModel || "gemini-2.0-flash"; // ensure 2.5 flash fallback
         const genCfg = speedMode === 'Quality'
-          ? { maxOutputTokens: 384, temperature: 0.95 }
-          : { maxOutputTokens: 160, temperature: 0.7 };
+          ? { maxOutputTokens: 50, temperature: 0.3 }
+          : { maxOutputTokens: 30, temperature: 0.3 };
         console.log("Gemini MM model (auto):", model, "config:", genCfg);
 
         const instructionFast =
@@ -205,9 +210,7 @@ function App() {
 
         const analyzedSubject = await generateWithImagesREST({ apiKey, model, text: instruction, imageDataUrls, generationConfig: genCfg });
         if (!cancelled) {
-          setPrompt(analyzedSubject);
-          setEditorSeed(analyzedSubject);
-          setLastSource("subject");
+          setSubjectAnalysis(analyzedSubject);
         }
       } catch (e2) {
         console.error("Auto-analyze subject failed", e2);
@@ -244,9 +247,7 @@ function App() {
 
         const analyzedScene = await generateWithImagesREST({ apiKey, model, text: instruction, imageDataUrls, generationConfig: genCfg });
         if (!cancelled) {
-          setPrompt(analyzedScene);
-          setEditorSeed(analyzedScene);
-          setLastSource("scene");
+          setSceneAnalysis(analyzedScene);
         }
       } catch (e2) {
         console.error("Auto-analyze scene failed", e2);
@@ -272,20 +273,18 @@ function App() {
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
         const model = envModel || "gemini-2.0-flash";
         const genCfg = speedMode === 'Quality'
-          ? { maxOutputTokens: 384, temperature: 0.95 }
-          : { maxOutputTokens: 160, temperature: 0.7 };
+          ? { maxOutputTokens: 50, temperature: 0.3 }
+          : { maxOutputTokens: 30, temperature: 0.3 };
 
         const instructionFast =
-          "You are a professional prompt engineer. Analyze the input image and produce a single, vivid, 1–2 sentence prompt suitable for image generation models. Focus specifically on the artistic style, including art style, technique, color palette, composition, visual effects, and aesthetic approach. Don't invent details not visible.";
+          "Identify the core artistic style of this image in 2-4 words. Examples: 'anime style', 'photorealistic', 'watercolor painting', 'digital art', 'oil painting', 'comic book style', 'sketch', 'pixel art', etc. Be concise and focus only on the fundamental artistic approach.";
         const instructionQuality =
-          "Analyze these images in detail and create a comprehensive, descriptive prompt based on what you see. Focus specifically on the artistic style - expand important details (art style, technique, medium, color palette, composition, visual effects, lighting style, texture, aesthetic approach). Return only the improved prompt.";
+          "Identify the core artistic style of this image in 2-6 words. Examples: 'anime style', 'photorealistic photography', 'watercolor painting', 'digital concept art', 'oil painting', 'comic book illustration', 'pencil sketch', 'pixel art', 'impressionist painting', etc. Be concise and focus only on the fundamental artistic approach and medium.";
         const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
 
         const analyzedStyle = await generateWithImagesREST({ apiKey, model, text: instruction, imageDataUrls, generationConfig: genCfg });
         if (!cancelled) {
-          setPrompt(analyzedStyle);
-          setEditorSeed(analyzedStyle);
-          setLastSource("style");
+          setStyleAnalysis(analyzedStyle);
         }
       } catch (e2) {
         console.error("Auto-analyze style failed", e2);
@@ -298,6 +297,54 @@ function App() {
       cancelled = true;
     };
   }, [styleImages, autoAnalyzeStyle, speedMode]);
+
+  // Combine subject, scene, and style analysis results into the main prompt
+  useEffect(() => {
+    if (subjectAnalysis || sceneAnalysis || styleAnalysis) {
+      const combinedPrompt = composePrompt({
+        userText: '', // Start fresh for combined analysis
+        contentSummary: subjectAnalysis,
+        scene: sceneAnalysis,
+        style: styleAnalysis,
+        useScene: !!sceneAnalysis,
+        useStyle: !!styleAnalysis
+      });
+      
+      if (combinedPrompt !== prompt) {
+        setPrompt(combinedPrompt);
+        setEditorSeed(combinedPrompt);
+        
+        // Determine the appropriate source label based on what's combined
+        const hasSubject = !!subjectAnalysis;
+        const hasScene = !!sceneAnalysis;
+        const hasStyle = !!styleAnalysis;
+        
+        if (hasSubject && hasScene && hasStyle) {
+          setLastSource("subject+scene+style");
+        } else if (hasSubject && hasScene) {
+          setLastSource("subject+scene");
+        } else if (hasSubject && hasStyle) {
+          setLastSource("subject+style");
+        } else if (hasScene && hasStyle) {
+          setLastSource("scene+style");
+        } else if (hasSubject) {
+          setLastSource("subject");
+        } else if (hasScene) {
+          setLastSource("scene");
+        } else if (hasStyle) {
+          setLastSource("style");
+        }
+      }
+    } else {
+      // Clear prompt when no analyses are present
+      if (prompt && (lastSource === "subject" || lastSource === "scene" || lastSource === "style" || 
+                     lastSource?.includes("subject") || lastSource?.includes("scene") || lastSource?.includes("style"))) {
+        setPrompt("");
+        setEditorSeed("");
+        setLastSource(undefined);
+      }
+    }
+  }, [subjectAnalysis, sceneAnalysis, styleAnalysis, prompt, lastSource]);
 
   // Generate preview URLs for image thumbnails
   useEffect(() => {
@@ -531,6 +578,9 @@ function App() {
     setSubjectImages([]);
     setSceneImages([]);
     setStyleImages([]);
+    setSubjectAnalysis('');
+    setSceneAnalysis('');
+    setStyleAnalysis('');
     setLastSource(undefined);
   };
 

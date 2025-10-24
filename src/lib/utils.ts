@@ -19,7 +19,7 @@ export function composePrompt(parts: ComposeParts): string {
   const sections: string[] = [];
   const body = userText?.trim() || "";
   if (contentSummary && contentSummary.trim()) {
-    sections.push(`Content: ${contentSummary.trim()}`);
+    sections.push(`Subject: ${contentSummary.trim()}`);
   }
   if (useScene && scene && scene.trim()) {
     sections.push(`Scene: ${scene.trim()}`);
@@ -28,5 +28,5 @@ export function composePrompt(parts: ComposeParts): string {
     sections.push(`Style: ${style.trim()}`);
   }
   // If any sections exist, append them beneath the user text; otherwise return user text only
-  return sections.length ? `${body}\n\n${sections.join("\n")}` : body;
+  return sections.length ? `${body}\n${sections.join("\n")}` : body;
 }
