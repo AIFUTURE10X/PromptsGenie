@@ -1,34 +1,160 @@
-# Genie Prompt Generator
+# PromptsGenie UI Design 🧞‍♂️
 
-[![Deploy to GitHub Pages](https://github.com/aifuture10x/Genie-Prompt-Generator/actions/workflows/deploy.yml/badge.svg)](https://github.com/aifuture10x/Genie-Prompt-Generator/actions/workflows/deploy.yml)
+A beautiful, modern React application for AI-powered prompt generation and image analysis. This repository contains the complete UI design and frontend architecture.
 
-Live site: https://aifuture10x.github.io/Genie-Prompt-Generator/
+## ✨ Features
 
-## Overview
-A Vite + React app deployed to GitHub Pages. Production builds use the correct base path (`/Genie-Prompt-Generator/`) and include an SPA fallback for deep-link refreshes.
+### 🎨 Modern UI Design
+- **Responsive Design**: Beautiful interface that works on all devices
+- **Animated Background**: Dynamic canvas background with interactive elements
+- **Modern Components**: Clean, accessible UI components built with React
+- **Tailwind CSS**: Utility-first CSS framework for rapid styling
 
-## Local Development
-- `npm install`
-- `npm run dev`
-- Open the local URL printed by Vite (e.g. `http://localhost:5173/`).
+### 🖼️ Image Analysis Interface
+- **Drag & Drop**: Intuitive image upload with drag-and-drop functionality
+- **Progressive Loading**: Smooth image loading with progressive enhancement
+- **Analysis Tools**: UI for Subject, Scene, and Style analysis
+- **Real-time Preview**: Live preview of analysis results
 
-## Deployment
-- Push to `main` triggers the "Deploy to GitHub Pages" workflow.
-- Manual runs are available in GitHub → Actions → Deploy to GitHub Pages.
-- Artifacts are built to `dist/` and published to Pages automatically.
+### 📝 Prompt Generation
+- **Dynamic Editor**: Advanced prompt editing interface
+- **Template System**: Pre-built prompt templates and patterns
+- **Export Options**: Multiple export formats for generated prompts
+- **History Management**: Track and manage prompt generation history
 
-## SPA Deep Links (GitHub Pages)
-GitHub Pages doesn’t natively support client-side routing. This repo includes:
-- `public/404.html` – redirects unknown paths to `index.html` while preserving the URL.
-- `index.html` – a small script restores the original URL via `history.replaceState` before the app loads.
+## 🚀 Getting Started
 
-Implementation based on: https://github.com/rafgraph/spa-github-pages
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
 
-## Troubleshooting
-- 404 after refresh: make sure `public/404.html` exists in the deployed site and that `index.html` includes the redirect script.
-- Broken assets on Pages: verify `vite.config.ts` sets `base` to `/Genie-Prompt-Generator/` for production builds.
-- Cache issues: hard refresh (`Ctrl+Shift+R`) or clear browser cache.
+### Installation
 
-## Notes
-- The Pages deployment will auto-update with each push to `main`.
-- Use "Unpublish site" in GitHub Pages to temporarily take the site offline; republish by pushing again or re-running the workflow.
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/promptsgenie-ui-design.git
+   cd promptsgenie-ui-design
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Edit `.env` and add your API keys:
+   ```env
+   VITE_GEMINI_API_KEY=your_gemini_api_key_here
+   VITE_GEMINI_MODEL_TEXT=gemini-1.5-flash
+   VITE_GEMINI_MODEL_IMAGES=gemini-1.5-flash
+   ```
+
+4. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+
+5. **Open your browser**
+   Navigate to `http://localhost:8085`
+
+## 🏗️ Project Structure
+
+```
+src/
+├── components/          # Reusable UI components
+│   ├── BackgroundCanvas.tsx    # Animated background
+│   ├── BrandHeader.tsx         # Application header
+│   ├── CurrentPromptPanel.tsx  # Prompt display panel
+│   ├── DM2PromptEditor.tsx     # Advanced prompt editor
+│   ├── ImageDropZone.tsx       # Image upload interface
+│   ├── ProgressiveImage.tsx    # Progressive image loading
+│   └── ui/                     # Base UI components
+├── hooks/               # Custom React hooks
+│   ├── useApiCache.ts          # API caching logic
+│   ├── useDebounce.ts          # Debouncing utility
+│   └── useImageProcessor.ts    # Image processing
+├── lib/                 # Utility libraries
+│   ├── geminiPrompts.ts        # Prompt templates
+│   └── utils.ts                # General utilities
+├── services/            # API services
+│   ├── promptApi.ts            # Prompt generation API
+│   └── supabasePrompt.ts       # Database integration
+├── types/               # TypeScript definitions
+└── workers/             # Web workers for heavy tasks
+```
+
+## 🎨 Design System
+
+### Color Palette
+- **Primary**: Modern gradient backgrounds
+- **Secondary**: Subtle accent colors
+- **Text**: High contrast for accessibility
+- **Interactive**: Hover and focus states
+
+### Typography
+- **Headers**: Clean, modern font stack
+- **Body**: Readable typography with proper spacing
+- **Code**: Monospace fonts for technical content
+
+### Components
+- **Buttons**: Multiple variants with consistent styling
+- **Forms**: Accessible form controls with validation
+- **Cards**: Content containers with subtle shadows
+- **Modals**: Overlay components for focused interactions
+
+## 🔧 Configuration
+
+### Environment Variables
+- `VITE_GEMINI_API_KEY`: Google Gemini API key
+- `VITE_GEMINI_MODEL_TEXT`: Text generation model
+- `VITE_GEMINI_MODEL_IMAGES`: Image analysis model
+- `API_BASE_URL`: Backend API URL
+- `PORT`: Development server port
+
+### Build Configuration
+- **Vite**: Fast build tool and dev server
+- **TypeScript**: Type safety and better DX
+- **Tailwind CSS**: Utility-first styling
+- **PostCSS**: CSS processing and optimization
+
+## 📱 Responsive Design
+
+The application is fully responsive and optimized for:
+- **Desktop**: Full-featured interface with all tools
+- **Tablet**: Adapted layout for touch interactions
+- **Mobile**: Streamlined interface for small screens
+
+## 🎯 Future Enhancements
+
+This UI design is ready for:
+- **API Integration**: Connect to AI services
+- **Authentication**: User accounts and preferences
+- **Cloud Storage**: Save and sync prompts
+- **Collaboration**: Share and collaborate on prompts
+- **Advanced Analytics**: Usage insights and optimization
+
+## 🤝 Contributing
+
+This is a UI design showcase. For functionality implementation:
+1. Fork this repository
+2. Add your API integrations
+3. Implement backend services
+4. Submit pull requests
+
+## 📄 License
+
+MIT License - feel free to use this design in your projects!
+
+## 🙏 Acknowledgments
+
+- Built with React and modern web technologies
+- Designed for AI-powered applications
+- Optimized for developer experience
+
+---
+
+**Note**: This repository contains the UI design and frontend architecture. API functionality can be added by implementing the service layer interfaces provided.

@@ -5,16 +5,27 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "server": "node server.js",
+    "dev:full": "concurrently \"npm run server\" \"npm run dev\"",
     "build": "vite build",
-    "preview": "vite preview --port 8085 --open"
+    "build:prod": "vite build --mode production",
+    "preview": "vite preview --port 8085 --open",
+    "preview:build": "npm run build && npm run preview",
+    "clean": "rimraf dist",
+    "build:clean": "npm run clean && npm run build"
   },
   "dependencies": {
     "@radix-ui/react-collapsible": "^1.0.3",
     "@radix-ui/react-popover": "^1.0.7",
     "@radix-ui/react-slot": "^1.0.2",
     "@supabase/supabase-js": "^2.76.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "tailwind-merge": "^2.3.0"
@@ -24,7 +35,9 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^5.0.4",
     "autoprefixer": "^10.4.19",
+    "concurrently": "^9.2.1",
     "postcss": "^8.4.41",
+    "rimraf": "^6.0.1",
     "tailwindcss": "^3.4.9",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.4.5",

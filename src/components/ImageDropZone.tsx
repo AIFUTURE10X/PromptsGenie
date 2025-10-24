@@ -1,283 +1,498 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
 
 interface ImageDropZoneProps {
-  onFiles?: (files: File[]) => void;
-  isAnalyzing?: boolean;
-  autoAnalyze?: boolean;
-  onToggleAutoAnalyze?: (value: boolean) => void;
-  // New: role-specific handlers
-  onStyleFile?: (file?: File) => void;
-  onSceneFile?: (file?: File) => void;
+  images: File[];
+  onImagesChange: (images: File[]) => void;
+  onRunAnalysis: () => void;
+  isAnalyzing: boolean;
+  onClearGeneral?: () => void;
+  autoAnalyze: boolean;
+  onAutoAnalyzeChange: (enabled: boolean) => void;
+  subjectImages: File[];
+  onSubjectImagesChange: (images: File[]) => void;
+  onRunSubjectAnalysis: () => void;
+  isAnalyzingSubject: boolean;
+  subjectPreview?: string;
+  autoAnalyzeSubject: boolean;
+  onAutoAnalyzeSubjectChange: (enabled: boolean) => void;
+  sceneImages: File[];
+  onSceneImagesChange: (images: File[]) => void;
+  onRunSceneAnalysis: () => void;
+  isAnalyzingScene: boolean;
+  scenePreview?: string;
+  autoAnalyzeScene: boolean;
+  onAutoAnalyzeSceneChange: (enabled: boolean) => void;
+  styleImages: File[];
+  onStyleImagesChange: (images: File[]) => void;
+  onRunStyleAnalysis: () => void;
+  isAnalyzingStyle: boolean;
+  stylePreview?: string;
+  autoAnalyzeStyle: boolean;
+  onAutoAnalyzeStyleChange: (enabled: boolean) => void;
 }
 
-export default function ImageDropZone({ onFiles, isAnalyzing = false, autoAnalyze = true, onToggleAutoAnalyze, onStyleFile, onSceneFile }: ImageDropZoneProps) {
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const styleInputRef = useRef<HTMLInputElement | null>(null);
-  const sceneInputRef = useRef<HTMLInputElement | null>(null);
-  const [selected, setSelected] = useState<File[]>([]);
-  const [previews, setPreviews] = useState<string[]>([]);
-  const [stylePreview, setStylePreview] = useState<string | undefined>(undefined);
-  const [scenePreview, setScenePreview] = useState<string | undefined>(undefined);
+export default function ImageDropZone({
+  images,
+  onImagesChange,
+  onRunAnalysis,
+  isAnalyzing,
+  onClearGeneral,
+  autoAnalyze,
+  onAutoAnalyzeChange,
+  subjectImages,
+  onSubjectImagesChange,
+  onRunSubjectAnalysis,
+  isAnalyzingSubject,
+  subjectPreview,
+  autoAnalyzeSubject,
+  onAutoAnalyzeSubjectChange,
+  sceneImages,
+  onSceneImagesChange,
+  onRunSceneAnalysis,
+  isAnalyzingScene,
+  scenePreview,
+  autoAnalyzeScene,
+  onAutoAnalyzeSceneChange,
+  styleImages,
+  onStyleImagesChange,
+  onRunStyleAnalysis,
+  isAnalyzingStyle,
+  stylePreview,
+  autoAnalyzeStyle,
+  onAutoAnalyzeStyleChange,
+}: ImageDropZoneProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const subjectInputRef = useRef<HTMLInputElement>(null);
+  const sceneInputRef = useRef<HTMLInputElement>(null);
+  const styleInputRef = useRef<HTMLInputElement>(null);
+  
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [isSubjectDragOver, setIsSubjectDragOver] = useState(false);
+  const [isSceneDragOver, setIsSceneDragOver] = useState(false);
+  const [isStyleDragOver, setIsStyleDragOver] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-  const handleFiles = (files: File[]) => {
-    const images = files.filter((f) => f.type.startsWith('image/'));
-    setSelected(images);
-    onFiles?.(images);
+  const handleFiles = (files: FileList) => {
+    const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+    if (imageFiles.length > 0) {
+      onImagesChange?.(imageFiles);
+      
+      // Create preview for the first image
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPreviewImage(e.target?.result as string);
+      };
+      reader.readAsDataURL(imageFiles[0]);
+    }
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleSubjectFiles = (files: FileList) => {
+    const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+    if (imageFiles.length > 0) {
+      onSubjectImagesChange?.(imageFiles);
+    }
+  };
+
+  const handleSceneFiles = (files: FileList) => {
+    const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+    if (imageFiles.length > 0) {
+      onSceneImagesChange?.(imageFiles);
+    }
+  };
+
+  const handleStyleFiles = (files: FileList) => {
+    const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+    if (imageFiles.length > 0) {
+      onStyleImagesChange?.(imageFiles);
+    }
+  };
+
+  // General Analysis handlers
+  const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    e.stopPropagation();
-    const files = Array.from(e.dataTransfer.files || []);
-    handleFiles(files);
+    setIsDragOver(false);
+    handleFiles(e.dataTransfer.files);
   };
 
-  const handleClick = () => {
-    inputRef.current?.click();
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    handleFiles(files);
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
   };
 
-  // New: style & scene handlers
-  const handleStyleClick = (e: React.MouseEvent) => { e.stopPropagation(); styleInputRef.current?.click(); };
-  const handleSceneClick = (e: React.MouseEvent) => { e.stopPropagation(); sceneInputRef.current?.click(); };
-
-  const handleStyleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []).filter((f) => f.type.startsWith('image/'));
-    const file = files[0];
-    if (stylePreview) { URL.revokeObjectURL(stylePreview); }
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setStylePreview(url);
-      onStyleFile?.(file);
-    } else {
-      setStylePreview(undefined);
-      onStyleFile?.(undefined);
-    }
+  // Subject Analysis handlers
+  const handleSubjectDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsSubjectDragOver(false);
+    handleSubjectFiles(e.dataTransfer.files);
   };
 
-  const handleSceneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []).filter((f) => f.type.startsWith('image/'));
-    const file = files[0];
-    if (scenePreview) { URL.revokeObjectURL(scenePreview); }
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setScenePreview(url);
-      onSceneFile?.(file);
-    } else {
-      setScenePreview(undefined);
-      onSceneFile?.(undefined);
-    }
+  const handleSubjectDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsSubjectDragOver(true);
   };
 
-  const clearSelection = () => {
-    setSelected([]);
-    setPreviews((prev) => {
-      prev.forEach((url) => URL.revokeObjectURL(url));
-      return [];
-    });
-    if (inputRef.current) inputRef.current.value = '';
-    onFiles?.([]);
+  const handleSubjectDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsSubjectDragOver(false);
   };
 
-  const clearStyle = (e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    if (stylePreview) URL.revokeObjectURL(stylePreview);
-    setStylePreview(undefined);
-    onStyleFile?.(undefined);
-    if (styleInputRef.current) styleInputRef.current.value = '';
+  // Scene Analysis handlers
+  const handleSceneDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsSceneDragOver(false);
+    handleSceneFiles(e.dataTransfer.files);
   };
 
-  const clearScene = (e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    if (scenePreview) URL.revokeObjectURL(scenePreview);
-    setScenePreview(undefined);
-    onSceneFile?.(undefined);
-    if (sceneInputRef.current) sceneInputRef.current.value = '';
+  const handleSceneDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsSceneDragOver(true);
   };
 
-  useEffect(() => {
-    // create object URLs for previews
-    setPreviews((prev) => {
-      prev.forEach((url) => URL.revokeObjectURL(url));
-      return selected.map((f) => URL.createObjectURL(f));
-    });
-    // cleanup on unmount
-    return () => {
-      previews.forEach((url) => URL.revokeObjectURL(url));
-      if (stylePreview) URL.revokeObjectURL(stylePreview);
-      if (scenePreview) URL.revokeObjectURL(scenePreview);
-    };
-  }, [selected]);
+  const handleSceneDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsSceneDragOver(false);
+  };
+
+  // Style Analysis handlers
+  const handleStyleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsStyleDragOver(false);
+    handleStyleFiles(e.dataTransfer.files);
+  };
+
+  const handleStyleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsStyleDragOver(true);
+  };
+
+  const handleStyleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsStyleDragOver(false);
+  };
+
+  const handleClearGeneralClick = () => {
+    onClearGeneral?.();
+    setPreviewImage(null);
+  };
 
   return (
-    <div
-      className="relative h-full w-full bg-panel dark:bg-dark-panel rounded-xl border-2 border-border dark:border-dark-border p-4 select-none"
-      onDragOver={(e) => e.preventDefault()}
-      onDrop={handleDrop}
-      onClick={handleClick}
-    >
-      {/* Analyzing overlay */}
-      {isAnalyzing && (
-        <div
-          className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-10 rounded-xl"
-          aria-busy="true"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex flex-col items-center gap-3">
-            {previews[0] ? (
-              <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-border dark:border-dark-border shadow-sm">
-                <img
-                  src={previews[0]}
-                  alt="Analyzing image"
-                  className="w-full h-full object-cover slow-spin"
+    <div className="bg-panel dark:bg-dark-panel rounded-xl border-2 border-border dark:border-dark-border h-full flex flex-col p-2">
+      {/* Three Cards Container */}
+      <div className="grid grid-cols-1 gap-2 flex-1">
+          
+          {/* Subject Analysis Card */}
+          <div className="group relative">
+            {/* Neon Glow Effect */}
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
+            
+            {/* Card Content */}
+            <div className="relative bg-panel-secondary dark:bg-dark-panel-secondary border border-purple-500/30 rounded-xl p-2.5 h-44 flex flex-col">
+              {/* Header */}
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-1.5 bg-purple-500/20 rounded-lg">
+                  <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-semibold text-text-primary dark:text-dark-text-primary">Subject Analysis</h3>
+              </div>
+
+              {/* Drop Zone */}
+              <div
+                className={`relative border-2 border-dashed rounded-lg p-2.5 text-center transition-all duration-300 cursor-pointer flex-1 flex flex-col justify-center overflow-hidden ${
+                  isSubjectDragOver
+                    ? 'border-purple-400 bg-purple-500/10'
+                    : 'border-purple-500/40 hover:border-purple-400 hover:bg-purple-500/5'
+                }`}
+                onDrop={handleSubjectDrop}
+                onDragOver={handleSubjectDragOver}
+                onDragLeave={handleSubjectDragLeave}
+                onClick={() => subjectInputRef.current?.click()}
+              >
+                {isAnalyzingSubject && (
+                  <div className="absolute inset-0 bg-gray-900/90 flex items-center justify-center rounded-lg">
+                    <div className="flex flex-col items-center space-y-2">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500"></div>
+                      <span className="text-xs text-purple-300">Analyzing…</span>
+                    </div>
+                  </div>
+                )}
+                
+                {!isAnalyzingSubject && (
+                  subjectPreview ? (
+                    <div className="flex items-center justify-between p-2 space-x-3">
+                      <p className="text-xs text-purple-300 flex-shrink-0">
+                        {subjectImages.length} image{subjectImages.length !== 1 ? 's' : ''} selected
+                      </p>
+                      <div className="relative flex justify-center flex-1">
+                        <img 
+                          src={subjectPreview} 
+                          alt="Subject Preview" 
+                          className="max-w-full max-h-12 object-contain rounded"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center space-y-1">
+                      <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                      </svg>
+                      <p className="text-xs text-purple-300 font-medium">Drop subject images here</p>
+                    </div>
+                  )
+                )}
+                
+                <input
+                  ref={subjectInputRef}
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => e.target.files && handleSubjectFiles(e.target.files)}
                 />
               </div>
-            ) : (
+
+              {/* Helper Text */}
+              <p className="text-xs text-gray-400 text-center mt-1 mb-2">Focus on people, objects, characters</p>
+
+              {/* Action Row */}
+              <div className="flex items-center justify-between gap-2">
+                <label className="flex items-center space-x-1 text-xs text-gray-300">
+                  <input
+                    type="checkbox"
+                    checked={autoAnalyzeSubject}
+                    onChange={(e) => onAutoAnalyzeSubjectChange(e.target.checked)}
+                    className="w-3 h-3 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500 focus:ring-1"
+                  />
+                  <span>Auto-analyze</span>
+                </label>
+                
+                <button
+                  onClick={onRunSubjectAnalysis}
+                  disabled={subjectImages.length === 0 || isAnalyzingSubject}
+                  className={`px-2 py-1 text-xs font-medium rounded-full transition-all duration-300 ${
+                    isAnalyzingSubject || subjectImages.length === 0
+                      ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                      : 'bg-purple-600 hover:bg-purple-500 text-white shadow-lg hover:shadow-purple-500/25'
+                  }`}
+                >
+                  {isAnalyzingSubject ? 'Analyzing...' : 'Analyze Subject'}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Scene Analysis Card */}
+          <div className="group relative">
+            {/* Neon Glow Effect */}
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-teal-500 to-green-600 rounded-xl blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
+            
+            {/* Card Content */}
+            <div className="relative bg-panel-secondary dark:bg-dark-panel-secondary border border-teal-500/30 rounded-xl p-2.5 h-44 flex flex-col">
+              {/* Header */}
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-1.5 bg-teal-500/20 rounded-lg">
+                  <svg className="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-semibold text-text-primary dark:text-dark-text-primary">Scene Analysis</h3>
+              </div>
+
+              {/* Drop Zone */}
               <div
-                className="w-10 h-10 rounded-full border-2 border-border dark:border-dark-border border-t-transparent animate-spin"
-                role="status"
-                aria-label="Analyzing"
-              />
-            )}
-            <div className="px-3 py-1.5 rounded-md bg-background dark:bg-dark-background border-2 border-border dark:border-dark-border text-xs text-text-primary dark:text-dark-text-primary">
-              Analyzing…
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="flex flex-col h-full">
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col">
-            <span className="text-sm font-medium text-text-primary dark:text-dark-text-primary">Upload Images</span>
-            <span className="text-[11px] text-text-secondary dark:text-dark-text-secondary">Drag & drop or click</span>
-            <span className="text-[11px] text-text-secondary dark:text-dark-text-secondary">Images only</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1">
-              <span className="text-xs text-text-secondary dark:text-dark-text-secondary">Auto Analyze</span>
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); onToggleAutoAnalyze?.(true); }}
-                className={`px-2 py-1 text-xs rounded-md border-2 ${autoAnalyze ? 'bg-brand-accent text-white border-brand-accent' : 'bg-background dark:bg-dark-background border-border dark:border-dark-border text-text-primary dark:text-dark-text-primary'}`}
+                className={`relative border-2 border-dashed rounded-lg p-2.5 text-center transition-all duration-300 cursor-pointer flex-1 flex flex-col justify-center overflow-hidden ${
+                  isSceneDragOver
+                    ? 'border-teal-400 bg-teal-500/10'
+                    : 'border-teal-500/40 hover:border-teal-400 hover:bg-teal-500/5'
+                }`}
+                onDrop={handleSceneDrop}
+                onDragOver={handleSceneDragOver}
+                onDragLeave={handleSceneDragLeave}
+                onClick={() => sceneInputRef.current?.click()}
               >
-                On
-              </button>
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); onToggleAutoAnalyze?.(false); }}
-                className={`px-2 py-1 text-xs rounded-md border-2 ${!autoAnalyze ? 'bg-brand-accent text-white border-brand-accent' : 'bg-background dark:bg-dark-background border-border dark:border-dark-border text-text-primary dark:text-dark-text-primary'}`}
-              >
-                Off
-              </button>
-            </div>
-            {selected.length > 0 && (
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); clearSelection(); }}
-                className="px-2 py-1 text-xs rounded-md bg-background dark:bg-dark-background border-2 border-border dark:border-dark-border text-text-primary dark:text-dark-text-primary"
-              >
-                Clear ({selected.length})
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* New: Style/Scene mini-slots */}
-        <div className="mt-2 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-          {/* Style slot */}
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              className="flex items-center gap-2 px-2 py-1 rounded-md bg-background dark:bg-dark-background border-2 border-border dark:border-dark-border text-xs text-text-primary dark:text-dark-text-primary"
-              onClick={handleStyleClick}
-              title="Upload Style image"
-            >
-              <span>Style</span>
-              <div className="w-8 h-8 rounded-md overflow-hidden bg-[#417D9B]/20 flex items-center justify-center">
-                {stylePreview ? (
-                  <img src={stylePreview} alt="Style" className="w-full h-full object-cover" />
-                ) : (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-text-secondary dark:text-dark-text-secondary">
-                    <path d="M12 5v14M5 12h14" />
-                  </svg>
+                {isAnalyzingScene && (
+                  <div className="absolute inset-0 bg-gray-900/90 flex items-center justify-center rounded-lg">
+                    <div className="flex flex-col items-center space-y-2">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-teal-500"></div>
+                      <span className="text-xs text-teal-300">Analyzing…</span>
+                    </div>
+                  </div>
                 )}
-              </div>
-            </button>
-            {stylePreview && (
-              <button
-                type="button"
-                className="px-2 py-1 rounded-md bg-background dark:bg-dark-background border-2 border-border dark:border-dark-border text-xs"
-                onClick={clearStyle}
-              >
-                Clear
-              </button>
-            )}
-          </div>
-
-          {/* Scene slot */}
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              className="flex items-center gap-2 px-2 py-1 rounded-md bg-background dark:bg-dark-background border-2 border-border dark:border-dark-border text-xs text-text-primary dark:text-dark-text-primary"
-              onClick={handleSceneClick}
-              title="Upload Scene image"
-            >
-              <span>Scene</span>
-              <div className="w-8 h-8 rounded-md overflow-hidden bg-[#417D9B]/20 flex items-center justify-center">
-                {scenePreview ? (
-                  <img src={scenePreview} alt="Scene" className="w-full h-full object-cover" />
-                ) : (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-text-secondary dark:text-dark-text-secondary">
-                    <path d="M12 5v14M5 12h14" />
-                  </svg>
+                
+                {!isAnalyzingScene && (
+                  scenePreview ? (
+                    <div className="flex items-center justify-between p-2 space-x-3">
+                      <p className="text-xs text-teal-300 flex-shrink-0">
+                        {sceneImages.length} image{sceneImages.length !== 1 ? 's' : ''} selected
+                      </p>
+                      <div className="relative flex justify-center flex-1">
+                        <img 
+                          src={scenePreview} 
+                          alt="Scene Preview" 
+                          className="max-w-full max-h-12 object-contain rounded"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center space-y-1">
+                      <svg className="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                      </svg>
+                      <p className="text-xs text-teal-300 font-medium">Drop scene images here</p>
+                    </div>
+                  )
                 )}
+                
+                <input
+                  ref={sceneInputRef}
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => e.target.files && handleSceneFiles(e.target.files)}
+                />
               </div>
-            </button>
-            {scenePreview && (
-              <button
-                type="button"
-                className="px-2 py-1 rounded-md bg-background dark:bg-dark-background border-2 border-border dark:border-dark-border text-xs"
-                onClick={clearScene}
-              >
-                Clear
-              </button>
-            )}
-          </div>
-        </div>
 
-        {selected.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="flex flex-col items-center gap-2 select-none" aria-label="Add images">
-              <div className="w-14 h-14 rounded-full bg-[#417D9B] flex items-center justify-center text-white">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8">
-                  <circle cx="9" cy="7" r="4"></circle>
-                  <path d="M2 20a7 7 0 0 1 14 0"></path>
-                  <path d="M19 9v4"></path>
-                  <path d="M17 11h4"></path>
-                </svg>
+              {/* Helper Text */}
+              <p className="text-xs text-gray-400 text-center mt-1 mb-2">Focus on environments, backgrounds, settings</p>
+
+              {/* Action Row */}
+              <div className="flex items-center justify-between gap-2">
+                <label className="flex items-center space-x-1 text-xs text-gray-300">
+                  <input
+                    type="checkbox"
+                    checked={autoAnalyzeScene}
+                    onChange={(e) => onAutoAnalyzeSceneChange(e.target.checked)}
+                    className="w-3 h-3 text-teal-600 bg-gray-700 border-gray-600 rounded focus:ring-teal-500 focus:ring-1"
+                  />
+                  <span>Auto-analyze</span>
+                </label>
+                
+                <button
+                  onClick={onRunSceneAnalysis}
+                  disabled={sceneImages.length === 0 || isAnalyzingScene}
+                  className={`px-2 py-1 text-xs font-medium rounded-full transition-all duration-300 ${
+                    isAnalyzingScene || sceneImages.length === 0
+                      ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                      : 'bg-teal-600 hover:bg-teal-500 text-white shadow-lg hover:shadow-teal-500/25'
+                  }`}
+                >
+                  {isAnalyzingScene ? 'Analyzing...' : 'Analyze Scene'}
+                </button>
               </div>
-              <span className="sr-only">Click to upload images</span>
             </div>
           </div>
-        ) : (
-          <div className="mt-3 grid grid-cols-3 gap-2 overflow-y-auto">
-            {previews.map((src, idx) => (
-              <div key={src} className="relative rounded-md overflow-hidden border-2 border-border dark:border-dark-border">
-                <img src={src} alt={`Selected ${idx + 1}`} className="w-full h-24 object-cover" />
+
+          {/* Style Analysis Card */}
+          <div className="group relative">
+            {/* Neon Glow Effect */}
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
+            
+            {/* Card Content */}
+            <div className="relative bg-panel-secondary dark:bg-dark-panel-secondary border border-orange-500/30 rounded-xl p-2.5 h-44 flex flex-col">
+              {/* Header */}
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-1.5 bg-orange-500/20 rounded-lg">
+                  <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-semibold text-text-primary dark:text-dark-text-primary">Style Analysis</h3>
               </div>
-            ))}
+
+              {/* Drop Zone */}
+              <div
+                className={`relative border-2 border-dashed rounded-lg p-2.5 text-center transition-all duration-300 cursor-pointer flex-1 flex flex-col justify-center overflow-hidden ${
+                  isStyleDragOver
+                    ? 'border-orange-400 bg-orange-500/10'
+                    : 'border-orange-500/40 hover:border-orange-400 hover:bg-orange-500/5'
+                }`}
+                onDrop={handleStyleDrop}
+                onDragOver={handleStyleDragOver}
+                onDragLeave={handleStyleDragLeave}
+                onClick={() => styleInputRef.current?.click()}
+              >
+                {isAnalyzingStyle && (
+                  <div className="absolute inset-0 bg-gray-900/90 flex items-center justify-center rounded-lg">
+                    <div className="flex flex-col items-center space-y-2">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
+                      <span className="text-xs text-orange-300">Analyzing…</span>
+                    </div>
+                  </div>
+                )}
+                
+                {!isAnalyzingStyle && (
+                  stylePreview ? (
+                    <div className="flex items-center justify-between p-2 space-x-3">
+                      <p className="text-xs text-orange-300 flex-shrink-0">
+                        {styleImages.length} image{styleImages.length !== 1 ? 's' : ''} selected
+                      </p>
+                      <div className="relative flex justify-center flex-1">
+                        <img 
+                          src={stylePreview} 
+                          alt="Style Preview" 
+                          className="max-w-full max-h-12 object-contain rounded"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center space-y-1">
+                      <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                      </svg>
+                      <p className="text-xs text-orange-300 font-medium">Drop style images here</p>
+                    </div>
+                  )
+                )}
+                
+                <input
+                  ref={styleInputRef}
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => e.target.files && handleStyleFiles(e.target.files)}
+                />
+              </div>
+
+              {/* Helper Text */}
+              <p className="text-xs text-gray-400 text-center mt-1 mb-2">Focus on artistic styles, aesthetics, moods</p>
+
+              {/* Action Row */}
+              <div className="flex items-center justify-between gap-2">
+                <label className="flex items-center space-x-1 text-xs text-gray-300">
+                  <input
+                    type="checkbox"
+                    checked={autoAnalyzeStyle}
+                    onChange={(e) => onAutoAnalyzeStyleChange(e.target.checked)}
+                    className="w-3 h-3 text-orange-600 bg-gray-700 border-gray-600 rounded focus:ring-orange-500 focus:ring-1"
+                  />
+                  <span>Auto-analyze</span>
+                </label>
+                
+                <button
+                  onClick={onRunStyleAnalysis}
+                  disabled={styleImages.length === 0 || isAnalyzingStyle}
+                  className={`px-2 py-1 text-xs font-medium rounded-full transition-all duration-300 ${
+                    isAnalyzingStyle || styleImages.length === 0
+                      ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                      : 'bg-orange-600 hover:bg-orange-500 text-white shadow-lg hover:shadow-orange-500/25'
+                  }`}
+                >
+                  {isAnalyzingStyle ? 'Analyzing...' : 'Analyze Style'}
+                </button>
+              </div>
+            </div>
           </div>
-        )}
-      </div>
-      <input ref={inputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleChange} />
-      {/* Hidden inputs for style and scene */}
-      <input ref={styleInputRef} type="file" accept="image/*" className="hidden" onChange={handleStyleChange} />
-      <input ref={sceneInputRef} type="file" accept="image/*" className="hidden" onChange={handleSceneChange} />
+
+        </div>
+>>>>>>> prompts-genie-latest-version
     </div>
   );
 }
