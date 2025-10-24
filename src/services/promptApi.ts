@@ -12,7 +12,7 @@ export async function generateWithGemini(inputText: string, model?: string, allo
     throw new Error('Missing or placeholder VITE_GEMINI_API_KEY');
   }
 
-  const chosenModel = model || (import.meta.env.VITE_GEMINI_MODEL_TEXT as string | undefined) || 'gemini-1.5-flash';
+  const chosenModel = model || (import.meta.env.VITE_GEMINI_MODEL_TEXT as string | undefined) || 'gemini-2.5-flash';
   console.log('Gemini text: Using model:', chosenModel);
   console.log('Gemini text: Input text length:', inputText?.length ?? 0);
   const url = `https://generativelanguage.googleapis.com/v1/models/${chosenModel}:generateContent?key=${apiKey}`;
@@ -92,7 +92,7 @@ export async function generateWithGeminiImages(inputText: string, imageDataUrls:
     throw new Error('Missing or placeholder VITE_GEMINI_API_KEY');
   }
 
-  const chosenModel = model || (import.meta.env.VITE_GEMINI_MODEL_IMAGE as string | undefined) || 'gemini-1.5-flash';
+  const chosenModel = model || (import.meta.env.VITE_GEMINI_MODEL_IMAGE as string | undefined) || 'gemini-2.5-flash';
   console.log('Gemini images: Using model:', chosenModel);
   console.log('Gemini images: Input text length:', inputText?.length ?? 0);
   console.log('Gemini images: Image count:', imageDataUrls.length);

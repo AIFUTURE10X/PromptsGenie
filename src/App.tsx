@@ -104,7 +104,7 @@ function App() {
       if (imagesDataUrls.length) {
         const apiKey = import.meta.env.VITE_GEMINI_API_KEY!;
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
-        const mmModel = envModel || "gemini-1.5-flash"; // ensure 1.5 flash fallback
+        const mmModel = envModel || "gemini-2.5-flash"; // ensure 2.5 flash fallback
         const genCfg = speedMode === 'Quality'
           ? { maxOutputTokens: 384, temperature: 0.95 }
           : { maxOutputTokens: 160, temperature: 0.7 };
@@ -114,7 +114,7 @@ function App() {
         setEditorSeed(directMm);
         setLastSource("gemini-mm");
       } else {
-        const textModel = import.meta.env.VITE_GEMINI_MODEL_TEXT || "gemini-1.5-flash";
+        const textModel = import.meta.env.VITE_GEMINI_MODEL_TEXT || "gemini-2.5-flash";
         const directResult = await generateWithGemini(finalPrompt, textModel, false);
         setPrompt(directResult);
         setEditorSeed(directResult);
@@ -138,7 +138,7 @@ function App() {
         const imageDataUrls = await getImageDataUrls(images, speedMode);
         const apiKey = import.meta.env.VITE_GEMINI_API_KEY!;
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
-        const model = envModel || "gemini-1.5-flash"; // ensure 1.5 flash fallback
+        const model = envModel || "gemini-2.0-flash"; // ensure 2.5 flash fallback
         const genCfg = speedMode === 'Quality'
           ? { maxOutputTokens: 384, temperature: 0.95 }
           : { maxOutputTokens: 160, temperature: 0.7 };
@@ -178,7 +178,7 @@ function App() {
         const imageDataUrls = await getImageDataUrls(subjectImages, speedMode);
         const apiKey = import.meta.env.VITE_GEMINI_API_KEY!;
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
-        const model = envModel || "gemini-1.5-flash";
+        const model = envModel || "gemini-2.0-flash";
         const genCfg = speedMode === 'Quality'
           ? { maxOutputTokens: 384, temperature: 0.95 }
           : { maxOutputTokens: 160, temperature: 0.7 };
@@ -217,7 +217,7 @@ function App() {
         const imageDataUrls = await getImageDataUrls(sceneImages, speedMode);
         const apiKey = import.meta.env.VITE_GEMINI_API_KEY!;
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
-        const model = envModel || "gemini-1.5-flash";
+        const model = envModel || "gemini-2.0-flash";
         const genCfg = speedMode === 'Quality'
           ? { maxOutputTokens: 384, temperature: 0.95 }
           : { maxOutputTokens: 160, temperature: 0.7 };
@@ -324,7 +324,7 @@ function App() {
       const imageDataUrls = await getImageDataUrls(images, speedMode);
       const apiKey = import.meta.env.VITE_GEMINI_API_KEY!;
       const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
-      const model = envModel || "gemini-1.5-flash";
+      const model = envModel || "gemini-2.5-flash";
       const genCfg = speedMode === 'Quality'
         ? { maxOutputTokens: 384, temperature: 0.95 }
         : { maxOutputTokens: 160, temperature: 0.7 };
@@ -347,26 +347,26 @@ function App() {
   };
 
   // Manual trigger functions for independent analysis
-  // Test function to verify API key works
+  // Test function to verify server and API key works
   const testApiKey = async (apiKey: string) => {
     try {
-      const testModel = import.meta.env.VITE_GEMINI_MODEL_TEXT || "gemini-1.5-flash";
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${testModel}:generateContent`;
+      // Test server health first
+      const healthEndpoint = `http://localhost:3001/api/health`;
+      console.log("🔧 Testing server health:", healthEndpoint);
       
-      console.log("🔧 Testing API with model:", testModel);
-      console.log("🔧 Test endpoint:", endpoint);
+      const healthResponse = await fetch(healthEndpoint);
+      if (!healthResponse.ok) {
+        throw new Error(`Server not available: ${healthResponse.status}`);
+      }
       
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-goog-api-key': apiKey,
-        },
-        body: JSON.stringify({
-          contents: [{ role: 'user', parts: [{ text: 'Hello' }] }],
-          generationConfig: { maxOutputTokens: 10 }
-        })
-      });
+      const healthData = await healthResponse.json();
+      console.log("🔧 Server health:", healthData);
+      
+      // Test actual API functionality
+      const testEndpoint = `http://localhost:3001/api/test`;
+      console.log("🔧 Testing API functionality:", testEndpoint);
+      
+      const response = await fetch(testEndpoint);
       
       if (response.ok) {
         console.log("✅ API Key test successful");
@@ -402,7 +402,7 @@ function App() {
       const imageDataUrls = await getImageDataUrls(subjectImages, speedMode);
       const apiKey = import.meta.env.VITE_GEMINI_API_KEY!;
       const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
-      const model = envModel || "gemini-1.5-flash";
+      const model = envModel || "gemini-2.0-flash";
       
       console.log("🔍 Environment variables:");
       console.log("  - VITE_GEMINI_API_KEY present:", !!apiKey, "length:", apiKey?.length || 0);
@@ -455,7 +455,7 @@ function App() {
       const imageDataUrls = await getImageDataUrls(sceneImages, speedMode);
       const apiKey = import.meta.env.VITE_GEMINI_API_KEY!;
       const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
-      const model = envModel || "gemini-1.5-flash";
+      const model = envModel || "gemini-2.0-flash";
       const genCfg = speedMode === 'Quality'
         ? { maxOutputTokens: 384, temperature: 0.95 }
         : { maxOutputTokens: 160, temperature: 0.7 };
@@ -542,7 +542,7 @@ function App() {
     if (!prompt) return;
     try {
       setIsGenerating(true);
-      const textModel = import.meta.env.VITE_GEMINI_MODEL_TEXT || "gemini-1.5-flash";
+      const textModel = import.meta.env.VITE_GEMINI_MODEL_TEXT || "gemini-2.5-flash";
       const instruction = "Rewrite the following into a more in-depth, comprehensive, and highly specific prompt. Expand important details (subject, context, style, lighting, composition, lens, mood, constraints). Keep it clear and actionable. Return only the improved prompt.";
       const input = `${instruction}\n\nOriginal Prompt:\n${prompt}`;
       const improved = await generateWithGemini(input, textModel);
