@@ -637,6 +637,44 @@ function App() {
     }
   };
 
+  const analyzeAllStyles = async () => {
+    console.log("🚀 analyzeAllStyles called - running all image analyses simultaneously");
+    
+    const promises = [];
+    
+    // Run subject analysis if images exist
+    if (subjectImages.length > 0) {
+      console.log("🔍 Adding subject analysis to batch");
+      promises.push(runSubjectAnalysis());
+    }
+    
+    // Run scene analysis if images exist
+    if (sceneImages.length > 0) {
+      console.log("🌍 Adding scene analysis to batch");
+      promises.push(runSceneAnalysis());
+    }
+    
+    // Run style analysis if images exist
+    if (styleImages.length > 0) {
+      console.log("🎨 Adding style analysis to batch");
+      promises.push(runStyleAnalysis());
+    }
+    
+    if (promises.length === 0) {
+      console.log("⚠️ No images to analyze");
+      return;
+    }
+    
+    try {
+      console.log(`🚀 Running ${promises.length} analyses simultaneously...`);
+      await Promise.all(promises);
+      console.log("✅ All style analyses completed successfully");
+    } catch (error) {
+      console.error("🚨 Error in batch analysis:", error);
+      alert(`Batch analysis failed: ${error.message || error}`);
+    }
+  };
+
   const handleClearGeneral = () => {
     setImages([]);
   };
@@ -719,48 +757,107 @@ function App() {
   };
 
   const handleRegenerate = async () => {
-    if (!prompt) {
-      console.log("❌ No prompt to regenerate");
+    console.log("🔄 REGENERATE BUTTON CLICKED - Starting image re-analysis");
+    
+    // Check if we have any images to re-analyze
+    const hasMainImages = images.length > 0;
+    const hasSubjectImages = subjectImages.length > 0;
+    const hasSceneImages = sceneImages.length > 0;
+    const hasStyleImages = styleImages.length > 0;
+    const hasAnyImages = hasMainImages || hasSubjectImages || hasSceneImages || hasStyleImages;
+    
+    if (!hasAnyImages && !prompt) {
+      alert("No images or prompt to regenerate. Please add images or generate a prompt first.");
       return;
     }
-    
-    console.log("🔄 Starting regeneration...");
-    
+
+    setIsGenerating(true);
     try {
-      setIsGenerating(true);
-      console.log("✅ Set isGenerating to true");
-      
-      const textModel = import.meta.env.VITE_GEMINI_MODEL_TEXT || "gemini-2.5-flash";
-      console.log("📝 Using model:", textModel);
-      
-      // Simplified regeneration instruction for testing
-      const instruction = "Rewrite this prompt with more detail and specificity. Add technical details about lighting, camera settings, artistic techniques, and mood descriptors. Make it more comprehensive and vivid.";
-      
-      console.log("🎯 Using instruction:", instruction.substring(0, 50) + "...");
-      
-      const input = `${instruction}\n\nOriginal Prompt:\n${prompt}`;
-      console.log("📤 Sending to Gemini, input length:", input.length);
-      
-      const improved = await generateWithGemini(input, textModel, true, 0.8);
-      console.log("📥 Received response, length:", improved?.length || 0);
-      
-      if (improved && improved.trim()) {
-        setPrompt(improved);
-        setEditorSeed(improved);
-        setLastSource("gemini-text");
-        console.log("✅ Successfully updated prompt");
+      // If we have images, re-analyze them with variation prompts
+      if (hasAnyImages) {
+        console.log("🖼️ Re-analyzing images with variation prompts");
+        
+        // Create variation instruction prompts
+        const variationInstructions = [
+          "with a different artistic perspective and creative interpretation",
+          "focusing on alternative visual elements and atmospheric details", 
+          "emphasizing different lighting conditions and mood variations",
+          "highlighting unique compositional angles and stylistic approaches",
+          "exploring alternative color schemes and visual techniques"
+        ];
+        
+        const randomVariation = variationInstructions[Math.floor(Math.random() * variationInstructions.length)];
+        
+        // Use the same logic as auto-analysis but with variation
+        const imageDataUrls = await getImageDataUrls(images, speedMode);
+        const apiKey = import.meta.env.VITE_GEMINI_API_KEY!;
+        const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
+        const model = envModel || "gemini-2.0-flash";
+        const genCfg = speedMode === 'Quality'
+          ? { maxOutputTokens: 50, temperature: 0.8 } // Higher temperature for more variation
+          : { maxOutputTokens: 30, temperature: 0.7 };
+        
+        const baseInstructionFast = "You are a professional prompt engineer. Analyze the input image and produce a single, vivid, 1–2 sentence prompt suitable for image generation models. Include subject, setting, style, lighting, composition, lens, and mood. Don't invent details not visible.";
+        const baseInstructionQuality = "Analyze these images in detail and create a comprehensive, descriptive prompt based on what you see. Expand important details (subject, context, style, lighting, composition, lens, mood, constraints). Return only the improved prompt.";
+        
+        const baseInstruction = speedMode === 'Quality' ? baseInstructionQuality : baseInstructionFast;
+        const instruction = `${baseInstruction} Create this analysis ${randomVariation}.`;
+        
+        console.log("🎯 Using variation:", randomVariation);
+        console.log("🔧 Using model:", model, "config:", genCfg);
+        
+        const regeneratedPrompt = await generateWithImagesREST({ 
+          apiKey, 
+          model, 
+          text: instruction, 
+          imageDataUrls, 
+          generationConfig: genCfg 
+        });
+        
+        console.log("🔍 Regenerated prompt result:", regeneratedPrompt);
+        console.log("🔍 Regenerated prompt type:", typeof regeneratedPrompt);
+        console.log("🔍 Regenerated prompt length:", regeneratedPrompt?.length);
+        console.log("🔍 Current prompt before update:", prompt);
+        
+        setPrompt(regeneratedPrompt);
+        setEditorSeed(regeneratedPrompt);
+        setLastSource("gemini-mm");
+        
+        console.log("🔍 Prompt state after update:", regeneratedPrompt);
+        console.log("✅ Image re-analysis regeneration completed successfully");
       } else {
-        console.error("❌ Empty response from Gemini");
-        alert("Received empty response. Please try again.");
+        // Fallback to text-based regeneration if no images
+        console.log("📝 No images found, using text-based regeneration");
+        
+        const variationPrompts = [
+          "Create a variation of this prompt with different artistic style and mood:",
+          "Rewrite this prompt with more vivid details and enhanced atmosphere:",
+          "Transform this prompt with a different lighting approach and composition:",
+          "Enhance this prompt with more specific camera details and visual effects:",
+          "Reimagine this prompt with alternative color palette and artistic techniques:"
+        ];
+
+        const randomVariation = variationPrompts[Math.floor(Math.random() * variationPrompts.length)];
+        const regenerationPrompt = `${randomVariation}\n\nOriginal prompt: ${prompt}`;
+        const textModel = import.meta.env.VITE_GEMINI_MODEL_TEXT || "gemini-2.5-flash";
+        
+        const regeneratedPrompt = await generateWithGemini(regenerationPrompt, textModel, true);
+        
+        setPrompt(regeneratedPrompt);
+        setEditorSeed(regeneratedPrompt);
+        setLastSource("regenerated");
+        
+        console.log("✅ Text-based regeneration completed successfully");
       }
-    } catch (e) {
-      console.error("❌ Regenerate failed:", e);
-      alert(`Regeneration failed: ${e instanceof Error ? e.message : 'Unknown error'}`);
+    } catch (error) {
+      console.error("❌ Regeneration failed:", error);
+      alert("Failed to regenerate. Please try again.");
     } finally {
       setIsGenerating(false);
-      console.log("🏁 Regeneration complete, isGenerating set to false");
     }
   };
+
+
 
   return (
     <div className="relative dark min-h-screen text-dark-text-primary">
@@ -801,6 +898,7 @@ function App() {
               stylePreview={stylePreview}
               autoAnalyzeStyle={autoAnalyzeStyle}
               onAutoAnalyzeStyleChange={setAutoAnalyzeStyle}
+              onAnalyzeAllStyles={analyzeAllStyles}
             />
           </div>
 
@@ -826,6 +924,8 @@ function App() {
               onEdit={handleEdit}
               onClear={handleClearPrompt}
               onRegenerate={handleRegenerate}
+              hasImages={subjectImages.length > 0 || sceneImages.length > 0 || styleImages.length > 0}
+              isGenerating={isGenerating}
             />
           </div>
 

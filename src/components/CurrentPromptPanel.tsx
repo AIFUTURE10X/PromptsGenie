@@ -7,10 +7,11 @@ interface Props {
   onEdit: () => void;
   onClear: () => void;
   onRegenerate: () => void;
+  hasImages?: boolean;
+  isGenerating?: boolean;
 }
 
-const CurrentPromptPanel: React.FC<Props> = ({ prompt, source, onCopy, onEdit, onClear, onRegenerate }) => {
-  console.log("📋 CurrentPromptPanel render - prompt:", prompt ? `"${prompt.substring(0, 50)}..."` : "EMPTY", "source:", source);
+const CurrentPromptPanel: React.FC<Props> = ({ prompt, source, onCopy, onEdit, onClear, onRegenerate, hasImages = false, isGenerating = false }) => {
   const getBadgeStyles = (source: string) => {
     switch (source) {
       case "edge":
@@ -111,7 +112,9 @@ const CurrentPromptPanel: React.FC<Props> = ({ prompt, source, onCopy, onEdit, o
           <div className="flex items-center gap-1 flex-nowrap">
             <button className="btn-action" onClick={onCopy} disabled={!prompt}>Copy</button>
             <button className="btn-action" onClick={onEdit} disabled={!prompt}>Edit</button>
-            <button className="btn-action" onClick={onRegenerate} disabled={!prompt} title="a better compensive Prompt" aria-label="Regenerate a better compensive Prompt">Regenerate</button>
+            <button className="btn-action" onClick={onRegenerate} disabled={(!prompt && !hasImages) || isGenerating} title="a better compensive Prompt" aria-label="Regenerate a better compensive Prompt">
+              {isGenerating ? 'Regenerating...' : 'Regenerate'}
+            </button>
             <button className="btn-danger" onClick={onClear}>Clear</button>
           </div>
         </div>

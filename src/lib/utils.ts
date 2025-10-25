@@ -18,15 +18,34 @@ export function composePrompt(parts: ComposeParts): string {
   const { userText, style, scene, contentSummary, useStyle = true, useScene = true } = parts;
   const sections: string[] = [];
   const body = userText?.trim() || "";
+  
+  // Add subject/content summary with heading
   if (contentSummary && contentSummary.trim()) {
     sections.push(`Subject: ${contentSummary.trim()}`);
   }
+  
+  // Add scene information with heading
   if (useScene && scene && scene.trim()) {
-    sections.push(`Scene: ${scene.trim()}`);
+    const cleanScene = scene.trim().replace(/^Scene:\s*/i, '');
+    sections.push(`Scene: ${cleanScene}`);
   }
+  
+  // Add style information with heading
   if (useStyle && style && style.trim()) {
-    sections.push(`Style: ${style.trim()}`);
+    const cleanStyle = style.trim().replace(/^Style:\s*/i, '');
+    sections.push(`Style: ${cleanStyle}`);
   }
-  // If any sections exist, append them beneath the user text; otherwise return user text only
-  return sections.length ? `${body}\n${sections.join("\n")}` : body;
+  
+  // Create a clean prompt with each category on a new line
+  if (sections.length === 0) {
+    return body;
+  }
+  
+  // If we have a user text body, append the analysis sections on new lines
+  if (body) {
+    return `${body}\n${sections.join('\n')}`;
+  }
+  
+  // If no user text, create a structured prompt with each category on a new line
+  return sections.join('\n');
 }

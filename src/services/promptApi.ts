@@ -4,7 +4,7 @@ export async function generateWithGemini(inputText: string, model?: string, allo
   console.log('Gemini API Key length:', apiKey?.length ?? 0);
   const isPlaceholderKey = !!apiKey && (apiKey.includes('YOUR_API_KEY') || apiKey.includes('PLACEHOLDER') || apiKey === 'VITE_GEMINI_API_KEY');
   if (!apiKey || isPlaceholderKey) {
-    console.warn('Gemini API key missing or placeholder; using generic fallback');
+    console.info('ℹ️ No Gemini API key configured - using enhanced prompt fallback (this is normal)');
     if (allowFallback) {
       const generic = inputText + ' — photorealistic, soft studio lighting, shallow depth of field, 50mm lens, balanced composition, high detail.';
       return generic.trim();

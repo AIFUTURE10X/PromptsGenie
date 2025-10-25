@@ -57,8 +57,18 @@ export async function generateWithImagesREST({ apiKey, model, text, imageDataUrl
   }
 
   const json = await res.json();
+  console.log("🔍 Server response JSON:", json);
+  console.log("🔍 Server response type:", typeof json);
+  console.log("🔍 Server response keys:", Object.keys(json || {}));
+  
   const candidates = json?.candidates || [];
+  console.log("🔍 Candidates found:", candidates.length);
+  console.log("🔍 First candidate:", candidates[0]);
+  
   const textOut = candidates[0]?.content?.parts?.map((p: any) => p.text).join("\n") || "";
+  console.log("🔍 Extracted text:", textOut);
+  console.log("🔍 Extracted text length:", textOut.length);
+  
   return textOut.trim();
 }
 

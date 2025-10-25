@@ -29,6 +29,7 @@ interface ImageDropZoneProps {
   stylePreview?: string;
   autoAnalyzeStyle: boolean;
   onAutoAnalyzeStyleChange: (enabled: boolean) => void;
+  onAnalyzeAllStyles: () => void;
 }
 
 export default function ImageDropZone({
@@ -60,6 +61,7 @@ export default function ImageDropZone({
   stylePreview,
   autoAnalyzeStyle,
   onAutoAnalyzeStyleChange,
+  onAnalyzeAllStyles,
 }: ImageDropZoneProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const subjectInputRef = useRef<HTMLInputElement>(null);
@@ -200,6 +202,21 @@ export default function ImageDropZone({
                   </svg>
                 </div>
                 <h3 className="text-base font-semibold text-text-primary dark:text-dark-text-primary">Subject Analysis</h3>
+                <button
+                  onClick={onAnalyzeAllStyles}
+                  disabled={!subjectImages.length && !sceneImages.length && !styleImages.length}
+                  className={`ml-auto px-2 py-1 text-xs font-medium rounded-full transition-all duration-300 flex items-center gap-1 ${
+                    (!subjectImages.length && !sceneImages.length && !styleImages.length)
+                      ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-purple-600 to-orange-600 hover:from-purple-500 hover:to-orange-500 text-white shadow-lg hover:shadow-purple-500/25'
+                  }`}
+                  title="Analyze all image styles at once"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  All Styles
+                </button>
               </div>
 
               {/* Drop Zone */}
