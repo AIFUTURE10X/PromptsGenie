@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Redirecting…</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script type="text/javascript">
+      // Single Page Apps for GitHub Pages
+      // MIT License - https://github.com/rafgraph/spa-github-pages
+      // This script converts the current path and query into a query-only URL
+      // and redirects so GitHub Pages serves index.html. Then index.html's
+      // companion script restores the original URL via history.replaceState.
+      // Note: keep this file > 512 bytes for legacy IE behavior.
+      (function(l) {
+        var pathSegmentsToKeep = 1; // keep "/Genie-Prompt-Generator" for Project Pages
+        var newUrl = l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+          l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
+          l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+          (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+          l.hash;
+        l.replace(newUrl);
+      }(window.location));
+    </script>
+    <style>
+      html, body { height: 100%; }
+      body { display: flex; align-items: center; justify-content: center; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color: #444; }
+    </style>
+  </head>
+  <body>
+    Redirecting…
+  </body>
+</html>

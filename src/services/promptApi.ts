@@ -1,4 +1,4 @@
-export async function generateWithGemini(inputText: string, model?: string, allowFallback: boolean = true): Promise<string> {
+export async function generateWithGemini(inputText: string, model?: string, allowFallback: boolean = true, temperature?: number): Promise<string> {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
   console.log('Gemini API Key exists:', Boolean(apiKey));
   console.log('Gemini API Key length:', apiKey?.length ?? 0);
@@ -15,11 +15,23 @@ export async function generateWithGemini(inputText: string, model?: string, allo
   const chosenModel = model || (import.meta.env.VITE_GEMINI_MODEL_TEXT as string | undefined) || 'gemini-2.5-flash';
   console.log('Gemini text: Using model:', chosenModel);
   console.log('Gemini text: Input text length:', inputText?.length ?? 0);
+  if (temperature !== undefined) {
+    console.log('Gemini text: Using temperature:', temperature);
+  }
   const url = `https://generativelanguage.googleapis.com/v1/models/${chosenModel}:generateContent?key=${apiKey}`;
 
-  const body = {
+  const body: any = {
     contents: [{ role: 'user', parts: [{ text: inputText }] }]
   };
+
+  // Add generation config if temperature is specified
+  if (temperature !== undefined) {
+    body.generationConfig = {
+      temperature: Math.max(0.0, Math.min(2.0, temperature)), // Clamp between 0.0 and 2.0
+      topP: 0.95,
+      topK: 40
+    };
+  }
 
   const res = await fetch(url, {
     method: 'POST',
@@ -46,7 +58,7 @@ export async function generateWithGemini(inputText: string, model?: string, allo
         if (fallbackModel.includes('2.5')) fallbackModel = fallbackModel.replace('2.5', '1.5');
         if (fallbackModel.includes('flash')) fallbackModel = fallbackModel.replace('flash', 'pro');
         if (fallbackModel !== chosenModel) {
-          return generateWithGemini(inputText, fallbackModel, false);
+          return generateWithGemini(inputText, fallbackModel, false, temperature);
         }
       }
     }
