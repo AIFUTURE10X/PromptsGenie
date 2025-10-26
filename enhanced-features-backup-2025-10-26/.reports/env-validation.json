@@ -1,0 +1,98 @@
+{
+  "timestamp": "2025-10-26T03:26:48.047Z",
+  "valid": true,
+  "errors": [],
+  "warnings": [
+    {
+      "type": "undocumented_vars",
+      "message": "Variables not in .env.example: AHA_CHROME_CRASHPAD_PIPE_NAME, ALLUSERSPROFILE, APPDATA, ChocolateyInstall, ChocolateyLastPathUpdate, CommonProgramFiles, CommonProgramFiles(x86), CommonProgramW6432, COMPUTERNAME, ComSpec, DriverData, EFC_10056_1262719628, EFC_10056_1592913036, EFC_10056_2283032206, EFC_10056_2775293581, EFC_10056_3789132940, FPS_BROWSER_APP_PROFILE_STRING, FPS_BROWSER_USER_PROFILE_STRING, GIT_PAGER, HOMEDRIVE, HOMEPATH, LOCALAPPDATA, LOGONSERVER, NUMBER_OF_PROCESSORS, OneDrive, OneDriveConsumer, ORIGINAL_XDG_CURRENT_DESKTOP, OS, PAGER, Path, PATHEXT, POWERSHELL_DISTRIBUTION_CHANNEL, PROCESSOR_ARCHITECTURE, PROCESSOR_IDENTIFIER, PROCESSOR_LEVEL, PROCESSOR_REVISION, ProgramData, ProgramFiles, ProgramFiles(x86), ProgramW6432, PSModulePath, PUBLIC, SESSIONNAME, SystemDrive, SystemRoot, TEMP, TMP, USERDOMAIN, USERDOMAIN_ROAMINGPROFILE, USERNAME, USERPROFILE, VIRTUAL_ENV, VIRTUAL_ENV_PROMPT, VSCODE_PYTHON_AUTOACTIVATE_GUARD, windir, ZES_ENABLE_SYSMAN, TRAE_AI_SHELL_ID, TERM_PROGRAM, TERM_PRODUCT, TERM_PROGRAM_VERSION, LANG, COLORTERM, GIT_ASKPASS, VSCODE_GIT_ASKPASS_NODE, VSCODE_GIT_ASKPASS_EXTRA_ARGS, VSCODE_GIT_ASKPASS_MAIN, VSCODE_GIT_IPC_HANDLE, PYDEVD_DISABLE_FILE_VALIDATION, VSCODE_DEBUGPY_ADAPTER_ENDPOINTS, BUNDLED_DEBUGPY_PATH, PYTHONSTARTUP, PYTHON_BASIC_REPL, VSCODE_INJECTION, _OLD_VIRTUAL_PATH",
+      "suggestion": "Consider adding these to .env.example for documentation"
+    }
+  ],
+  "envFiles": [
+    {
+      "file": ".env",
+      "exists": true,
+      "readable": true
+    },
+    {
+      "file": ".env.local",
+      "exists": false,
+      "readable": false
+    },
+    {
+      "file": ".env.development",
+      "exists": false,
+      "readable": false
+    },
+    {
+      "file": ".env.production",
+      "exists": true,
+      "readable": true
+    }
+  ],
+  "variables": {
+    "required": [
+      {
+        "name": "VITE_GEMINI_API_KEY",
+        "value": "[REDACTED]",
+        "type": "required"
+      },
+      {
+        "name": "GOOGLE_API_KEY",
+        "value": "[REDACTED]",
+        "type": "required"
+      }
+    ],
+    "optional": [
+      {
+        "name": "VITE_GEMINI_MODEL_IMAGES",
+        "value": "gemini-2.5-flash",
+        "type": "optional"
+      },
+      {
+        "name": "VITE_GEMINI_MODEL_TEXT",
+        "value": "gemini-2.5-flash",
+        "type": "optional"
+      },
+      {
+        "name": "PORT",
+        "value": "8085",
+        "type": "optional"
+      },
+      {
+        "name": "API_BASE_URL",
+        "value": "http://localhost:8085",
+        "type": "optional"
+      },
+      {
+        "name": "VITE_SUPABASE_URL",
+        "value": "",
+        "type": "optional"
+      },
+      {
+        "name": "VITE_SUPABASE_ANON_KEY",
+        "value": "[REDACTED]",
+        "type": "optional"
+      },
+      {
+        "name": "VITE_ENABLE_IMAGE_ANALYSIS",
+        "value": "true",
+        "type": "optional"
+      },
+      {
+        "name": "VITE_SUPABASE_STATUS_PING",
+        "value": "true",
+        "type": "optional"
+      }
+    ],
+    "missing": [],
+    "invalid": []
+  },
+  "summary": {
+    "totalChecked": 19,
+    "requiredMissing": 0,
+    "optionalMissing": 0,
+    "invalidValues": 0
+  }
+}

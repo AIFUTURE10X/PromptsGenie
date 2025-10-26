@@ -1,0 +1,158 @@
+{
+  "metadata": {
+    "spec_version": "1.0.0",
+    "created_at": "2025-10-26T00:29:57.853Z",
+    "complexity": "medium",
+    "estimated_hours": 8
+  },
+  "summary": "Implement dark mode toggle with theme persistence and smooth transitions",
+  "tasks": [
+    {
+      "id": "task-1",
+      "title": "Create theme context and provider",
+      "description": "Implement React context for theme management",
+      "files": [
+        "src/contexts/ThemeContext.tsx"
+      ],
+      "type": "create",
+      "complexity": "medium",
+      "estimated_hours": 2
+    },
+    {
+      "id": "task-2",
+      "title": "Create theme toggle component",
+      "description": "Build accessible toggle switch component",
+      "files": [
+        "src/components/ThemeToggle.tsx"
+      ],
+      "type": "create",
+      "complexity": "low",
+      "estimated_hours": 1.5
+    },
+    {
+      "id": "task-3",
+      "title": "Add theme styles and CSS variables",
+      "description": "Define light and dark theme CSS custom properties",
+      "files": [
+        "src/styles/themes.css",
+        "src/styles/variables.css"
+      ],
+      "type": "create",
+      "complexity": "medium",
+      "estimated_hours": 2
+    },
+    {
+      "id": "task-4",
+      "title": "Integrate toggle in settings page",
+      "description": "Add theme toggle to settings page",
+      "files": [
+        "src/pages/Settings.tsx"
+      ],
+      "type": "modify",
+      "complexity": "low",
+      "estimated_hours": 1
+    },
+    {
+      "id": "task-5",
+      "title": "Add localStorage persistence",
+      "description": "Implement theme preference persistence",
+      "files": [
+        "src/utils/themeStorage.ts"
+      ],
+      "type": "create",
+      "complexity": "low",
+      "estimated_hours": 1
+    },
+    {
+      "id": "task-6",
+      "title": "Write unit tests",
+      "description": "Create comprehensive test suite",
+      "files": [
+        "src/contexts/__tests__/ThemeContext.test.tsx",
+        "src/components/__tests__/ThemeToggle.test.tsx",
+        "src/utils/__tests__/themeStorage.test.ts"
+      ],
+      "type": "create",
+      "complexity": "medium",
+      "estimated_hours": 2.5
+    }
+  ],
+  "dependencies": [
+    {
+      "from": "task-1",
+      "to": "task-2"
+    },
+    {
+      "from": "task-1",
+      "to": "task-4"
+    },
+    {
+      "from": "task-2",
+      "to": "task-4"
+    },
+    {
+      "from": "task-3",
+      "to": "task-1"
+    },
+    {
+      "from": "task-5",
+      "to": "task-1"
+    }
+  ],
+  "execution_plan": {
+    "phases": [
+      {
+        "name": "Foundation",
+        "tasks": [
+          "task-3",
+          "task-5"
+        ],
+        "parallel": true
+      },
+      {
+        "name": "Core Implementation",
+        "tasks": [
+          "task-1",
+          "task-2"
+        ],
+        "parallel": true
+      },
+      {
+        "name": "Integration",
+        "tasks": [
+          "task-4"
+        ],
+        "parallel": false
+      },
+      {
+        "name": "Testing",
+        "tasks": [
+          "task-6"
+        ],
+        "parallel": false
+      }
+    ]
+  },
+  "risk_analysis": {
+    "level": "low",
+    "critical_path": [
+      "task-3",
+      "task-1",
+      "task-4"
+    ],
+    "bottlenecks": [
+      "task-1"
+    ],
+    "risks": [
+      "CSS conflicts with existing styles",
+      "Performance impact of theme switching"
+    ]
+  },
+  "quality_gates": [
+    "TypeScript compilation must pass",
+    "All unit tests must pass",
+    "ESLint rules must pass",
+    "Accessibility tests must pass",
+    "Visual regression tests must pass"
+  ]
+}

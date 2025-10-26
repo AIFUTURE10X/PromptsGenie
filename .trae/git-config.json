@@ -1,0 +1,34 @@
+{
+  "repository": "c:\\PromptsGenie",
+  "features": {
+    "commitAnalysis": true,
+    "branchTracking": true,
+    "diffGeneration": true,
+    "historySearch": true,
+    "blameAnalysis": true,
+    "mergeConflictDetection": true
+  },
+  "defaultBranch": "main",
+  "ignorePaths": [
+    "node_modules/",
+    ".env",
+    "*.log",
+    "dist/",
+    "build/"
+  ],
+  "commitMessageTemplates": {
+    "feature": "feat: add {description}",
+    "fix": "fix: resolve {description}",
+    "docs": "docs: update {description}",
+    "style": "style: improve {description}",
+    "refactor": "refactor: restructure {description}",
+    "test": "test: add {description}",
+    "chore": "chore: update {description}"
+  },
+  "analysisSettings": {
+    "maxCommitsToAnalyze": 100,
+    "includeFileChanges": true,
+    "trackAuthorStats": true,
+    "detectPatterns": true
+  }
+}

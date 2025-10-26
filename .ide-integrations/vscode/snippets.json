@@ -1,0 +1,34 @@
+{
+  "Autopilot Feature Request": {
+    "prefix": "autopilot-feature",
+    "body": [
+      "/**",
+      " * Feature Request for Spec-to-Code Autopilot",
+      " * ",
+      " * Title: ${1:Feature Title}",
+      " * Type: ${2|feature,bugfix,refactor,api|}",
+      " * Priority: ${3|low,medium,high|}",
+      " * ",
+      " * Description:",
+      " * ${4:Detailed description of the feature}",
+      " * ",
+      " * Acceptance Criteria:",
+      " * - ${5:Given/When/Then criteria}",
+      " * - ${6:Additional criteria}",
+      " * ",
+      " * Requirements:",
+      " * - ${7:Functional requirements}",
+      " * - ${8:Non-functional requirements}",
+      " */",
+      "$0"
+    ],
+    "description": "Template for autopilot feature requests"
+  },
+  "Autopilot CLI Command": {
+    "prefix": "autopilot-cli",
+    "body": [
+      "node scripts/autopilot-cli.mjs ${1|run,spec,plan,code,validate,pr,status|} ${2:--options}$0"
+    ],
+    "description": "Autopilot CLI command template"
+  }
+}

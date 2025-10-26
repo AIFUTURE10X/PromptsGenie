@@ -1,0 +1,51 @@
+{
+  "allowedPaths": [
+    "c:\\PromptsGenie\\src",
+    "c:\\PromptsGenie\\public", 
+    "c:\\PromptsGenie\\components",
+    "c:\\PromptsGenie\\pages",
+    "c:\\PromptsGenie\\styles",
+    "c:\\PromptsGenie\\utils",
+    "c:\\PromptsGenie\\hooks",
+    "c:\\PromptsGenie\\types",
+    "c:\\PromptsGenie\\lib",
+    "c:\\PromptsGenie\\api"
+  ],
+  "allowedExtensions": [
+    ".js",
+    ".jsx", 
+    ".ts",
+    ".tsx",
+    ".json",
+    ".md",
+    ".css",
+    ".scss",
+    ".html",
+    ".env",
+    ".gitignore",
+    ".yml",
+    ".yaml"
+  ],
+  "readOnlyPaths": [
+    "c:\\PromptsGenie\\node_modules",
+    "c:\\PromptsGenie\\.git",
+    "c:\\PromptsGenie\\scripts"
+  ],
+  "excludePatterns": [
+    "*.log",
+    "*.tmp",
+    "dist/*",
+    "build/*",
+    ".DS_Store",
+    "Thumbs.db",
+    ".vercel/*",
+    ".next/*",
+    ".turbo/*",
+    "coverage/*",
+    ".reports/*",
+    "cypress/videos/*",
+    "cypress/screenshots/*",
+    "node_modules/*",
+    ".venv/*"
+  ]
+}

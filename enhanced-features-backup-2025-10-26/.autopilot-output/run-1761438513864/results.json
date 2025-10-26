@@ -1,0 +1,77 @@
+{
+  "runId": "run-1761438513864",
+  "startTime": "2025-10-26T00:28:33.868Z",
+  "featureRequest": {
+    "description": "Add shopping cart functionality with item management, quantity updates, price calculations, discount codes, tax calculations, and checkout integration for an e-commerce platform",
+    "type": "feature",
+    "priority": "high",
+    "author": "Autopilot Demo"
+  },
+  "phases": [
+    {
+      "name": "Specification",
+      "success": true,
+      "output": {
+        "phase": "spec",
+        "options": {
+          "feature": "Add shopping cart functionality with item management, quantity updates, price calculations, discount codes, tax calculations, and checkout integration for an e-commerce platform",
+          "type": "feature",
+          "priority": "high",
+          "output": "C:\\PromptsGenie\\.autopilot-output\\run-1761438513864\\spec.json"
+        },
+        "executed": true
+      }
+    },
+    {
+      "name": "Task Planning",
+      "success": true,
+      "output": {
+        "phase": "plan",
+        "options": {
+          "spec": "C:\\PromptsGenie\\.autopilot-output\\run-1761438513864\\spec.json",
+          "output": "C:\\PromptsGenie\\.autopilot-output\\run-1761438513864\\plan.json"
+        },
+        "executed": true
+      }
+    },
+    {
+      "name": "Code Generation",
+      "success": true,
+      "output": {
+        "phase": "code",
+        "options": {
+          "plan": "C:\\PromptsGenie\\.autopilot-output\\run-1761438513864\\plan.json",
+          "output": "C:\\PromptsGenie\\.autopilot-output\\run-1761438513864\\generated"
+        },
+        "executed": true
+      }
+    },
+    {
+      "name": "Validation",
+      "success": true,
+      "output": {
+        "phase": "validate",
+        "options": {
+          "report": "C:\\PromptsGenie\\.autopilot-output\\run-1761438513864\\validation.json"
+        },
+        "executed": true
+      }
+    },
+    {
+      "name": "PR Generation",
+      "success": true,
+      "output": {
+        "phase": "pr",
+        "options": {
+          "spec": "C:\\PromptsGenie\\.autopilot-output\\run-1761438513864\\spec.json",
+          "plan": "C:\\PromptsGenie\\.autopilot-output\\run-1761438513864\\plan.json",
+          "validation": "C:\\PromptsGenie\\.autopilot-output\\run-1761438513864\\validation.json",
+          "output": "C:\\PromptsGenie\\.autopilot-output\\run-1761438513864\\pull-request.md"
+        },
+        "executed": true
+      }
+    }
+  ],
+  "success": true,
+  "endTime": "2025-10-26T00:28:33.899Z"
+}

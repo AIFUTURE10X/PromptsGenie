@@ -1,0 +1,25 @@
+<snippet>
+    <content><![CDATA[
+/**
+ * Feature Request for Spec-to-Code Autopilot
+ * 
+ * Title: ${1:Feature Title}
+ * Type: ${2:feature}
+ * Priority: ${3:medium}
+ * 
+ * Description:
+ * ${4:Detailed description of the feature}
+ * 
+ * Acceptance Criteria:
+ * - ${5:Given/When/Then criteria}
+ * - ${6:Additional criteria}
+ * 
+ * Requirements:
+ * - ${7:Functional requirements}
+ * - ${8:Non-functional requirements}
+ */
+]]></content>
+    <tabTrigger>autopilot-feature</tabTrigger>
+    <scope>source.js, source.ts</scope>
+    <description>Autopilot feature request template</description>
+</snippet>

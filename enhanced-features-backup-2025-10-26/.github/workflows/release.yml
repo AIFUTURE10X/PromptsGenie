@@ -1,0 +1,171 @@
+name: Release Pipeline
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  release-please:
+    name: Release Please
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      upload_url: ${{ steps.release.outputs.upload_url }}
+    steps:
+      - name: Release Please
+        id: release
+        uses: google-github-actions/release-please-action@v4
+        with:
+          release-type: node
+          package-name: promptsgenie
+          changelog-types: |
+            [
+              {"type":"feat","section":"Features","hidden":false},
+              {"type":"fix","section":"Bug Fixes","hidden":false},
+              {"type":"perf","section":"Performance Improvements","hidden":false},
+              {"type":"deps","section":"Dependencies","hidden":false},
+              {"type":"revert","section":"Reverts","hidden":false},
+              {"type":"docs","section":"Documentation","hidden":true},
+              {"type":"style","section":"Styles","hidden":true},
+              {"type":"chore","section":"Miscellaneous","hidden":true},
+              {"type":"refactor","section":"Code Refactoring","hidden":true},
+              {"type":"test","section":"Tests","hidden":true},
+              {"type":"build","section":"Build System","hidden":true},
+              {"type":"ci","section":"Continuous Integration","hidden":true}
+            ]
+
+  build-and-deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    needs: release-please
+    if: needs.release-please.outputs.release_created
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run CI Gates
+        run: npm run ci:gates
+
+      - name: Build Application
+        run: npm run build
+        env:
+          VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
+
+      - name: Deploy to Vercel Production
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+
+      - name: Build Docker Image
+        run: |
+          docker build -t promptsgenie:${{ needs.release-please.outputs.tag_name }} .
+          docker tag promptsgenie:${{ needs.release-please.outputs.tag_name }} gcr.io/${{ secrets.GCP_PROJECT_ID }}/promptsgenie:${{ needs.release-please.outputs.tag_name }}
+          docker tag promptsgenie:${{ needs.release-please.outputs.tag_name }} gcr.io/${{ secrets.GCP_PROJECT_ID }}/promptsgenie:latest
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Configure Docker for GCR
+        run: gcloud auth configure-docker
+
+      - name: Push Docker Image
+        run: |
+          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/promptsgenie:${{ needs.release-please.outputs.tag_name }}
+          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/promptsgenie:latest
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: promptsgenie
+          image: gcr.io/${{ secrets.GCP_PROJECT_ID }}/promptsgenie:${{ needs.release-please.outputs.tag_name }}
+          region: us-central1
+          flags: |
+            --port=8085
+            --memory=512Mi
+            --cpu=1
+            --min-instances=0
+            --max-instances=10
+            --allow-unauthenticated
+          env_vars: |
+            NODE_ENV=production
+            VITE_GEMINI_API_KEY=${{ secrets.VITE_GEMINI_API_KEY }}
+
+      - name: Upload Release Assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release-please.outputs.upload_url }}
+          asset_path: ./dist.zip
+          asset_name: promptsgenie-${{ needs.release-please.outputs.tag_name }}-dist.zip
+          asset_content_type: application/zip
+
+  notify:
+    name: Notify Deployment
+    runs-on: ubuntu-latest
+    needs: [release-please, build-and-deploy]
+    if: needs.release-please.outputs.release_created && needs.build-and-deploy.result == 'success'
+    steps:
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          text: |
+            🚀 PromptsGenie ${{ needs.release-please.outputs.tag_name }} deployed successfully!
+            
+            📦 Vercel: https://promptsgenie.vercel.app
+            ☁️ Cloud Run: https://promptsgenie-[hash]-uc.a.run.app
+            📋 Release Notes: https://github.com/${{ github.repository }}/releases/tag/${{ needs.release-please.outputs.tag_name }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  rollback:
+    name: Rollback on Failure
+    runs-on: ubuntu-latest
+    needs: [release-please, build-and-deploy]
+    if: needs.release-please.outputs.release_created && needs.build-and-deploy.result == 'failure'
+    steps:
+      - name: Rollback Cloud Run
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Revert to Previous Revision
+        run: |
+          gcloud run services update-traffic promptsgenie \
+            --to-revisions=LATEST=100 \
+            --region=us-central1
+
+      - name: Notify Failure
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          text: |
+            ❌ PromptsGenie ${{ needs.release-please.outputs.tag_name }} deployment failed!
+            
+            🔄 Cloud Run rolled back to previous version
+            🔍 Check logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

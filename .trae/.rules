@@ -1,0 +1,223 @@
+# PromptsGenie Project Rules & Conventions
+
+## Project Overview
+PromptsGenie is a React-based web application for AI-powered prompt generation and image analysis using Google's Gemini API.
+
+## Technology Stack
+- Frontend: React 18+ with TypeScript
+- Backend: Node.js with Express
+- AI Integration: Google Gemini API (gemini-2.5-flash, gemini-2.5-pro)
+- Styling: CSS with modern responsive design
+- Build Tool: Vite
+- Package Manager: npm
+
+## Code Style & Conventions
+
+### React Components
+- Use functional components with hooks
+- Prefer TypeScript interfaces for props
+- Use descriptive component names in PascalCase
+- Keep components focused and single-responsibility
+- Use React.memo for performance optimization when needed
+
+### File Organization
+- Components in `/src/components/`
+- Pages in `/src/pages/`
+- Utilities in `/src/utils/`
+- Types in `/src/types/`
+- API calls in `/src/api/`
+
+### Naming Conventions
+- Files: kebab-case for components (e.g., `image-analyzer.tsx`)
+- Variables: camelCase
+- Constants: UPPER_SNAKE_CASE
+- CSS classes: kebab-case with BEM methodology
+
+### API Integration
+- Use environment variables for API keys
+- Implement proper error handling for API calls
+- Use async/await pattern for API requests
+- Validate API responses before processing
+
+### State Management
+- Use React hooks (useState, useEffect, useContext)
+- Keep state as close to where it's used as possible
+- Use custom hooks for complex state logic
+- Implement proper cleanup in useEffect
+
+### Error Handling
+- Implement try-catch blocks for async operations
+- Provide user-friendly error messages
+- Log errors appropriately for debugging
+- Use error boundaries for React components
+
+### Performance Guidelines
+- Optimize images and assets
+- Use lazy loading for components when appropriate
+- Minimize re-renders with proper dependency arrays
+- Use production builds for deployment
+
+### Security Best Practices
+- Never expose API keys in client-side code
+- Validate all user inputs
+- Sanitize data before processing
+- Use HTTPS for all API communications
+
+## AI-Specific Guidelines
+
+### Gemini API Usage
+- Use gemini-2.5-flash for fast responses
+- Use gemini-2.5-pro for high-quality analysis
+- Implement proper rate limiting
+- Handle API quota and error responses gracefully
+
+### Prompt Engineering
+- Create clear, specific prompts for better results
+- Use structured prompts for consistent outputs
+- Implement prompt templates for reusability
+- Test prompts thoroughly before deployment
+
+## Development Workflow
+- Use feature branches for new development
+- Write descriptive commit messages
+- Test thoroughly before merging
+- Keep dependencies up to date
+- Document significant changes
+
+## Testing Guidelines
+- Write unit tests for utility functions
+- Test API integrations with mock data
+- Validate user interface interactions
+- Test error scenarios and edge cases
+
+## Documentation Standards
+- Use JSDoc comments for functions
+- Document complex logic inline
+- Keep README files updated
+- Document API endpoints and responses
+
+## Accessibility
+- Use semantic HTML elements
+- Provide alt text for images
+- Ensure keyboard navigation works
+- Test with screen readers
+- Maintain proper color contrast
+
+## Browser Compatibility
+- Support modern browsers (Chrome, Firefox, Safari, Edge)
+- Use progressive enhancement
+- Test responsive design on multiple devices
+- Provide fallbacks for newer features
+
+## CI/CD Gates & Quality Standards
+
+[ci.gates]
+require = [
+  "jest-runner:coverage>=80",
+  "eslint:no-warnings", 
+  "tsc-check:pass",
+  "gitleaks:no-findings",
+  "npm-audit:no-high",
+  "bundle-analyzer:budgets",
+  "lighthouse:accessibility>=90;performance>=75;best-practices>=90",
+  "axe-a11y:no-critical",
+  "commit-validate:conventional-format",
+  "storybook-build:success",
+  "chromatic-visual:no-breaking-changes",
+  "env-validate:all-required-present"
+]
+
+[ci.deployment]
+vercel.preview_on_pr = true
+vercel.production_on_main = true
+cloud_run.auto_deploy = "main"
+cloud_run.health_check_path = "/health"
+cloud_run.min_instances = 0
+cloud_run.max_instances = 10
+cloud_run.cpu_limit = "1000m"
+cloud_run.memory_limit = "512Mi"
+
+[testing]
+framework = "jest"
+coverage.lines = 0.80
+coverage.branches = 0.75
+coverage.functions = 0.80
+coverage.statements = 0.80
+require-tests-for = ["new public API endpoints", "new exported components"]
+snapshot_testing = "stable UI components only"
+frameworks = ["Jest", "React Testing Library", "MSW", "Storybook", "Chromatic"]
+
+[visual_testing]
+storybook.required_stories = ["Button", "Input", "Modal", "Layout"]
+storybook.addon_essentials = true
+storybook.addon_a11y = true
+chromatic.threshold_percentage = 0.2
+chromatic.auto_accept_changes = false
+chromatic.review_required = true
+
+[performance]
+main_bundle_max_gzip_kb = 250
+route_chunk_max_gzip_kb = 200
+images.require_optimal_formats = true
+code_splitting.required = true
+lighthouse_thresholds.mobile.lcp_score = 75
+lighthouse_thresholds.mobile.cls_score = 90
+lighthouse_thresholds.mobile.best_practices_score = 90
+lighthouse_thresholds.mobile.accessibility_score = 90
+
+[accessibility]
+axe.fail_on = ["critical"]
+axe.warn_on = ["serious"]
+keyboard_navigation.required = true
+critical_routes_check = ["/", "/generate", "/analyze", "/settings"]
+pr_comment_summary.required = true
+
+[security]
+secrets_scanning = "gitleaks"
+dependency_policy = "no-high"
+pii_redaction.logs = true
+error_messages.no_info_leakage = true
+no_secrets_in = ["code", "commits", "logs"]
+gitleaks_diff_check = true
+
+[api.contract]
+openapi.validate_clients = true
+retry_policy.default = "exponential_backoff: {maxRetries: 3, baseMs: 300}"
+circuit_breaker.enabled = true
+gemini_calls.standardized_error_handling = true
+gemini_calls.circuit_breaker_on_failures = true
+mock_mode.dev_environment = true
+
+[release]
+conventional_commits = true
+changelog.auto = true
+merge.block_on_ci_failure = true
+tagged_releases.gates_required = true
+
+[analytics.privacy]
+event_schema_validation = true
+no_pii_in_payloads = true
+
+## Filesystem Configuration Refinements
+
+[filesystem.permissions]
+read_only = ["/.git", "/scripts"]
+exclude_from_monitoring = [
+  ".vercel/", 
+  ".next/", 
+  ".turbo/", 
+  "coverage/", 
+  ".reports/", 
+  "cypress/videos/",
+  "cypress/screenshots/",
+  "node_modules/",
+  ".venv/"
+]
+
+## Build Configuration Standards
+
+[vite.build]
+reportCompressedSize = true
+chunkSizeWarningLimit = 250
+sourcemap = false  # Upload privately to error tracking service
+rollupOptions.output.manualChunks = "vendor libraries separate"

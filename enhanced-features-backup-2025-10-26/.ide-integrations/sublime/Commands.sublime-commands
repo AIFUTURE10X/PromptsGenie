@@ -1,0 +1,53 @@
+[
+  {
+    "caption": "Autopilot: Run Workflow",
+    "command": "exec",
+    "args": {
+      "cmd": [
+        "node",
+        "scripts/autopilot-cli.mjs",
+        "run",
+        "--interactive"
+      ],
+      "working_dir": "$project_path"
+    }
+  },
+  {
+    "caption": "Autopilot: Generate Spec",
+    "command": "exec",
+    "args": {
+      "cmd": [
+        "node",
+        "scripts/autopilot-cli.mjs",
+        "spec",
+        "--feature",
+        "$selection"
+      ],
+      "working_dir": "$project_path"
+    }
+  },
+  {
+    "caption": "Autopilot: Run Validation",
+    "command": "exec",
+    "args": {
+      "cmd": [
+        "node",
+        "scripts/autopilot-cli.mjs",
+        "validate"
+      ],
+      "working_dir": "$project_path"
+    }
+  },
+  {
+    "caption": "Autopilot: Show Status",
+    "command": "exec",
+    "args": {
+      "cmd": [
+        "node",
+        "scripts/autopilot-cli.mjs",
+        "status"
+      ],
+      "working_dir": "$project_path"
+    }
+  }
+]

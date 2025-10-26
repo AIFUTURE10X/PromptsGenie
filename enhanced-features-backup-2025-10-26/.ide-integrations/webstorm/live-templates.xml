@@ -1,0 +1,17 @@
+
+<templateSet group="Autopilot">
+  <template name="autopilot-feature" value="/**&#10; * Feature Request for Spec-to-Code Autopilot&#10; * &#10; * Title: $TITLE$&#10; * Type: $TYPE$&#10; * Priority: $PRIORITY$&#10; * &#10; * Description:&#10; * $DESCRIPTION$&#10; * &#10; * Acceptance Criteria:&#10; * - $CRITERIA1$&#10; * - $CRITERIA2$&#10; * &#10; * Requirements:&#10; * - $REQ1$&#10; * - $REQ2$&#10; */" description="Autopilot feature request template" toReformat="false" toShortenFQNames="true">
+    <variable name="TITLE" expression="" defaultValue="&quot;Feature Title&quot;" alwaysStopAt="true" />
+    <variable name="TYPE" expression="" defaultValue="&quot;feature&quot;" alwaysStopAt="true" />
+    <variable name="PRIORITY" expression="" defaultValue="&quot;medium&quot;" alwaysStopAt="true" />
+    <variable name="DESCRIPTION" expression="" defaultValue="&quot;Detailed description&quot;" alwaysStopAt="true" />
+    <variable name="CRITERIA1" expression="" defaultValue="&quot;Given/When/Then criteria&quot;" alwaysStopAt="true" />
+    <variable name="CRITERIA2" expression="" defaultValue="&quot;Additional criteria&quot;" alwaysStopAt="true" />
+    <variable name="REQ1" expression="" defaultValue="&quot;Functional requirement&quot;" alwaysStopAt="true" />
+    <variable name="REQ2" expression="" defaultValue="&quot;Non-functional requirement&quot;" alwaysStopAt="true" />
+    <context>
+      <option name="JAVA_SCRIPT" value="true" />
+      <option name="TypeScript" value="true" />
+    </context>
+  </template>
+</templateSet>

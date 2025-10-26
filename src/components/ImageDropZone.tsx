@@ -253,6 +253,18 @@ export default function ImageDropZone({
                           className="max-w-full max-h-12 object-contain rounded"
                         />
                       </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSubjectImagesChange([]);
+                        }}
+                        className="flex-shrink-0 p-1 rounded-full bg-red-500 hover:bg-red-600 text-white transition-colors"
+                        title="Delete subject images"
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center space-y-1">
@@ -355,6 +367,18 @@ export default function ImageDropZone({
                           className="max-w-full max-h-12 object-contain rounded"
                         />
                       </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSceneImagesChange([]);
+                        }}
+                        className="flex-shrink-0 p-1 rounded-full bg-red-500 hover:bg-red-600 text-white transition-colors"
+                        title="Delete scene images"
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center space-y-1">
@@ -457,6 +481,18 @@ export default function ImageDropZone({
                           className="max-w-full max-h-12 object-contain rounded"
                         />
                       </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onStyleImagesChange([]);
+                        }}
+                        className="flex-shrink-0 p-1 rounded-full bg-red-500 hover:bg-red-600 text-white transition-colors"
+                        title="Delete style images"
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center space-y-1">

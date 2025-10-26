@@ -1,0 +1,252 @@
+{
+  "templates": {
+    "feature": {
+      "name": "Feature Specification",
+      "description": "Template for new feature specifications",
+      "sections": [
+        {
+          "title": "Feature Overview",
+          "content": "## Feature Overview\n\n### Summary\n{feature_summary}\n\n### Business Value\n{business_value}\n\n### Success Metrics\n{success_metrics}"
+        },
+        {
+          "title": "User Story",
+          "content": "## User Story\n\n**As a** {user_type}  \n**I want** {user_goal}  \n**So that** {user_benefit}\n\n### User Personas\n{user_personas}\n\n### User Journey\n{user_journey}"
+        },
+        {
+          "title": "Acceptance Criteria",
+          "content": "## Acceptance Criteria\n\n### Functional Requirements\n{functional_requirements}\n\n### Scenario: {scenario_name}\n**Given** {given_condition}  \n**When** {when_action}  \n**Then** {then_outcome}\n\n### Edge Cases\n{edge_cases}"
+        },
+        {
+          "title": "API Contract",
+          "content": "## API Contract\n\n### Endpoints\n{api_endpoints}\n\n### Request Schema\n```json\n{request_schema}\n```\n\n### Response Schema\n```json\n{response_schema}\n```\n\n### Error Handling\n{error_handling}"
+        },
+        {
+          "title": "UI/UX Design",
+          "content": "## UI/UX Design\n\n### Component Structure\n{component_structure}\n\n### User Interface\n{ui_description}\n\n### Interaction Patterns\n{interaction_patterns}\n\n### Accessibility Requirements\n{accessibility_requirements}"
+        },
+        {
+          "title": "Data Model",
+          "content": "## Data Model\n\n### Database Changes\n{database_changes}\n\n### Schema Updates\n```sql\n{schema_updates}\n```\n\n### Migration Strategy\n{migration_strategy}\n\n### Data Validation\n{data_validation}"
+        },
+        {
+          "title": "Non-functional Requirements",
+          "content": "## Non-functional Requirements\n\n### Performance\n{performance_requirements}\n\n### Security\n{security_requirements}\n\n### Scalability\n{scalability_requirements}\n\n### Accessibility\n{accessibility_standards}"
+        },
+        {
+          "title": "Risk Assessment",
+          "content": "## Risk Assessment\n\n### Technical Risks\n{technical_risks}\n\n### Business Risks\n{business_risks}\n\n### Mitigation Strategies\n{mitigation_strategies}\n\n### Rollback Plan\n{rollback_plan}"
+        },
+        {
+          "title": "Implementation Plan",
+          "content": "## Implementation Plan\n\n### Development Phases\n{development_phases}\n\n### Dependencies\n{dependencies}\n\n### Testing Strategy\n{testing_strategy}\n\n### Deployment Plan\n{deployment_plan}"
+        }
+      ],
+      "placeholders": {
+        "feature_summary": "Brief description of the feature",
+        "business_value": "Why this feature is important",
+        "success_metrics": "How success will be measured",
+        "user_type": "Type of user (e.g., developer, end-user)",
+        "user_goal": "What the user wants to accomplish",
+        "user_benefit": "Why the user wants this",
+        "user_personas": "Detailed user personas",
+        "user_journey": "Step-by-step user journey",
+        "functional_requirements": "List of functional requirements",
+        "scenario_name": "Name of the test scenario",
+        "given_condition": "Initial conditions",
+        "when_action": "User action",
+        "then_outcome": "Expected outcome",
+        "edge_cases": "Edge cases to consider",
+        "api_endpoints": "List of API endpoints",
+        "request_schema": "JSON schema for requests",
+        "response_schema": "JSON schema for responses",
+        "error_handling": "Error handling strategy",
+        "component_structure": "React component structure",
+        "ui_description": "UI design description",
+        "interaction_patterns": "User interaction patterns",
+        "accessibility_requirements": "Accessibility requirements",
+        "database_changes": "Required database changes",
+        "schema_updates": "SQL schema updates",
+        "migration_strategy": "Database migration strategy",
+        "data_validation": "Data validation rules",
+        "performance_requirements": "Performance requirements",
+        "security_requirements": "Security requirements",
+        "scalability_requirements": "Scalability requirements",
+        "accessibility_standards": "Accessibility standards to follow",
+        "technical_risks": "Technical risks identified",
+        "business_risks": "Business risks identified",
+        "mitigation_strategies": "Risk mitigation strategies",
+        "rollback_plan": "Plan for rolling back changes",
+        "development_phases": "Development phases",
+        "dependencies": "Project dependencies",
+        "testing_strategy": "Testing approach",
+        "deployment_plan": "Deployment strategy"
+      }
+    },
+    "bugfix": {
+      "name": "Bug Fix Specification",
+      "description": "Template for bug fix specifications",
+      "sections": [
+        {
+          "title": "Bug Report",
+          "content": "## Bug Report\n\n### Issue Description\n{issue_description}\n\n### Steps to Reproduce\n{reproduction_steps}\n\n### Expected Behavior\n{expected_behavior}\n\n### Actual Behavior\n{actual_behavior}"
+        },
+        {
+          "title": "Root Cause Analysis",
+          "content": "## Root Cause Analysis\n\n### Investigation Findings\n{investigation_findings}\n\n### Root Cause\n{root_cause}\n\n### Contributing Factors\n{contributing_factors}"
+        },
+        {
+          "title": "Solution Design",
+          "content": "## Solution Design\n\n### Proposed Fix\n{proposed_fix}\n\n### Alternative Solutions\n{alternative_solutions}\n\n### Implementation Approach\n{implementation_approach}"
+        },
+        {
+          "title": "Testing Strategy",
+          "content": "## Testing Strategy\n\n### Test Cases\n{test_cases}\n\n### Regression Testing\n{regression_testing}\n\n### Validation Criteria\n{validation_criteria}"
+        },
+        {
+          "title": "Risk Assessment",
+          "content": "## Risk Assessment\n\n### Impact Analysis\n{impact_analysis}\n\n### Risk Level\n{risk_level}\n\n### Rollback Plan\n{rollback_plan}"
+        }
+      ],
+      "placeholders": {
+        "issue_description": "Detailed description of the bug",
+        "reproduction_steps": "Steps to reproduce the bug",
+        "expected_behavior": "What should happen",
+        "actual_behavior": "What actually happens",
+        "investigation_findings": "What was discovered during investigation",
+        "root_cause": "The underlying cause of the bug",
+        "contributing_factors": "Factors that contributed to the bug",
+        "proposed_fix": "How the bug will be fixed",
+        "alternative_solutions": "Other possible solutions",
+        "implementation_approach": "How the fix will be implemented",
+        "test_cases": "Test cases to verify the fix",
+        "regression_testing": "Regression testing approach",
+        "validation_criteria": "How to validate the fix works",
+        "impact_analysis": "Analysis of the fix's impact",
+        "risk_level": "Risk level of the fix",
+        "rollback_plan": "Plan for rolling back if needed"
+      }
+    },
+    "refactor": {
+      "name": "Refactoring Specification",
+      "description": "Template for code refactoring specifications",
+      "sections": [
+        {
+          "title": "Refactoring Overview",
+          "content": "## Refactoring Overview\n\n### Current State\n{current_state}\n\n### Target State\n{target_state}\n\n### Motivation\n{motivation}\n\n### Benefits\n{benefits}"
+        },
+        {
+          "title": "Scope and Impact",
+          "content": "## Scope and Impact\n\n### Files Affected\n{files_affected}\n\n### Breaking Changes\n{breaking_changes}\n\n### Backward Compatibility\n{backward_compatibility}"
+        },
+        {
+          "title": "Implementation Strategy",
+          "content": "## Implementation Strategy\n\n### Refactoring Steps\n{refactoring_steps}\n\n### Migration Path\n{migration_path}\n\n### Testing Approach\n{testing_approach}"
+        },
+        {
+          "title": "Quality Metrics",
+          "content": "## Quality Metrics\n\n### Code Quality Improvements\n{quality_improvements}\n\n### Performance Impact\n{performance_impact}\n\n### Maintainability Gains\n{maintainability_gains}"
+        }
+      ],
+      "placeholders": {
+        "current_state": "Description of current code state",
+        "target_state": "Description of desired code state",
+        "motivation": "Why this refactoring is needed",
+        "benefits": "Benefits of the refactoring",
+        "files_affected": "List of files that will be changed",
+        "breaking_changes": "Any breaking changes introduced",
+        "backward_compatibility": "Backward compatibility considerations",
+        "refactoring_steps": "Step-by-step refactoring process",
+        "migration_path": "How to migrate existing code",
+        "testing_approach": "How to test the refactored code",
+        "quality_improvements": "Code quality improvements expected",
+        "performance_impact": "Expected performance impact",
+        "maintainability_gains": "Maintainability improvements"
+      }
+    },
+    "api": {
+      "name": "API Specification",
+      "description": "Template for API design specifications",
+      "sections": [
+        {
+          "title": "API Overview",
+          "content": "## API Overview\n\n### Purpose\n{api_purpose}\n\n### Version\n{api_version}\n\n### Base URL\n{base_url}\n\n### Authentication\n{authentication_method}"
+        },
+        {
+          "title": "Endpoints",
+          "content": "## Endpoints\n\n### {endpoint_name}\n\n**Method:** {http_method}  \n**Path:** {endpoint_path}  \n**Description:** {endpoint_description}\n\n#### Request\n```json\n{request_example}\n```\n\n#### Response\n```json\n{response_example}\n```\n\n#### Error Responses\n{error_responses}"
+        },
+        {
+          "title": "Data Models",
+          "content": "## Data Models\n\n### {model_name}\n```json\n{model_schema}\n```\n\n#### Validation Rules\n{validation_rules}"
+        },
+        {
+          "title": "Security",
+          "content": "## Security\n\n### Authentication\n{auth_details}\n\n### Authorization\n{authorization_details}\n\n### Rate Limiting\n{rate_limiting}\n\n### Security Headers\n{security_headers}"
+        },
+        {
+          "title": "Testing",
+          "content": "## Testing\n\n### Test Scenarios\n{test_scenarios}\n\n### Contract Testing\n{contract_testing}\n\n### Performance Testing\n{performance_testing}"
+        }
+      ],
+      "placeholders": {
+        "api_purpose": "Purpose of the API",
+        "api_version": "API version",
+        "base_url": "Base URL for the API",
+        "authentication_method": "Authentication method used",
+        "endpoint_name": "Name of the endpoint",
+        "http_method": "HTTP method (GET, POST, etc.)",
+        "endpoint_path": "URL path for the endpoint",
+        "endpoint_description": "Description of what the endpoint does",
+        "request_example": "Example request payload",
+        "response_example": "Example response payload",
+        "error_responses": "Possible error responses",
+        "model_name": "Name of the data model",
+        "model_schema": "JSON schema for the model",
+        "validation_rules": "Validation rules for the model",
+        "auth_details": "Authentication details",
+        "authorization_details": "Authorization details",
+        "rate_limiting": "Rate limiting strategy",
+        "security_headers": "Required security headers",
+        "test_scenarios": "Test scenarios for the API",
+        "contract_testing": "Contract testing approach",
+        "performance_testing": "Performance testing strategy"
+      }
+    }
+  },
+  "validation_schema": {
+    "required_sections": [
+      "User Story",
+      "Acceptance Criteria",
+      "Risk Assessment"
+    ],
+    "optional_sections": [
+      "API Contract",
+      "Data Model",
+      "UI/UX Design"
+    ],
+    "quality_checks": {
+      "min_word_count": 200,
+      "max_word_count": 2000,
+      "min_sections": 3,
+      "required_patterns": {
+        "user_story": "As a .+ I want .+ so that .+",
+        "acceptance_criteria": "(Given|When|Then)",
+        "risk_assessment": "(risk|mitigation|rollback)"
+      }
+    },
+    "completeness_score": {
+      "weights": {
+        "required_sections": 0.4,
+        "optional_sections": 0.2,
+        "quality_checks": 0.2,
+        "detail_level": 0.2
+      },
+      "thresholds": {
+        "excellent": 0.9,
+        "good": 0.7,
+        "acceptable": 0.5,
+        "poor": 0.3
+      }
+    }
+  }
+}

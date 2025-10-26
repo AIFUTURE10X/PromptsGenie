@@ -1,0 +1,134 @@
+{
+  "summary": {
+    "total_gates": 12,
+    "passed": 10,
+    "failed": 1,
+    "skipped": 1,
+    "warnings": 3,
+    "duration": 45000,
+    "success": false
+  },
+  "gates": {
+    "required": [
+      {
+        "name": "TypeScript Compilation",
+        "passed": true,
+        "duration": 5000,
+        "critical": true,
+        "warnings": 0
+      },
+      {
+        "name": "ESLint",
+        "passed": false,
+        "duration": 3000,
+        "critical": true,
+        "warnings": 2,
+        "error": "2 linting errors found"
+      },
+      {
+        "name": "Unit Tests",
+        "passed": true,
+        "duration": 15000,
+        "critical": true,
+        "warnings": 0
+      },
+      {
+        "name": "Integration Tests",
+        "passed": true,
+        "duration": 8000,
+        "critical": true,
+        "warnings": 1
+      }
+    ],
+    "optional": [
+      {
+        "name": "Code Coverage",
+        "passed": true,
+        "duration": 2000,
+        "critical": false,
+        "warnings": 0,
+        "metrics": {
+          "value": 85,
+          "unit": "%",
+          "threshold": 80
+        }
+      },
+      {
+        "name": "Performance Tests",
+        "passed": true,
+        "duration": 5000,
+        "critical": false,
+        "warnings": 0
+      },
+      {
+        "name": "Accessibility Tests",
+        "passed": true,
+        "duration": 3000,
+        "critical": false,
+        "warnings": 0
+      }
+    ],
+    "security": [
+      {
+        "name": "NPM Audit",
+        "passed": true,
+        "duration": 2000,
+        "critical": true,
+        "warnings": 0,
+        "metrics": {
+          "vulnerabilities": 0
+        }
+      },
+      {
+        "name": "Secret Scanning",
+        "passed": true,
+        "duration": 1000,
+        "critical": true,
+        "warnings": 0
+      }
+    ],
+    "visual": [
+      {
+        "name": "Storybook Build",
+        "passed": true,
+        "duration": 8000,
+        "critical": false,
+        "warnings": 0
+      },
+      {
+        "name": "Visual Regression Tests",
+        "passed": true,
+        "duration": 12000,
+        "critical": false,
+        "warnings": 0
+      },
+      {
+        "name": "Chromatic Tests",
+        "passed": false,
+        "skipped": true,
+        "duration": 0,
+        "critical": false,
+        "warnings": 0,
+        "error": "Chromatic token not configured"
+      }
+    ]
+  },
+  "recommendations": [
+    {
+      "type": "critical",
+      "title": "Fix ESLint Errors",
+      "description": "ESLint found 2 critical errors that must be fixed",
+      "items": [
+        "Remove unused import in ThemeContext.tsx",
+        "Fix missing dependency in useEffect hook"
+      ],
+      "priority": "high"
+    }
+  ],
+  "next_steps": [
+    "❌ Fix failing critical quality gates",
+    "🔧 Fix ESLint errors",
+    "🔄 Re-run validation pipeline",
+    "✅ Proceed to PR creation once all gates pass"
+  ]
+}

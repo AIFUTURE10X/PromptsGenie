@@ -1,0 +1,50 @@
+[
+  {
+    "keys": [
+      "ctrl+shift+a",
+      "ctrl+shift+r"
+    ],
+    "command": "exec",
+    "args": {
+      "cmd": [
+        "node",
+        "scripts/autopilot-cli.mjs",
+        "run",
+        "--interactive"
+      ],
+      "working_dir": "$project_path"
+    }
+  },
+  {
+    "keys": [
+      "ctrl+shift+a",
+      "ctrl+shift+s"
+    ],
+    "command": "exec",
+    "args": {
+      "cmd": [
+        "node",
+        "scripts/autopilot-cli.mjs",
+        "spec",
+        "--feature",
+        "$selection"
+      ],
+      "working_dir": "$project_path"
+    }
+  },
+  {
+    "keys": [
+      "ctrl+shift+a",
+      "ctrl+shift+v"
+    ],
+    "command": "exec",
+    "args": {
+      "cmd": [
+        "node",
+        "scripts/autopilot-cli.mjs",
+        "validate"
+      ],
+      "working_dir": "$project_path"
+    }
+  }
+]

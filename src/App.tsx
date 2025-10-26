@@ -6,6 +6,7 @@ import { generateWithGemini } from "./services/promptApi";
 import { generateWithImagesREST } from "./helpers/gemini";
 import BackgroundCanvas from "./components/BackgroundCanvas";
 import BrandHeader from "./components/BrandHeader";
+import MenuHeader from "./components/MenuHeader";
 import { composePrompt } from "./lib/utils";
 
 // Local type to coordinate speed across components
@@ -859,11 +860,34 @@ function App() {
 
 
 
+  // Menu handlers (placeholder for now)
+  const handleTemplatesClick = () => {
+    console.log("Templates clicked");
+    // TODO: Implement templates functionality
+  };
+
+  const handleSettingsClick = () => {
+    console.log("Settings clicked");
+    // TODO: Implement settings functionality
+  };
+
+  const handleAboutClick = () => {
+    console.log("About clicked");
+    // TODO: Implement about functionality
+  };
+
   return (
     <div className="relative dark min-h-screen text-dark-text-primary">
       <BackgroundCanvas color="#000000" opacity={1} effect="grain" effectOpacity={0.06} />
       <div className="max-w-6xl mx-auto px-4">
         <BrandHeader logoSrc="Genie.png" />
+        <div className="mt-3">
+          <MenuHeader 
+            onTemplatesClick={handleTemplatesClick}
+            onSettingsClick={handleSettingsClick}
+            onAboutClick={handleAboutClick}
+          />
+        </div>
       </div>
       <div className="max-w-6xl mx-auto py-6 px-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">

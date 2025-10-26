@@ -1,0 +1,35 @@
+
+<application>
+  <component name="ToolsProvider">
+    <tools>
+      <tool name="Autopilot: Run Workflow" description="Run complete Spec-to-Code workflow" showInMainMenu="true" showInEditor="true" showInProject="true" showInSearchPopup="true" disabled="false" useConsole="true" showConsoleOnStdOut="true" showConsoleOnStdErr="true" synchronizeAfterRun="true">
+        <exec>
+          <option name="COMMAND" value="node" />
+          <option name="PARAMETERS" value="scripts/autopilot-cli.mjs run --interactive" />
+          <option name="WORKING_DIRECTORY" value="$ProjectFileDir$" />
+        </exec>
+      </tool>
+      <tool name="Autopilot: Generate Spec" description="Generate specification only" showInMainMenu="true" showInEditor="true" showInProject="true" showInSearchPopup="true" disabled="false" useConsole="true" showConsoleOnStdOut="true" showConsoleOnStdErr="true" synchronizeAfterRun="true">
+        <exec>
+          <option name="COMMAND" value="node" />
+          <option name="PARAMETERS" value="scripts/autopilot-cli.mjs spec --feature '$Prompt$'" />
+          <option name="WORKING_DIRECTORY" value="$ProjectFileDir$" />
+        </exec>
+      </tool>
+      <tool name="Autopilot: Run Validation" description="Run validation pipeline" showInMainMenu="true" showInEditor="true" showInProject="true" showInSearchPopup="true" disabled="false" useConsole="true" showConsoleOnStdOut="true" showConsoleOnStdErr="true" synchronizeAfterRun="true">
+        <exec>
+          <option name="COMMAND" value="node" />
+          <option name="PARAMETERS" value="scripts/autopilot-cli.mjs validate" />
+          <option name="WORKING_DIRECTORY" value="$ProjectFileDir$" />
+        </exec>
+      </tool>
+      <tool name="Autopilot: Show Status" description="Show autopilot status" showInMainMenu="true" showInEditor="true" showInProject="true" showInSearchPopup="true" disabled="false" useConsole="true" showConsoleOnStdOut="true" showConsoleOnStdErr="true" synchronizeAfterRun="true">
+        <exec>
+          <option name="COMMAND" value="node" />
+          <option name="PARAMETERS" value="scripts/autopilot-cli.mjs status" />
+          <option name="WORKING_DIRECTORY" value="$ProjectFileDir$" />
+        </exec>
+      </tool>
+    </tools>
+  </component>
+</application>

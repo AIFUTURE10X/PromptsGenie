@@ -1,0 +1,1773 @@
+{
+  "test_summary": {
+    "success": true,
+    "duration": 28,
+    "phases_completed": 5,
+    "phases_passed": 5
+  },
+  "phases": [
+    {
+      "name": "Specification Generation",
+      "success": true,
+      "duration": 3,
+      "output": {
+        "spec": {
+          "metadata": {
+            "title": "Add Dark Mode Toggle",
+            "type": "feature",
+            "priority": "medium",
+            "author": "Test User",
+            "created_at": "2025-10-26T00:29:57.849Z",
+            "version": "1.0.0"
+          },
+          "user_story": {
+            "title": "Add Dark Mode Toggle",
+            "description": "Implement a dark mode toggle in the application settings that allows users to switch between light and dark themes",
+            "as_a": "user",
+            "i_want": "to toggle between light and dark themes",
+            "so_that": "I can use the application in different lighting conditions"
+          },
+          "acceptance_criteria": [
+            "Given I am on the settings page, when I click the dark mode toggle, then the theme should switch to dark mode",
+            "Given dark mode is enabled, when I refresh the page, then the dark theme should persist",
+            "Given I toggle the theme, when the transition occurs, then it should be smooth and accessible",
+            "Given I use a screen reader, when I interact with the toggle, then it should announce the current state"
+          ],
+          "api_contract": {
+            "endpoints": [],
+            "components": [
+              {
+                "name": "ThemeToggle",
+                "props": {
+                  "isDark": "boolean",
+                  "onToggle": "function",
+                  "disabled": "boolean"
+                }
+              },
+              {
+                "name": "ThemeProvider",
+                "props": {
+                  "theme": "string",
+                  "children": "ReactNode"
+                }
+              }
+            ]
+          },
+          "data_model": {
+            "theme_preference": {
+              "type": "string",
+              "values": [
+                "light",
+                "dark",
+                "system"
+              ],
+              "storage": "localStorage",
+              "key": "theme-preference"
+            }
+          },
+          "non_functional_requirements": {
+            "performance": "Theme switching should complete within 200ms",
+            "accessibility": "WCAG 2.1 AA compliance required",
+            "browser_support": "Modern browsers (Chrome 90+, Firefox 88+, Safari 14+)",
+            "responsive": "Works on all screen sizes"
+          },
+          "risk_assessment": {
+            "level": "low",
+            "risks": [
+              "Potential flash of unstyled content during theme switch",
+              "CSS specificity conflicts with existing styles"
+            ],
+            "mitigation": [
+              "Implement CSS-in-JS solution with proper loading states",
+              "Use CSS custom properties for theme variables"
+            ]
+          }
+        },
+        "path": "C:\\PromptsGenie\\.test-workflow\\test-spec.json"
+      },
+      "error": null
+    },
+    {
+      "name": "Task Planning",
+      "success": true,
+      "duration": 2,
+      "output": {
+        "plan": {
+          "metadata": {
+            "spec_version": "1.0.0",
+            "created_at": "2025-10-26T00:29:57.853Z",
+            "complexity": "medium",
+            "estimated_hours": 8
+          },
+          "summary": "Implement dark mode toggle with theme persistence and smooth transitions",
+          "tasks": [
+            {
+              "id": "task-1",
+              "title": "Create theme context and provider",
+              "description": "Implement React context for theme management",
+              "files": [
+                "src/contexts/ThemeContext.tsx"
+              ],
+              "type": "create",
+              "complexity": "medium",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-2",
+              "title": "Create theme toggle component",
+              "description": "Build accessible toggle switch component",
+              "files": [
+                "src/components/ThemeToggle.tsx"
+              ],
+              "type": "create",
+              "complexity": "low",
+              "estimated_hours": 1.5
+            },
+            {
+              "id": "task-3",
+              "title": "Add theme styles and CSS variables",
+              "description": "Define light and dark theme CSS custom properties",
+              "files": [
+                "src/styles/themes.css",
+                "src/styles/variables.css"
+              ],
+              "type": "create",
+              "complexity": "medium",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-4",
+              "title": "Integrate toggle in settings page",
+              "description": "Add theme toggle to settings page",
+              "files": [
+                "src/pages/Settings.tsx"
+              ],
+              "type": "modify",
+              "complexity": "low",
+              "estimated_hours": 1
+            },
+            {
+              "id": "task-5",
+              "title": "Add localStorage persistence",
+              "description": "Implement theme preference persistence",
+              "files": [
+                "src/utils/themeStorage.ts"
+              ],
+              "type": "create",
+              "complexity": "low",
+              "estimated_hours": 1
+            },
+            {
+              "id": "task-6",
+              "title": "Write unit tests",
+              "description": "Create comprehensive test suite",
+              "files": [
+                "src/contexts/__tests__/ThemeContext.test.tsx",
+                "src/components/__tests__/ThemeToggle.test.tsx",
+                "src/utils/__tests__/themeStorage.test.ts"
+              ],
+              "type": "create",
+              "complexity": "medium",
+              "estimated_hours": 2.5
+            }
+          ],
+          "dependencies": [
+            {
+              "from": "task-1",
+              "to": "task-2"
+            },
+            {
+              "from": "task-1",
+              "to": "task-4"
+            },
+            {
+              "from": "task-2",
+              "to": "task-4"
+            },
+            {
+              "from": "task-3",
+              "to": "task-1"
+            },
+            {
+              "from": "task-5",
+              "to": "task-1"
+            }
+          ],
+          "execution_plan": {
+            "phases": [
+              {
+                "name": "Foundation",
+                "tasks": [
+                  "task-3",
+                  "task-5"
+                ],
+                "parallel": true
+              },
+              {
+                "name": "Core Implementation",
+                "tasks": [
+                  "task-1",
+                  "task-2"
+                ],
+                "parallel": true
+              },
+              {
+                "name": "Integration",
+                "tasks": [
+                  "task-4"
+                ],
+                "parallel": false
+              },
+              {
+                "name": "Testing",
+                "tasks": [
+                  "task-6"
+                ],
+                "parallel": false
+              }
+            ]
+          },
+          "risk_analysis": {
+            "level": "low",
+            "critical_path": [
+              "task-3",
+              "task-1",
+              "task-4"
+            ],
+            "bottlenecks": [
+              "task-1"
+            ],
+            "risks": [
+              "CSS conflicts with existing styles",
+              "Performance impact of theme switching"
+            ]
+          },
+          "quality_gates": [
+            "TypeScript compilation must pass",
+            "All unit tests must pass",
+            "ESLint rules must pass",
+            "Accessibility tests must pass",
+            "Visual regression tests must pass"
+          ]
+        },
+        "path": "C:\\PromptsGenie\\.test-workflow\\test-plan.json"
+      },
+      "error": null
+    },
+    {
+      "name": "Code Generation",
+      "success": true,
+      "duration": 16,
+      "output": {
+        "files": [
+          {
+            "original_path": "src/contexts/ThemeContext.tsx",
+            "test_path": "C:\\PromptsGenie\\.test-workflow\\generated\\ThemeContext.tsx",
+            "task_id": "task-1",
+            "type": "create"
+          },
+          {
+            "original_path": "src/components/ThemeToggle.tsx",
+            "test_path": "C:\\PromptsGenie\\.test-workflow\\generated\\ThemeToggle.tsx",
+            "task_id": "task-2",
+            "type": "create"
+          },
+          {
+            "original_path": "src/styles/themes.css",
+            "test_path": "C:\\PromptsGenie\\.test-workflow\\generated\\themes.css",
+            "task_id": "task-3",
+            "type": "create"
+          },
+          {
+            "original_path": "src/styles/variables.css",
+            "test_path": "C:\\PromptsGenie\\.test-workflow\\generated\\variables.css",
+            "task_id": "task-3",
+            "type": "create"
+          },
+          {
+            "original_path": "src/pages/Settings.tsx",
+            "test_path": "C:\\PromptsGenie\\.test-workflow\\generated\\Settings.tsx",
+            "task_id": "task-4",
+            "type": "modify"
+          },
+          {
+            "original_path": "src/utils/themeStorage.ts",
+            "test_path": "C:\\PromptsGenie\\.test-workflow\\generated\\themeStorage.ts",
+            "task_id": "task-5",
+            "type": "create"
+          },
+          {
+            "original_path": "src/contexts/__tests__/ThemeContext.test.tsx",
+            "test_path": "C:\\PromptsGenie\\.test-workflow\\generated\\ThemeContext.test.tsx",
+            "task_id": "task-6",
+            "type": "create"
+          },
+          {
+            "original_path": "src/components/__tests__/ThemeToggle.test.tsx",
+            "test_path": "C:\\PromptsGenie\\.test-workflow\\generated\\ThemeToggle.test.tsx",
+            "task_id": "task-6",
+            "type": "create"
+          },
+          {
+            "original_path": "src/utils/__tests__/themeStorage.test.ts",
+            "test_path": "C:\\PromptsGenie\\.test-workflow\\generated\\themeStorage.test.ts",
+            "task_id": "task-6",
+            "type": "create"
+          }
+        ],
+        "summary": "Generated 9 files"
+      },
+      "error": null
+    },
+    {
+      "name": "Validation Pipeline",
+      "success": true,
+      "duration": 2,
+      "output": {
+        "validation": {
+          "summary": {
+            "total_gates": 12,
+            "passed": 10,
+            "failed": 1,
+            "skipped": 1,
+            "warnings": 3,
+            "duration": 45000,
+            "success": false
+          },
+          "gates": {
+            "required": [
+              {
+                "name": "TypeScript Compilation",
+                "passed": true,
+                "duration": 5000,
+                "critical": true,
+                "warnings": 0
+              },
+              {
+                "name": "ESLint",
+                "passed": false,
+                "duration": 3000,
+                "critical": true,
+                "warnings": 2,
+                "error": "2 linting errors found"
+              },
+              {
+                "name": "Unit Tests",
+                "passed": true,
+                "duration": 15000,
+                "critical": true,
+                "warnings": 0
+              },
+              {
+                "name": "Integration Tests",
+                "passed": true,
+                "duration": 8000,
+                "critical": true,
+                "warnings": 1
+              }
+            ],
+            "optional": [
+              {
+                "name": "Code Coverage",
+                "passed": true,
+                "duration": 2000,
+                "critical": false,
+                "warnings": 0,
+                "metrics": {
+                  "value": 85,
+                  "unit": "%",
+                  "threshold": 80
+                }
+              },
+              {
+                "name": "Performance Tests",
+                "passed": true,
+                "duration": 5000,
+                "critical": false,
+                "warnings": 0
+              },
+              {
+                "name": "Accessibility Tests",
+                "passed": true,
+                "duration": 3000,
+                "critical": false,
+                "warnings": 0
+              }
+            ],
+            "security": [
+              {
+                "name": "NPM Audit",
+                "passed": true,
+                "duration": 2000,
+                "critical": true,
+                "warnings": 0,
+                "metrics": {
+                  "vulnerabilities": 0
+                }
+              },
+              {
+                "name": "Secret Scanning",
+                "passed": true,
+                "duration": 1000,
+                "critical": true,
+                "warnings": 0
+              }
+            ],
+            "visual": [
+              {
+                "name": "Storybook Build",
+                "passed": true,
+                "duration": 8000,
+                "critical": false,
+                "warnings": 0
+              },
+              {
+                "name": "Visual Regression Tests",
+                "passed": true,
+                "duration": 12000,
+                "critical": false,
+                "warnings": 0
+              },
+              {
+                "name": "Chromatic Tests",
+                "passed": false,
+                "skipped": true,
+                "duration": 0,
+                "critical": false,
+                "warnings": 0,
+                "error": "Chromatic token not configured"
+              }
+            ]
+          },
+          "recommendations": [
+            {
+              "type": "critical",
+              "title": "Fix ESLint Errors",
+              "description": "ESLint found 2 critical errors that must be fixed",
+              "items": [
+                "Remove unused import in ThemeContext.tsx",
+                "Fix missing dependency in useEffect hook"
+              ],
+              "priority": "high"
+            }
+          ],
+          "next_steps": [
+            "❌ Fix failing critical quality gates",
+            "🔧 Fix ESLint errors",
+            "🔄 Re-run validation pipeline",
+            "✅ Proceed to PR creation once all gates pass"
+          ]
+        },
+        "path": "C:\\PromptsGenie\\.test-workflow\\validation-results.json"
+      },
+      "error": null
+    },
+    {
+      "name": "PR Generation",
+      "success": true,
+      "duration": 3,
+      "output": {
+        "description": "# feat: Add Dark Mode Toggle\n\nImplement a dark mode toggle in the application settings that allows users to switch between light and dark themes\n\n## 📋 Summary\n\n**User Story:** As a user, I want to toggle between light and dark themes so that I can use the application in different lighting conditions.\n\n**Acceptance Criteria:**\n- Given I am on the settings page, when I click the dark mode toggle, then the theme should switch to dark mode\n- Given dark mode is enabled, when I refresh the page, then the dark theme should persist\n- Given I toggle the theme, when the transition occurs, then it should be smooth and accessible\n- Given I use a screen reader, when I interact with the toggle, then it should announce the current state\n\n## 🔄 Changes Made\n\n**Key Changes:**\n- Create theme context and provider\n- Create theme toggle component\n- Add theme styles and CSS variables\n- Integrate toggle in settings page\n- Add localStorage persistence\n- Write unit tests\n\n**Files Modified:**\n- Total files changed: 8\n- By file type:\n  - .tsx: 4 files\n  - .ts: 2 files\n  - .css: 2 files\n\n## 🧪 Testing\n\n**Test Plan:**\n- Unit tests for ThemeContext\n- Unit tests for ThemeToggle component\n- Integration tests for theme persistence\n- Accessibility tests for toggle component\n\n**Test Results:**\n- Total tests: 12\n- Passed: 10\n- Failed: 1\n- Duration: 45s\n\n## ✅ Validation Results\n\n**Overall Status:** ❌ FAILED\n\n| Gate Category | Total | Passed | Failed | Skipped |\n|---------------|-------|--------|--------|---------|\n| Required | 4 | 3 | 1 | 0 |\n| Optional | 3 | 3 | 0 | 0 |\n| Security | 2 | 2 | 0 | 0 |\n| Visual | 3 | 2 | 0 | 1 |\n\n**Failed Gates:**\n- ❌ ESLint: 2 linting errors found\n\n## 📊 Impact Analysis\n\n**Scope:** moderate\n**Risk Level:** low\n**Affected Areas:** frontend, styling, testing\n\n**Impact Details:**\n- User-facing changes: ✅ Yes\n- API changes: ❌ No\n- Database changes: ❌ No\n- Breaking changes: ❌ No\n- Performance impact: minimal\n- Security impact: none\n\n## ⚠️ Breaking Changes\n\nNo breaking changes in this PR.\n\n## ✅ Checklist\n\n- [ ] Code follows project style guidelines\n- [ ] Self-review of code completed\n- [ ] Code is commented, particularly in hard-to-understand areas\n- [ ] Corresponding changes to documentation made\n- [ ] No new warnings introduced\n- [ ] Tests added that prove fix is effective or feature works\n- [ ] New and existing unit tests pass locally\n- [ ] Any dependent changes have been merged and published\n\n---\n\n## 🤖 Generated by Spec-to-Code Autopilot\n\n- **Generated at:** 2025-10-26T00:29:57.873Z\n- **Generator version:** 1.0.0\n- **Files changed:** 8\n- **Validation status:** ❌ Failed\n",
+        "metadata": {
+          "title": "feat: Add Dark Mode Toggle",
+          "description": "Implement a dark mode toggle in the application settings that allows users to switch between light and dark themes",
+          "type": "feature",
+          "spec": {
+            "metadata": {
+              "title": "Add Dark Mode Toggle",
+              "type": "feature",
+              "priority": "medium",
+              "author": "Test User",
+              "created_at": "2025-10-26T00:29:57.849Z",
+              "version": "1.0.0"
+            },
+            "user_story": {
+              "title": "Add Dark Mode Toggle",
+              "description": "Implement a dark mode toggle in the application settings that allows users to switch between light and dark themes",
+              "as_a": "user",
+              "i_want": "to toggle between light and dark themes",
+              "so_that": "I can use the application in different lighting conditions"
+            },
+            "acceptance_criteria": [
+              "Given I am on the settings page, when I click the dark mode toggle, then the theme should switch to dark mode",
+              "Given dark mode is enabled, when I refresh the page, then the dark theme should persist",
+              "Given I toggle the theme, when the transition occurs, then it should be smooth and accessible",
+              "Given I use a screen reader, when I interact with the toggle, then it should announce the current state"
+            ],
+            "api_contract": {
+              "endpoints": [],
+              "components": [
+                {
+                  "name": "ThemeToggle",
+                  "props": {
+                    "isDark": "boolean",
+                    "onToggle": "function",
+                    "disabled": "boolean"
+                  }
+                },
+                {
+                  "name": "ThemeProvider",
+                  "props": {
+                    "theme": "string",
+                    "children": "ReactNode"
+                  }
+                }
+              ]
+            },
+            "data_model": {
+              "theme_preference": {
+                "type": "string",
+                "values": [
+                  "light",
+                  "dark",
+                  "system"
+                ],
+                "storage": "localStorage",
+                "key": "theme-preference"
+              }
+            },
+            "non_functional_requirements": {
+              "performance": "Theme switching should complete within 200ms",
+              "accessibility": "WCAG 2.1 AA compliance required",
+              "browser_support": "Modern browsers (Chrome 90+, Firefox 88+, Safari 14+)",
+              "responsive": "Works on all screen sizes"
+            },
+            "risk_assessment": {
+              "level": "low",
+              "risks": [
+                "Potential flash of unstyled content during theme switch",
+                "CSS specificity conflicts with existing styles"
+              ],
+              "mitigation": [
+                "Implement CSS-in-JS solution with proper loading states",
+                "Use CSS custom properties for theme variables"
+              ]
+            }
+          },
+          "plan": {
+            "metadata": {
+              "spec_version": "1.0.0",
+              "created_at": "2025-10-26T00:29:57.853Z",
+              "complexity": "medium",
+              "estimated_hours": 8
+            },
+            "summary": "Implement dark mode toggle with theme persistence and smooth transitions",
+            "tasks": [
+              {
+                "id": "task-1",
+                "title": "Create theme context and provider",
+                "description": "Implement React context for theme management",
+                "files": [
+                  "src/contexts/ThemeContext.tsx"
+                ],
+                "type": "create",
+                "complexity": "medium",
+                "estimated_hours": 2
+              },
+              {
+                "id": "task-2",
+                "title": "Create theme toggle component",
+                "description": "Build accessible toggle switch component",
+                "files": [
+                  "src/components/ThemeToggle.tsx"
+                ],
+                "type": "create",
+                "complexity": "low",
+                "estimated_hours": 1.5
+              },
+              {
+                "id": "task-3",
+                "title": "Add theme styles and CSS variables",
+                "description": "Define light and dark theme CSS custom properties",
+                "files": [
+                  "src/styles/themes.css",
+                  "src/styles/variables.css"
+                ],
+                "type": "create",
+                "complexity": "medium",
+                "estimated_hours": 2
+              },
+              {
+                "id": "task-4",
+                "title": "Integrate toggle in settings page",
+                "description": "Add theme toggle to settings page",
+                "files": [
+                  "src/pages/Settings.tsx"
+                ],
+                "type": "modify",
+                "complexity": "low",
+                "estimated_hours": 1
+              },
+              {
+                "id": "task-5",
+                "title": "Add localStorage persistence",
+                "description": "Implement theme preference persistence",
+                "files": [
+                  "src/utils/themeStorage.ts"
+                ],
+                "type": "create",
+                "complexity": "low",
+                "estimated_hours": 1
+              },
+              {
+                "id": "task-6",
+                "title": "Write unit tests",
+                "description": "Create comprehensive test suite",
+                "files": [
+                  "src/contexts/__tests__/ThemeContext.test.tsx",
+                  "src/components/__tests__/ThemeToggle.test.tsx",
+                  "src/utils/__tests__/themeStorage.test.ts"
+                ],
+                "type": "create",
+                "complexity": "medium",
+                "estimated_hours": 2.5
+              }
+            ],
+            "dependencies": [
+              {
+                "from": "task-1",
+                "to": "task-2"
+              },
+              {
+                "from": "task-1",
+                "to": "task-4"
+              },
+              {
+                "from": "task-2",
+                "to": "task-4"
+              },
+              {
+                "from": "task-3",
+                "to": "task-1"
+              },
+              {
+                "from": "task-5",
+                "to": "task-1"
+              }
+            ],
+            "execution_plan": {
+              "phases": [
+                {
+                  "name": "Foundation",
+                  "tasks": [
+                    "task-3",
+                    "task-5"
+                  ],
+                  "parallel": true
+                },
+                {
+                  "name": "Core Implementation",
+                  "tasks": [
+                    "task-1",
+                    "task-2"
+                  ],
+                  "parallel": true
+                },
+                {
+                  "name": "Integration",
+                  "tasks": [
+                    "task-4"
+                  ],
+                  "parallel": false
+                },
+                {
+                  "name": "Testing",
+                  "tasks": [
+                    "task-6"
+                  ],
+                  "parallel": false
+                }
+              ]
+            },
+            "risk_analysis": {
+              "level": "low",
+              "critical_path": [
+                "task-3",
+                "task-1",
+                "task-4"
+              ],
+              "bottlenecks": [
+                "task-1"
+              ],
+              "risks": [
+                "CSS conflicts with existing styles",
+                "Performance impact of theme switching"
+              ]
+            },
+            "quality_gates": [
+              "TypeScript compilation must pass",
+              "All unit tests must pass",
+              "ESLint rules must pass",
+              "Accessibility tests must pass",
+              "Visual regression tests must pass"
+            ]
+          },
+          "validation": {
+            "summary": {
+              "total_gates": 12,
+              "passed": 10,
+              "failed": 1,
+              "skipped": 1,
+              "warnings": 3,
+              "duration": 45000,
+              "success": false
+            },
+            "gates": {
+              "required": [
+                {
+                  "name": "TypeScript Compilation",
+                  "passed": true,
+                  "duration": 5000,
+                  "critical": true,
+                  "warnings": 0
+                },
+                {
+                  "name": "ESLint",
+                  "passed": false,
+                  "duration": 3000,
+                  "critical": true,
+                  "warnings": 2,
+                  "error": "2 linting errors found"
+                },
+                {
+                  "name": "Unit Tests",
+                  "passed": true,
+                  "duration": 15000,
+                  "critical": true,
+                  "warnings": 0
+                },
+                {
+                  "name": "Integration Tests",
+                  "passed": true,
+                  "duration": 8000,
+                  "critical": true,
+                  "warnings": 1
+                }
+              ],
+              "optional": [
+                {
+                  "name": "Code Coverage",
+                  "passed": true,
+                  "duration": 2000,
+                  "critical": false,
+                  "warnings": 0,
+                  "metrics": {
+                    "value": 85,
+                    "unit": "%",
+                    "threshold": 80
+                  }
+                },
+                {
+                  "name": "Performance Tests",
+                  "passed": true,
+                  "duration": 5000,
+                  "critical": false,
+                  "warnings": 0
+                },
+                {
+                  "name": "Accessibility Tests",
+                  "passed": true,
+                  "duration": 3000,
+                  "critical": false,
+                  "warnings": 0
+                }
+              ],
+              "security": [
+                {
+                  "name": "NPM Audit",
+                  "passed": true,
+                  "duration": 2000,
+                  "critical": true,
+                  "warnings": 0,
+                  "metrics": {
+                    "vulnerabilities": 0
+                  }
+                },
+                {
+                  "name": "Secret Scanning",
+                  "passed": true,
+                  "duration": 1000,
+                  "critical": true,
+                  "warnings": 0
+                }
+              ],
+              "visual": [
+                {
+                  "name": "Storybook Build",
+                  "passed": true,
+                  "duration": 8000,
+                  "critical": false,
+                  "warnings": 0
+                },
+                {
+                  "name": "Visual Regression Tests",
+                  "passed": true,
+                  "duration": 12000,
+                  "critical": false,
+                  "warnings": 0
+                },
+                {
+                  "name": "Chromatic Tests",
+                  "passed": false,
+                  "skipped": true,
+                  "duration": 0,
+                  "critical": false,
+                  "warnings": 0,
+                  "error": "Chromatic token not configured"
+                }
+              ]
+            },
+            "recommendations": [
+              {
+                "type": "critical",
+                "title": "Fix ESLint Errors",
+                "description": "ESLint found 2 critical errors that must be fixed",
+                "items": [
+                  "Remove unused import in ThemeContext.tsx",
+                  "Fix missing dependency in useEffect hook"
+                ],
+                "priority": "high"
+              }
+            ],
+            "next_steps": [
+              "❌ Fix failing critical quality gates",
+              "🔧 Fix ESLint errors",
+              "🔄 Re-run validation pipeline",
+              "✅ Proceed to PR creation once all gates pass"
+            ]
+          },
+          "fileAnalysis": {
+            "total": 8,
+            "by_type": {
+              ".tsx": 4,
+              ".ts": 2,
+              ".css": 2
+            },
+            "by_directory": {
+              "src/components": 2,
+              "src/contexts": 1,
+              "src/utils": 1,
+              "src/styles": 2,
+              "src/__tests__": 2
+            },
+            "complexity": "medium",
+            "risk_level": "low"
+          },
+          "impact": {
+            "scope": "moderate",
+            "affected_areas": [
+              "frontend",
+              "styling",
+              "testing"
+            ],
+            "user_facing": true,
+            "api_changes": false,
+            "database_changes": false,
+            "breaking_changes": false,
+            "performance_impact": "minimal",
+            "security_impact": "none"
+          },
+          "breakingChanges": [],
+          "author": "Spec-to-Code Autopilot",
+          "reviewers": [
+            "frontend-team"
+          ],
+          "labels": [
+            "feature",
+            "ui",
+            "accessibility",
+            "size/medium"
+          ],
+          "linkedIssues": [],
+          "metadata": {
+            "generated_at": "2025-10-26T00:29:57.873Z",
+            "generator_version": "1.0.0",
+            "files_changed": 8,
+            "validation_success": false
+          }
+        },
+        "files": {
+          "description": "C:\\PromptsGenie\\.test-workflow\\pull-request.md",
+          "metadata": "C:\\PromptsGenie\\.test-workflow\\pr-metadata.json"
+        }
+      },
+      "error": null
+    }
+  ],
+  "outputs": {
+    "spec": {
+      "spec": {
+        "metadata": {
+          "title": "Add Dark Mode Toggle",
+          "type": "feature",
+          "priority": "medium",
+          "author": "Test User",
+          "created_at": "2025-10-26T00:29:57.849Z",
+          "version": "1.0.0"
+        },
+        "user_story": {
+          "title": "Add Dark Mode Toggle",
+          "description": "Implement a dark mode toggle in the application settings that allows users to switch between light and dark themes",
+          "as_a": "user",
+          "i_want": "to toggle between light and dark themes",
+          "so_that": "I can use the application in different lighting conditions"
+        },
+        "acceptance_criteria": [
+          "Given I am on the settings page, when I click the dark mode toggle, then the theme should switch to dark mode",
+          "Given dark mode is enabled, when I refresh the page, then the dark theme should persist",
+          "Given I toggle the theme, when the transition occurs, then it should be smooth and accessible",
+          "Given I use a screen reader, when I interact with the toggle, then it should announce the current state"
+        ],
+        "api_contract": {
+          "endpoints": [],
+          "components": [
+            {
+              "name": "ThemeToggle",
+              "props": {
+                "isDark": "boolean",
+                "onToggle": "function",
+                "disabled": "boolean"
+              }
+            },
+            {
+              "name": "ThemeProvider",
+              "props": {
+                "theme": "string",
+                "children": "ReactNode"
+              }
+            }
+          ]
+        },
+        "data_model": {
+          "theme_preference": {
+            "type": "string",
+            "values": [
+              "light",
+              "dark",
+              "system"
+            ],
+            "storage": "localStorage",
+            "key": "theme-preference"
+          }
+        },
+        "non_functional_requirements": {
+          "performance": "Theme switching should complete within 200ms",
+          "accessibility": "WCAG 2.1 AA compliance required",
+          "browser_support": "Modern browsers (Chrome 90+, Firefox 88+, Safari 14+)",
+          "responsive": "Works on all screen sizes"
+        },
+        "risk_assessment": {
+          "level": "low",
+          "risks": [
+            "Potential flash of unstyled content during theme switch",
+            "CSS specificity conflicts with existing styles"
+          ],
+          "mitigation": [
+            "Implement CSS-in-JS solution with proper loading states",
+            "Use CSS custom properties for theme variables"
+          ]
+        }
+      },
+      "path": "C:\\PromptsGenie\\.test-workflow\\test-spec.json"
+    },
+    "plan": {
+      "plan": {
+        "metadata": {
+          "spec_version": "1.0.0",
+          "created_at": "2025-10-26T00:29:57.853Z",
+          "complexity": "medium",
+          "estimated_hours": 8
+        },
+        "summary": "Implement dark mode toggle with theme persistence and smooth transitions",
+        "tasks": [
+          {
+            "id": "task-1",
+            "title": "Create theme context and provider",
+            "description": "Implement React context for theme management",
+            "files": [
+              "src/contexts/ThemeContext.tsx"
+            ],
+            "type": "create",
+            "complexity": "medium",
+            "estimated_hours": 2
+          },
+          {
+            "id": "task-2",
+            "title": "Create theme toggle component",
+            "description": "Build accessible toggle switch component",
+            "files": [
+              "src/components/ThemeToggle.tsx"
+            ],
+            "type": "create",
+            "complexity": "low",
+            "estimated_hours": 1.5
+          },
+          {
+            "id": "task-3",
+            "title": "Add theme styles and CSS variables",
+            "description": "Define light and dark theme CSS custom properties",
+            "files": [
+              "src/styles/themes.css",
+              "src/styles/variables.css"
+            ],
+            "type": "create",
+            "complexity": "medium",
+            "estimated_hours": 2
+          },
+          {
+            "id": "task-4",
+            "title": "Integrate toggle in settings page",
+            "description": "Add theme toggle to settings page",
+            "files": [
+              "src/pages/Settings.tsx"
+            ],
+            "type": "modify",
+            "complexity": "low",
+            "estimated_hours": 1
+          },
+          {
+            "id": "task-5",
+            "title": "Add localStorage persistence",
+            "description": "Implement theme preference persistence",
+            "files": [
+              "src/utils/themeStorage.ts"
+            ],
+            "type": "create",
+            "complexity": "low",
+            "estimated_hours": 1
+          },
+          {
+            "id": "task-6",
+            "title": "Write unit tests",
+            "description": "Create comprehensive test suite",
+            "files": [
+              "src/contexts/__tests__/ThemeContext.test.tsx",
+              "src/components/__tests__/ThemeToggle.test.tsx",
+              "src/utils/__tests__/themeStorage.test.ts"
+            ],
+            "type": "create",
+            "complexity": "medium",
+            "estimated_hours": 2.5
+          }
+        ],
+        "dependencies": [
+          {
+            "from": "task-1",
+            "to": "task-2"
+          },
+          {
+            "from": "task-1",
+            "to": "task-4"
+          },
+          {
+            "from": "task-2",
+            "to": "task-4"
+          },
+          {
+            "from": "task-3",
+            "to": "task-1"
+          },
+          {
+            "from": "task-5",
+            "to": "task-1"
+          }
+        ],
+        "execution_plan": {
+          "phases": [
+            {
+              "name": "Foundation",
+              "tasks": [
+                "task-3",
+                "task-5"
+              ],
+              "parallel": true
+            },
+            {
+              "name": "Core Implementation",
+              "tasks": [
+                "task-1",
+                "task-2"
+              ],
+              "parallel": true
+            },
+            {
+              "name": "Integration",
+              "tasks": [
+                "task-4"
+              ],
+              "parallel": false
+            },
+            {
+              "name": "Testing",
+              "tasks": [
+                "task-6"
+              ],
+              "parallel": false
+            }
+          ]
+        },
+        "risk_analysis": {
+          "level": "low",
+          "critical_path": [
+            "task-3",
+            "task-1",
+            "task-4"
+          ],
+          "bottlenecks": [
+            "task-1"
+          ],
+          "risks": [
+            "CSS conflicts with existing styles",
+            "Performance impact of theme switching"
+          ]
+        },
+        "quality_gates": [
+          "TypeScript compilation must pass",
+          "All unit tests must pass",
+          "ESLint rules must pass",
+          "Accessibility tests must pass",
+          "Visual regression tests must pass"
+        ]
+      },
+      "path": "C:\\PromptsGenie\\.test-workflow\\test-plan.json"
+    },
+    "code": {
+      "files": [
+        {
+          "original_path": "src/contexts/ThemeContext.tsx",
+          "test_path": "C:\\PromptsGenie\\.test-workflow\\generated\\ThemeContext.tsx",
+          "task_id": "task-1",
+          "type": "create"
+        },
+        {
+          "original_path": "src/components/ThemeToggle.tsx",
+          "test_path": "C:\\PromptsGenie\\.test-workflow\\generated\\ThemeToggle.tsx",
+          "task_id": "task-2",
+          "type": "create"
+        },
+        {
+          "original_path": "src/styles/themes.css",
+          "test_path": "C:\\PromptsGenie\\.test-workflow\\generated\\themes.css",
+          "task_id": "task-3",
+          "type": "create"
+        },
+        {
+          "original_path": "src/styles/variables.css",
+          "test_path": "C:\\PromptsGenie\\.test-workflow\\generated\\variables.css",
+          "task_id": "task-3",
+          "type": "create"
+        },
+        {
+          "original_path": "src/pages/Settings.tsx",
+          "test_path": "C:\\PromptsGenie\\.test-workflow\\generated\\Settings.tsx",
+          "task_id": "task-4",
+          "type": "modify"
+        },
+        {
+          "original_path": "src/utils/themeStorage.ts",
+          "test_path": "C:\\PromptsGenie\\.test-workflow\\generated\\themeStorage.ts",
+          "task_id": "task-5",
+          "type": "create"
+        },
+        {
+          "original_path": "src/contexts/__tests__/ThemeContext.test.tsx",
+          "test_path": "C:\\PromptsGenie\\.test-workflow\\generated\\ThemeContext.test.tsx",
+          "task_id": "task-6",
+          "type": "create"
+        },
+        {
+          "original_path": "src/components/__tests__/ThemeToggle.test.tsx",
+          "test_path": "C:\\PromptsGenie\\.test-workflow\\generated\\ThemeToggle.test.tsx",
+          "task_id": "task-6",
+          "type": "create"
+        },
+        {
+          "original_path": "src/utils/__tests__/themeStorage.test.ts",
+          "test_path": "C:\\PromptsGenie\\.test-workflow\\generated\\themeStorage.test.ts",
+          "task_id": "task-6",
+          "type": "create"
+        }
+      ],
+      "summary": "Generated 9 files"
+    },
+    "validation": {
+      "validation": {
+        "summary": {
+          "total_gates": 12,
+          "passed": 10,
+          "failed": 1,
+          "skipped": 1,
+          "warnings": 3,
+          "duration": 45000,
+          "success": false
+        },
+        "gates": {
+          "required": [
+            {
+              "name": "TypeScript Compilation",
+              "passed": true,
+              "duration": 5000,
+              "critical": true,
+              "warnings": 0
+            },
+            {
+              "name": "ESLint",
+              "passed": false,
+              "duration": 3000,
+              "critical": true,
+              "warnings": 2,
+              "error": "2 linting errors found"
+            },
+            {
+              "name": "Unit Tests",
+              "passed": true,
+              "duration": 15000,
+              "critical": true,
+              "warnings": 0
+            },
+            {
+              "name": "Integration Tests",
+              "passed": true,
+              "duration": 8000,
+              "critical": true,
+              "warnings": 1
+            }
+          ],
+          "optional": [
+            {
+              "name": "Code Coverage",
+              "passed": true,
+              "duration": 2000,
+              "critical": false,
+              "warnings": 0,
+              "metrics": {
+                "value": 85,
+                "unit": "%",
+                "threshold": 80
+              }
+            },
+            {
+              "name": "Performance Tests",
+              "passed": true,
+              "duration": 5000,
+              "critical": false,
+              "warnings": 0
+            },
+            {
+              "name": "Accessibility Tests",
+              "passed": true,
+              "duration": 3000,
+              "critical": false,
+              "warnings": 0
+            }
+          ],
+          "security": [
+            {
+              "name": "NPM Audit",
+              "passed": true,
+              "duration": 2000,
+              "critical": true,
+              "warnings": 0,
+              "metrics": {
+                "vulnerabilities": 0
+              }
+            },
+            {
+              "name": "Secret Scanning",
+              "passed": true,
+              "duration": 1000,
+              "critical": true,
+              "warnings": 0
+            }
+          ],
+          "visual": [
+            {
+              "name": "Storybook Build",
+              "passed": true,
+              "duration": 8000,
+              "critical": false,
+              "warnings": 0
+            },
+            {
+              "name": "Visual Regression Tests",
+              "passed": true,
+              "duration": 12000,
+              "critical": false,
+              "warnings": 0
+            },
+            {
+              "name": "Chromatic Tests",
+              "passed": false,
+              "skipped": true,
+              "duration": 0,
+              "critical": false,
+              "warnings": 0,
+              "error": "Chromatic token not configured"
+            }
+          ]
+        },
+        "recommendations": [
+          {
+            "type": "critical",
+            "title": "Fix ESLint Errors",
+            "description": "ESLint found 2 critical errors that must be fixed",
+            "items": [
+              "Remove unused import in ThemeContext.tsx",
+              "Fix missing dependency in useEffect hook"
+            ],
+            "priority": "high"
+          }
+        ],
+        "next_steps": [
+          "❌ Fix failing critical quality gates",
+          "🔧 Fix ESLint errors",
+          "🔄 Re-run validation pipeline",
+          "✅ Proceed to PR creation once all gates pass"
+        ]
+      },
+      "path": "C:\\PromptsGenie\\.test-workflow\\validation-results.json"
+    },
+    "pr": {
+      "description": "# feat: Add Dark Mode Toggle\n\nImplement a dark mode toggle in the application settings that allows users to switch between light and dark themes\n\n## 📋 Summary\n\n**User Story:** As a user, I want to toggle between light and dark themes so that I can use the application in different lighting conditions.\n\n**Acceptance Criteria:**\n- Given I am on the settings page, when I click the dark mode toggle, then the theme should switch to dark mode\n- Given dark mode is enabled, when I refresh the page, then the dark theme should persist\n- Given I toggle the theme, when the transition occurs, then it should be smooth and accessible\n- Given I use a screen reader, when I interact with the toggle, then it should announce the current state\n\n## 🔄 Changes Made\n\n**Key Changes:**\n- Create theme context and provider\n- Create theme toggle component\n- Add theme styles and CSS variables\n- Integrate toggle in settings page\n- Add localStorage persistence\n- Write unit tests\n\n**Files Modified:**\n- Total files changed: 8\n- By file type:\n  - .tsx: 4 files\n  - .ts: 2 files\n  - .css: 2 files\n\n## 🧪 Testing\n\n**Test Plan:**\n- Unit tests for ThemeContext\n- Unit tests for ThemeToggle component\n- Integration tests for theme persistence\n- Accessibility tests for toggle component\n\n**Test Results:**\n- Total tests: 12\n- Passed: 10\n- Failed: 1\n- Duration: 45s\n\n## ✅ Validation Results\n\n**Overall Status:** ❌ FAILED\n\n| Gate Category | Total | Passed | Failed | Skipped |\n|---------------|-------|--------|--------|---------|\n| Required | 4 | 3 | 1 | 0 |\n| Optional | 3 | 3 | 0 | 0 |\n| Security | 2 | 2 | 0 | 0 |\n| Visual | 3 | 2 | 0 | 1 |\n\n**Failed Gates:**\n- ❌ ESLint: 2 linting errors found\n\n## 📊 Impact Analysis\n\n**Scope:** moderate\n**Risk Level:** low\n**Affected Areas:** frontend, styling, testing\n\n**Impact Details:**\n- User-facing changes: ✅ Yes\n- API changes: ❌ No\n- Database changes: ❌ No\n- Breaking changes: ❌ No\n- Performance impact: minimal\n- Security impact: none\n\n## ⚠️ Breaking Changes\n\nNo breaking changes in this PR.\n\n## ✅ Checklist\n\n- [ ] Code follows project style guidelines\n- [ ] Self-review of code completed\n- [ ] Code is commented, particularly in hard-to-understand areas\n- [ ] Corresponding changes to documentation made\n- [ ] No new warnings introduced\n- [ ] Tests added that prove fix is effective or feature works\n- [ ] New and existing unit tests pass locally\n- [ ] Any dependent changes have been merged and published\n\n---\n\n## 🤖 Generated by Spec-to-Code Autopilot\n\n- **Generated at:** 2025-10-26T00:29:57.873Z\n- **Generator version:** 1.0.0\n- **Files changed:** 8\n- **Validation status:** ❌ Failed\n",
+      "metadata": {
+        "title": "feat: Add Dark Mode Toggle",
+        "description": "Implement a dark mode toggle in the application settings that allows users to switch between light and dark themes",
+        "type": "feature",
+        "spec": {
+          "metadata": {
+            "title": "Add Dark Mode Toggle",
+            "type": "feature",
+            "priority": "medium",
+            "author": "Test User",
+            "created_at": "2025-10-26T00:29:57.849Z",
+            "version": "1.0.0"
+          },
+          "user_story": {
+            "title": "Add Dark Mode Toggle",
+            "description": "Implement a dark mode toggle in the application settings that allows users to switch between light and dark themes",
+            "as_a": "user",
+            "i_want": "to toggle between light and dark themes",
+            "so_that": "I can use the application in different lighting conditions"
+          },
+          "acceptance_criteria": [
+            "Given I am on the settings page, when I click the dark mode toggle, then the theme should switch to dark mode",
+            "Given dark mode is enabled, when I refresh the page, then the dark theme should persist",
+            "Given I toggle the theme, when the transition occurs, then it should be smooth and accessible",
+            "Given I use a screen reader, when I interact with the toggle, then it should announce the current state"
+          ],
+          "api_contract": {
+            "endpoints": [],
+            "components": [
+              {
+                "name": "ThemeToggle",
+                "props": {
+                  "isDark": "boolean",
+                  "onToggle": "function",
+                  "disabled": "boolean"
+                }
+              },
+              {
+                "name": "ThemeProvider",
+                "props": {
+                  "theme": "string",
+                  "children": "ReactNode"
+                }
+              }
+            ]
+          },
+          "data_model": {
+            "theme_preference": {
+              "type": "string",
+              "values": [
+                "light",
+                "dark",
+                "system"
+              ],
+              "storage": "localStorage",
+              "key": "theme-preference"
+            }
+          },
+          "non_functional_requirements": {
+            "performance": "Theme switching should complete within 200ms",
+            "accessibility": "WCAG 2.1 AA compliance required",
+            "browser_support": "Modern browsers (Chrome 90+, Firefox 88+, Safari 14+)",
+            "responsive": "Works on all screen sizes"
+          },
+          "risk_assessment": {
+            "level": "low",
+            "risks": [
+              "Potential flash of unstyled content during theme switch",
+              "CSS specificity conflicts with existing styles"
+            ],
+            "mitigation": [
+              "Implement CSS-in-JS solution with proper loading states",
+              "Use CSS custom properties for theme variables"
+            ]
+          }
+        },
+        "plan": {
+          "metadata": {
+            "spec_version": "1.0.0",
+            "created_at": "2025-10-26T00:29:57.853Z",
+            "complexity": "medium",
+            "estimated_hours": 8
+          },
+          "summary": "Implement dark mode toggle with theme persistence and smooth transitions",
+          "tasks": [
+            {
+              "id": "task-1",
+              "title": "Create theme context and provider",
+              "description": "Implement React context for theme management",
+              "files": [
+                "src/contexts/ThemeContext.tsx"
+              ],
+              "type": "create",
+              "complexity": "medium",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-2",
+              "title": "Create theme toggle component",
+              "description": "Build accessible toggle switch component",
+              "files": [
+                "src/components/ThemeToggle.tsx"
+              ],
+              "type": "create",
+              "complexity": "low",
+              "estimated_hours": 1.5
+            },
+            {
+              "id": "task-3",
+              "title": "Add theme styles and CSS variables",
+              "description": "Define light and dark theme CSS custom properties",
+              "files": [
+                "src/styles/themes.css",
+                "src/styles/variables.css"
+              ],
+              "type": "create",
+              "complexity": "medium",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-4",
+              "title": "Integrate toggle in settings page",
+              "description": "Add theme toggle to settings page",
+              "files": [
+                "src/pages/Settings.tsx"
+              ],
+              "type": "modify",
+              "complexity": "low",
+              "estimated_hours": 1
+            },
+            {
+              "id": "task-5",
+              "title": "Add localStorage persistence",
+              "description": "Implement theme preference persistence",
+              "files": [
+                "src/utils/themeStorage.ts"
+              ],
+              "type": "create",
+              "complexity": "low",
+              "estimated_hours": 1
+            },
+            {
+              "id": "task-6",
+              "title": "Write unit tests",
+              "description": "Create comprehensive test suite",
+              "files": [
+                "src/contexts/__tests__/ThemeContext.test.tsx",
+                "src/components/__tests__/ThemeToggle.test.tsx",
+                "src/utils/__tests__/themeStorage.test.ts"
+              ],
+              "type": "create",
+              "complexity": "medium",
+              "estimated_hours": 2.5
+            }
+          ],
+          "dependencies": [
+            {
+              "from": "task-1",
+              "to": "task-2"
+            },
+            {
+              "from": "task-1",
+              "to": "task-4"
+            },
+            {
+              "from": "task-2",
+              "to": "task-4"
+            },
+            {
+              "from": "task-3",
+              "to": "task-1"
+            },
+            {
+              "from": "task-5",
+              "to": "task-1"
+            }
+          ],
+          "execution_plan": {
+            "phases": [
+              {
+                "name": "Foundation",
+                "tasks": [
+                  "task-3",
+                  "task-5"
+                ],
+                "parallel": true
+              },
+              {
+                "name": "Core Implementation",
+                "tasks": [
+                  "task-1",
+                  "task-2"
+                ],
+                "parallel": true
+              },
+              {
+                "name": "Integration",
+                "tasks": [
+                  "task-4"
+                ],
+                "parallel": false
+              },
+              {
+                "name": "Testing",
+                "tasks": [
+                  "task-6"
+                ],
+                "parallel": false
+              }
+            ]
+          },
+          "risk_analysis": {
+            "level": "low",
+            "critical_path": [
+              "task-3",
+              "task-1",
+              "task-4"
+            ],
+            "bottlenecks": [
+              "task-1"
+            ],
+            "risks": [
+              "CSS conflicts with existing styles",
+              "Performance impact of theme switching"
+            ]
+          },
+          "quality_gates": [
+            "TypeScript compilation must pass",
+            "All unit tests must pass",
+            "ESLint rules must pass",
+            "Accessibility tests must pass",
+            "Visual regression tests must pass"
+          ]
+        },
+        "validation": {
+          "summary": {
+            "total_gates": 12,
+            "passed": 10,
+            "failed": 1,
+            "skipped": 1,
+            "warnings": 3,
+            "duration": 45000,
+            "success": false
+          },
+          "gates": {
+            "required": [
+              {
+                "name": "TypeScript Compilation",
+                "passed": true,
+                "duration": 5000,
+                "critical": true,
+                "warnings": 0
+              },
+              {
+                "name": "ESLint",
+                "passed": false,
+                "duration": 3000,
+                "critical": true,
+                "warnings": 2,
+                "error": "2 linting errors found"
+              },
+              {
+                "name": "Unit Tests",
+                "passed": true,
+                "duration": 15000,
+                "critical": true,
+                "warnings": 0
+              },
+              {
+                "name": "Integration Tests",
+                "passed": true,
+                "duration": 8000,
+                "critical": true,
+                "warnings": 1
+              }
+            ],
+            "optional": [
+              {
+                "name": "Code Coverage",
+                "passed": true,
+                "duration": 2000,
+                "critical": false,
+                "warnings": 0,
+                "metrics": {
+                  "value": 85,
+                  "unit": "%",
+                  "threshold": 80
+                }
+              },
+              {
+                "name": "Performance Tests",
+                "passed": true,
+                "duration": 5000,
+                "critical": false,
+                "warnings": 0
+              },
+              {
+                "name": "Accessibility Tests",
+                "passed": true,
+                "duration": 3000,
+                "critical": false,
+                "warnings": 0
+              }
+            ],
+            "security": [
+              {
+                "name": "NPM Audit",
+                "passed": true,
+                "duration": 2000,
+                "critical": true,
+                "warnings": 0,
+                "metrics": {
+                  "vulnerabilities": 0
+                }
+              },
+              {
+                "name": "Secret Scanning",
+                "passed": true,
+                "duration": 1000,
+                "critical": true,
+                "warnings": 0
+              }
+            ],
+            "visual": [
+              {
+                "name": "Storybook Build",
+                "passed": true,
+                "duration": 8000,
+                "critical": false,
+                "warnings": 0
+              },
+              {
+                "name": "Visual Regression Tests",
+                "passed": true,
+                "duration": 12000,
+                "critical": false,
+                "warnings": 0
+              },
+              {
+                "name": "Chromatic Tests",
+                "passed": false,
+                "skipped": true,
+                "duration": 0,
+                "critical": false,
+                "warnings": 0,
+                "error": "Chromatic token not configured"
+              }
+            ]
+          },
+          "recommendations": [
+            {
+              "type": "critical",
+              "title": "Fix ESLint Errors",
+              "description": "ESLint found 2 critical errors that must be fixed",
+              "items": [
+                "Remove unused import in ThemeContext.tsx",
+                "Fix missing dependency in useEffect hook"
+              ],
+              "priority": "high"
+            }
+          ],
+          "next_steps": [
+            "❌ Fix failing critical quality gates",
+            "🔧 Fix ESLint errors",
+            "🔄 Re-run validation pipeline",
+            "✅ Proceed to PR creation once all gates pass"
+          ]
+        },
+        "fileAnalysis": {
+          "total": 8,
+          "by_type": {
+            ".tsx": 4,
+            ".ts": 2,
+            ".css": 2
+          },
+          "by_directory": {
+            "src/components": 2,
+            "src/contexts": 1,
+            "src/utils": 1,
+            "src/styles": 2,
+            "src/__tests__": 2
+          },
+          "complexity": "medium",
+          "risk_level": "low"
+        },
+        "impact": {
+          "scope": "moderate",
+          "affected_areas": [
+            "frontend",
+            "styling",
+            "testing"
+          ],
+          "user_facing": true,
+          "api_changes": false,
+          "database_changes": false,
+          "breaking_changes": false,
+          "performance_impact": "minimal",
+          "security_impact": "none"
+        },
+        "breakingChanges": [],
+        "author": "Spec-to-Code Autopilot",
+        "reviewers": [
+          "frontend-team"
+        ],
+        "labels": [
+          "feature",
+          "ui",
+          "accessibility",
+          "size/medium"
+        ],
+        "linkedIssues": [],
+        "metadata": {
+          "generated_at": "2025-10-26T00:29:57.873Z",
+          "generator_version": "1.0.0",
+          "files_changed": 8,
+          "validation_success": false
+        }
+      },
+      "files": {
+        "description": "C:\\PromptsGenie\\.test-workflow\\pull-request.md",
+        "metadata": "C:\\PromptsGenie\\.test-workflow\\pr-metadata.json"
+      }
+    }
+  },
+  "recommendations": [
+    {
+      "type": "validation",
+      "title": "Address Validation Failures",
+      "description": "Quality gates failed and must be fixed before PR merge",
+      "items": [
+        "Fix ESLint errors",
+        "Re-run validation pipeline"
+      ]
+    }
+  ],
+  "next_steps": [
+    "✅ All workflow phases completed successfully",
+    "🚀 Ready to integrate Spec-to-Code Autopilot",
+    "📝 Create CLI commands and IDE integration",
+    "🔄 Set up CI/CD integration"
+  ]
+}

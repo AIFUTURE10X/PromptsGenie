@@ -1,0 +1,58 @@
+{
+  "storageLocation": "c:\\PromptsGenie\\.trae\\memory",
+  "knowledgeGraph": {
+    "enabled": true,
+    "maxNodes": 10000,
+    "relationshipTypes": [
+      "depends_on",
+      "implements", 
+      "extends",
+      "uses",
+      "calls",
+      "imports",
+      "exports",
+      "related_to"
+    ]
+  },
+  "contextRetention": {
+    "sessionMemory": true,
+    "projectMemory": true,
+    "codePatterns": true,
+    "userPreferences": true,
+    "errorPatterns": true,
+    "solutionHistory": true
+  },
+  "categories": {
+    "codeStructure": {
+      "description": "Component relationships and architecture patterns",
+      "priority": "high"
+    },
+    "bugFixes": {
+      "description": "Common issues and their solutions",
+      "priority": "high"
+    },
+    "optimizations": {
+      "description": "Performance improvements and best practices",
+      "priority": "medium"
+    },
+    "dependencies": {
+      "description": "Library usage patterns and configurations",
+      "priority": "medium"
+    },
+    "userPatterns": {
+      "description": "Coding style and preference patterns",
+      "priority": "low"
+    }
+  },
+  "autoSave": {
+    "enabled": true,
+    "interval": 300,
+    "onFileChange": true,
+    "onSessionEnd": true
+  },
+  "searchSettings": {
+    "fuzzySearch": true,
+    "semanticSearch": true,
+    "contextualRanking": true
+  }
+}

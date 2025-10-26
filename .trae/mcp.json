@@ -1,0 +1,340 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "c:\\PromptsGenie"
+      ],
+      "description": "Secure file operations across the PromptsGenie project",
+      "status": "verified"
+    },
+    "memory": {
+      "command": "node",
+      "args": [
+        "-e",
+        "console.log('Memory MCP server configured for persistent context')"
+      ],
+      "description": "Persistent knowledge graph for coding context and learning",
+      "status": "configured"
+    },
+    "github": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "YOUR_GITHUB_TOKEN_HERE"
+      },
+      "description": "GitHub repository management and API integration",
+      "status": "requires_token"
+    }
+  },
+  "tools": [
+    {
+      "name": "vision-gemini",
+      "type": "process",
+      "command": "node",
+      "args": ["./tools/vision-gemini.js"],
+      "env": ["GOOGLE_API_KEY", "VITE_GEMINI_API_KEY"],
+      "permissions": ["exec", "read"],
+      "description": "Google Gemini Vision API for image analysis with structured JSON output",
+      "options": {
+        "timeout": 30000,
+        "retries": 2
+      }
+    },
+    {
+      "name": "jest-runner",
+      "type": "process",
+      "command": "npx",
+      "args": ["jest", "--coverage", "--json", "--outputFile=./.reports/jest.json"],
+      "permissions": ["exec", "read", "write"],
+      "description": "Run unit/integration tests with coverage and JSON output"
+    },
+    {
+      "name": "eslint",
+      "type": "process",
+      "command": "npx",
+      "args": ["eslint", "src", "--ext", ".ts,.tsx", "--format", "json", "--max-warnings=0", "--output-file", ".reports/eslint.json"],
+      "permissions": ["exec", "read", "write"],
+      "description": "Code quality linting with zero warnings tolerance for TypeScript files",
+      "options": {
+        "cache": true,
+        "cacheLocation": ".eslintcache",
+        "fix": false
+      }
+    },
+    {
+      "name": "typescript-lsp",
+      "type": "lsp",
+      "command": "npx",
+      "args": ["typescript-language-server", "--stdio"],
+      "permissions": ["exec", "read"],
+      "description": "TypeScript Language Server for real-time diagnostics and IntelliSense",
+      "capabilities": {
+        "textDocument": {
+          "publishDiagnostics": true,
+          "completion": true,
+          "hover": true,
+          "signatureHelp": true,
+          "definition": true,
+          "references": true,
+          "rename": true
+        }
+      },
+      "initializationOptions": {
+        "preferences": {
+          "includeCompletionsForModuleExports": true,
+          "includeCompletionsWithInsertText": true
+        }
+      }
+    },
+    {
+      "name": "eslint-fix",
+      "type": "process",
+      "command": "npx",
+      "args": ["eslint", "--fix", "--ext", ".ts,.tsx"],
+      "permissions": ["exec", "read", "write"],
+      "description": "Automated ESLint fixes for TypeScript files",
+      "options": {
+        "autoFix": true,
+        "maxWarnings": 0,
+        "cache": true,
+        "cacheLocation": ".eslintcache"
+      }
+    },
+    {
+      "name": "tsc-check",
+      "type": "process",
+      "command": "npx",
+      "args": ["tsc", "--noEmit"],
+      "permissions": ["exec", "read"],
+      "description": "TypeScript strict type checking without compilation",
+      "options": {
+        "incremental": true,
+        "skipLibCheck": true
+      }
+    },
+    {
+      "name": "tsc-watch",
+      "type": "process",
+      "command": "npx",
+      "args": ["tsc", "--noEmit", "--watch"],
+      "permissions": ["exec", "read"],
+      "description": "TypeScript type checking in watch mode for continuous feedback",
+      "options": {
+        "persistent": true,
+        "incremental": true
+      }
+    },
+    {
+      "name": "lint-staged",
+      "type": "process",
+      "command": "npx",
+      "args": ["lint-staged"],
+      "permissions": ["exec", "read", "write"],
+      "description": "Run linters on staged files for pre-commit hooks",
+      "options": {
+        "concurrent": false,
+        "quiet": false
+      }
+    },
+    {
+      "name": "bundle-analyzer",
+      "type": "process",
+      "command": "npx",
+      "args": ["vite", "build", "--mode=analyze"],
+      "permissions": ["exec", "read", "write"],
+      "description": "Bundle size analysis and optimization insights"
+    },
+    {
+      "name": "lighthouse",
+      "type": "process",
+      "command": "npx",
+      "args": ["lighthouse", "http://localhost:8085", "--output=json", "--output-path=.reports/lh.json", "--quiet", "--chrome-flags=--headless"],
+      "permissions": ["exec", "read", "write"],
+      "description": "Performance, accessibility, and SEO auditing"
+    },
+    {
+      "name": "axe-a11y",
+      "type": "process",
+      "command": "node",
+      "args": ["scripts/run-axe.mjs"],
+      "permissions": ["exec", "read", "write"],
+      "description": "Accessibility testing with axe-core"
+    },
+    {
+      "name": "gitleaks",
+      "type": "process",
+      "command": "npx",
+      "args": ["gitleaks", "detect", "--report-format", "json", "--report-path", ".reports/gitleaks.json"],
+      "permissions": ["exec", "read", "write"],
+      "description": "Secret scanning and security vulnerability detection"
+    },
+    {
+      "name": "npm-audit",
+      "type": "process",
+      "command": "npm",
+      "args": ["audit", "--json"],
+      "permissions": ["exec", "read"],
+      "description": "Dependency vulnerability scanning"
+    },
+    {
+      "name": "openapi-check",
+      "type": "process",
+      "command": "node",
+      "args": ["scripts/openapi-validate.mjs"],
+      "permissions": ["exec", "read"],
+      "description": "OpenAPI schema validation and contract testing"
+    },
+    {
+      "name": "sentry-logs",
+      "type": "http",
+      "baseUrl": "https://sentry.io/api/...",
+      "permissions": ["read"],
+      "description": "Error monitoring and performance tracking integration"
+    },
+    {
+      "name": "release-manager",
+      "type": "process",
+      "command": "npx",
+      "args": ["release-please", "release-pr", "--repo-url", "owner/repo"],
+      "permissions": ["exec", "read", "write"],
+      "description": "Automated release management with conventional commits"
+    },
+    {
+      "name": "deploy-vercel",
+      "type": "process",
+      "command": "npx",
+      "args": ["vercel", "--prod"],
+      "permissions": ["exec", "read"],
+      "env": ["VERCEL_TOKEN"],
+      "description": "Production deployment to Vercel platform"
+    },
+    {
+      "name": "env-validate",
+      "type": "process",
+      "command": "node",
+      "args": ["scripts/validate-env.mjs"],
+      "permissions": ["exec", "read"],
+      "description": "Environment variable validation and schema checking"
+    },
+    {
+      "name": "msw-mock",
+      "type": "process",
+      "command": "node",
+      "args": ["scripts/start-mocks.mjs"],
+      "permissions": ["exec"],
+      "description": "Mock service worker for API mocking during development"
+    },
+    {
+      "name": "storybook-build",
+      "type": "process",
+      "command": "npx",
+      "args": ["storybook", "build", "--output-dir", ".reports/storybook"],
+      "permissions": ["exec", "read", "write"],
+      "description": "Build Storybook for visual testing and component documentation"
+    },
+    {
+      "name": "chromatic-visual",
+      "type": "process",
+      "command": "npx",
+      "args": ["chromatic", "--project-token", "$CHROMATIC_PROJECT_TOKEN", "--exit-zero-on-changes"],
+      "permissions": ["exec", "read"],
+      "env": ["CHROMATIC_PROJECT_TOKEN"],
+      "description": "Visual regression testing with Chromatic"
+    },
+    {
+      "name": "docker-build",
+      "type": "process",
+      "command": "docker",
+      "args": ["build", "-t", "promptsgenie:latest", "."],
+      "permissions": ["exec", "read"],
+      "description": "Build Docker image for Cloud Run deployment"
+    },
+    {
+      "name": "gcloud-deploy",
+      "type": "process",
+      "command": "gcloud",
+      "args": ["run", "deploy", "promptsgenie", "--image", "gcr.io/$PROJECT_ID/promptsgenie:latest", "--platform", "managed", "--region", "us-central1"],
+      "permissions": ["exec", "read"],
+      "env": ["PROJECT_ID", "GOOGLE_APPLICATION_CREDENTIALS"],
+      "description": "Deploy to Google Cloud Run"
+    },
+    {
+      "name": "commit-validate",
+      "type": "process",
+      "command": "node",
+      "args": ["scripts/validate-commits.mjs"],
+      "permissions": ["exec", "read"],
+      "description": "Validate conventional commit format and standards"
+    },
+    {
+      "name": "spec-to-code-autopilot",
+      "type": "orchestrator",
+      "command": "node",
+      "args": ["scripts/spec-to-code-autopilot.mjs"],
+      "permissions": ["exec", "read", "write", "git"],
+      "env": ["GEMINI_API_KEY", "ANTHROPIC_API_KEY", "GITHUB_TOKEN"],
+      "description": "Dual-model orchestrated feature development from spec to PR",
+      "models": {
+        "planner": "claude-3-5-sonnet-20241022",
+        "implementer": "gemini-2.5-pro",
+        "reviewer": "claude-3-5-sonnet-20241022"
+      },
+      "pipeline": [
+        "spec-generation",
+        "task-planning",
+        "impact-analysis",
+        "code-implementation",
+        "test-generation",
+        "validation-gates",
+        "pr-preparation"
+      ],
+      "gates": {
+        "required": ["tsc-check", "eslint", "jest-runner", "openapi-check"],
+        "optional": ["lighthouse", "axe-a11y", "chromatic-visual"],
+        "security": ["gitleaks", "npm-audit"],
+        "coverage": {"minimum": 80, "delta": 5}
+      }
+    },
+    {
+      "name": "spec-validator",
+      "type": "process",
+      "command": "node",
+      "args": ["scripts/validate-spec.mjs"],
+      "permissions": ["exec", "read"],
+      "description": "Validate generated specifications against project standards"
+    },
+    {
+      "name": "impact-analyzer",
+      "type": "process",
+      "command": "node",
+      "args": ["scripts/analyze-impact.mjs"],
+      "permissions": ["exec", "read"],
+      "description": "Analyze code changes impact on existing functionality"
+    },
+    {
+      "name": "adr-generator",
+      "type": "process",
+      "command": "node",
+      "args": ["scripts/generate-adr.mjs"],
+      "permissions": ["exec", "read", "write"],
+      "description": "Generate Architecture Decision Records for breaking changes"
+    }
+  ],
+  "projectConfig": {
+    "name": "PromptsGenie",
+    "type": "React + Node.js",
+    "aiModels": ["gemini-2.5-flash", "gemini-2.5-pro"],
+    "enhancedFeatures": {
+      "contextRetention": true,
+      "codeIntelligence": true,
+      "projectMemory": true,
+      "secureFileOps": true
+    }
+  }
+}

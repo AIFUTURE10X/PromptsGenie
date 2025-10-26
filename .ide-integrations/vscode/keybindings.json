@@ -1,0 +1,22 @@
+[
+  {
+    "key": "ctrl+shift+a ctrl+shift+r",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Autopilot: Run Full Workflow"
+  },
+  {
+    "key": "ctrl+shift+a ctrl+shift+s",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Autopilot: Generate Spec"
+  },
+  {
+    "key": "ctrl+shift+a ctrl+shift+v",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Autopilot: Run Validation"
+  },
+  {
+    "key": "ctrl+shift+a ctrl+shift+t",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Autopilot: Show Status"
+  }
+]
