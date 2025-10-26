@@ -1,0 +1,61 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "MCP: Verify Configuration",
+      "type": "shell",
+      "command": "node",
+      "args": [".trae/verify-mcp.js"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "MCP: Start Vision Tool",
+      "type": "shell",
+      "command": "node",
+      "args": ["tools/vision-gemini.js"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "MCP: Validate Filesystem Config",
+      "type": "shell",
+      "command": "node",
+      "args": ["-e", "console.log(JSON.stringify(require('./.trae/filesystem-config.json'), null, 2))"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "MCP: Check Git Configuration",
+      "type": "shell",
+      "command": "node",
+      "args": ["-e", "console.log(JSON.stringify(require('./.trae/git-config.json'), null, 2))"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
