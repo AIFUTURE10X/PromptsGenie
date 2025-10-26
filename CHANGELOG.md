@@ -5,6 +5,26 @@ All notable changes to the Spec-to-Code Autopilot system will be documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.0.0 (2025-10-26)
+
+
+### Features
+
+* Add menu header and delete icons for image modals ([68faedd](https://github.com/AIFUTURE10X/PromptsGenie/commit/68faeddcb0b39c11c4b5c09853aab3cbebd4cde0))
+* Complete Prompts Genie Latest Version ([c7fbc2e](https://github.com/AIFUTURE10X/PromptsGenie/commit/c7fbc2e8f43e0dcea497e30117025c1da369167a))
+* default Fast mode; per-mode image optimization; generationConfig passthrough; Gemini 2.0 Flash fallback; logging for model/config ([bc8b8b4](https://github.com/AIFUTURE10X/PromptsGenie/commit/bc8b8b4598db9bc9acf8988604df2703eeee6619))
+* implement compact modal boxes UI with 47% size reduction ([acdcc5a](https://github.com/AIFUTURE10X/PromptsGenie/commit/acdcc5a24e92e6124668156d34c9b31c080c1d80))
+* PromptsGenie UI Design - Complete frontend architecture ([723d7aa](https://github.com/AIFUTURE10X/PromptsGenie/commit/723d7aaa281d2af8e077edb1f816f83ea8214bb0))
+* **spa:** add GitHub Pages SPA fallback and README ([9bb21f9](https://github.com/AIFUTURE10X/PromptsGenie/commit/9bb21f98fba05f2f94312e070c64cfec2aa6f0c9))
+* **ui:** Clear All button; tidy Image panel header; remove Supabase badges; hide Gemini (MM) badge ([090cd50](https://github.com/AIFUTURE10X/PromptsGenie/commit/090cd5089fa7da21ab982f9b3edacee682ad9821))
+* working Gemini image-to-prompt via REST v1 (inlineData, -latest model) ([0d6cedd](https://github.com/AIFUTURE10X/PromptsGenie/commit/0d6cedd9a064838aa8bcc0e8024c219c77b6b31f))
+
+
+### Bug Fixes
+
+* Remove remaining merge conflict markers causing build errors ([0a37984](https://github.com/AIFUTURE10X/PromptsGenie/commit/0a37984b4b573655a823aa5ba4dc6961153f0b50))
+* Update all analysis functions to use working gemini-2.0-flash model ([13a2e03](https://github.com/AIFUTURE10X/PromptsGenie/commit/13a2e03cd4877d58368c56cd1072763a5388f7d6))
+
 ## [1.0.0] - 2024-12-19
 
 ### Added
