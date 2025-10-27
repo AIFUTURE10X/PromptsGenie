@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import DM2PromptEditor from "./components/DM2PromptEditor";
+import DM2PromptEditor, { RewriteStyle } from "./components/DM2PromptEditor";
 import CurrentPromptPanel from "./components/CurrentPromptPanel";
 import ImageDropZone from "./components/ImageDropZone";
 import { generateWithGemini } from "./services/promptApi";
 import { generateWithImagesREST } from "./helpers/gemini";
 import BackgroundCanvas from "./components/BackgroundCanvas";
 import BrandHeader from "./components/BrandHeader";
-import { composePrompt } from "./lib/utils";
+import { composePrompt, applyRewriteStyle } from "./lib/utils";
 
 // Local type to coordinate speed across components
 type SpeedMode = 'Fast' | 'Quality';
@@ -14,6 +14,7 @@ type SpeedMode = 'Fast' | 'Quality';
 function App() {
   const [prompt, setPrompt] = useState("");
   const [editorSeed, setEditorSeed] = useState<string>("");
+  const [rawPrompt, setRawPrompt] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [images, setImages] = useState<File[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -30,6 +31,7 @@ function App() {
     console.log("🔄 LastSource state changed:", lastSource);
   }, [lastSource]);
   const [speedMode, setSpeedMode] = useState<SpeedMode>('Fast');
+  const [rewriteStyle, setRewriteStyle] = useState<RewriteStyle>('Descriptive');
   
   // State for independent image analysis
   const [subjectImages, setSubjectImages] = useState<File[]>([]);
@@ -46,6 +48,16 @@ function App() {
   const [subjectAnalysis, setSubjectAnalysis] = useState<string>('');
   const [sceneAnalysis, setSceneAnalysis] = useState<string>('');
   const [styleAnalysis, setStyleAnalysis] = useState<string>('');
+
+  useEffect(() => {
+    if (rawPrompt) {
+      const transformedPrompt = rewriteStyle && rewriteStyle !== 'Descriptive'
+        ? applyRewriteStyle(rawPrompt, rewriteStyle)
+        : rawPrompt;
+      setPrompt(transformedPrompt);
+      setEditorSeed(transformedPrompt);
+    }
+  }, [rawPrompt, rewriteStyle]);
   
   // Preview states for image thumbnails
   const [subjectPreview, setSubjectPreview] = useState<string | undefined>(undefined);
@@ -107,16 +119,16 @@ function App() {
   const handleStyleFile = (file?: File) => setStyleFile(file);
   const handleSceneFile = (file?: File) => setSceneFile(file);
 
-  const handleSend = async (finalPrompt: string) => {
+  const handleSend = async (finalPrompt: string, rewriteStyle: 'Descriptive' | 'Concise' | 'Marketing' | 'Technical' = 'Descriptive') => {
     setIsGenerating(true);
     try {
-      // Compose prompt with optional style/scene descriptors
       const composed = composePrompt({
         userText: finalPrompt,
         style: styleDesc,
         scene: sceneDesc,
         useStyle,
         useScene,
+        rewriteStyle,
       });
 
       const imagesDataUrls = await getImageDataUrls(images, speedMode);
@@ -159,8 +171,8 @@ function App() {
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
         const model = envModel || "gemini-2.0-flash"; // ensure 2.5 flash fallback
         const genCfg = speedMode === 'Quality'
-          ? { maxOutputTokens: 50, temperature: 0.3 }
-          : { maxOutputTokens: 30, temperature: 0.3 };
+          ? { maxOutputTokens: 500, temperature: 0.3 }
+          : { maxOutputTokens: 400, temperature: 0.3 };
         console.log("Gemini MM model (auto):", model, "config:", genCfg);
 
         const instructionFast =
@@ -171,7 +183,7 @@ function App() {
 
         const analyzedDirect = await generateWithImagesREST({ apiKey, model, text: instruction, imageDataUrls, generationConfig: genCfg });
         if (!cancelled) {
-          setPrompt(analyzedDirect);
+          setRawPrompt(analyzedDirect);
           setEditorSeed(analyzedDirect);
           setLastSource("gemini-mm");
         }
@@ -206,7 +218,7 @@ function App() {
       console.log("🎨 Step 1: Running style detection analysis");
       const styleDetectionPrompt = "Analyze this image and identify the MOST SPECIFIC artistic style. Examine ALL visual indicators with extreme detail: KAWAII (oversized sparkly eyes with multiple highlights, rounded soft features, pastel pink/blue/lavender color palette, chipmunk-like cheeks, soft gradient shading, heart-shaped blush marks, tiny button nose, glossy textures), STUDIO GHIBLI ANIME (soft watercolor-like backgrounds with organic textures, detailed hand-painted natural environments, gentle cel-shading with warm undertones, golden hour lighting with soft shadows, visible brush-like textures, muted earth tones, atmospheric perspective, hand-crafted quality), MODERN ANIME (razor-sharp cel-shading with hard shadow edges, highly saturated neon-bright colors, clean vector-perfect line art, mathematically precise proportions, digital gradient effects, lens flares, perfect symmetry, HD digital quality), CLASSIC ANIME (traditional 80s-90s hand-drawn animation cells, softer muted colors with slight grain, visible pencil construction lines, analog video quality, retro color palettes, slightly imperfect line weights, nostalgic film grain), SHOUJO ANIME (abundant sparkles and light effects, floating flower petals, romantic soft-focus backgrounds, delicate pastel color schemes, ethereal lighting, dreamy atmosphere, ornate decorative elements, feminine aesthetic), SHOUNEN ANIME (dynamic action-oriented poses with motion blur, bold high-contrast colors, intense dramatic expressions, speed lines and impact effects, muscular proportions, explosive energy effects, dramatic lighting with strong shadows), CHIBI (extremely super-deformed proportions with 1:3 head-to-body ratio, oversized round head, tiny stick-like limbs, simple dot eyes, minimal detail, cute rounded shapes, soft pastel colors), 3D RENDER (perfect CGI surfaces with subsurface scattering, realistic material properties, volumetric lighting with god rays, ray-traced reflections, ambient occlusion shadows, digital particle effects, flawless geometry), REALISTIC PHOTOGRAPHY (natural photographic grain, authentic depth of field blur, real-world lighting conditions, skin pores and texture details, fabric weave patterns, environmental reflections, camera lens distortion), HYPERREALISTIC ART (impossibly detailed hand-painted surfaces, photo-perfect but slightly idealized, visible paint texture under magnification, enhanced colors beyond photography, artistic interpretation of reality), CARTOON (bold black outline borders, flat solid color fills, simplified geometric shapes, exaggerated proportions, primary color schemes, rubber-hose animation style, squash-and-stretch deformation), DISNEY STYLE (rounded organic shapes, large expressive eyes with multiple eyelid folds, smooth gradient shading, warm color palettes, appealing character proportions, soft lighting), PIXAR STYLE (3D cartoon with soft subsurface lighting, appealing stylized proportions, warm color temperature, soft shadows, tactile material textures, family-friendly aesthetic), PIXEL ART (visible square pixels in grid formation, limited color palette, dithering patterns, retro 8-bit/16-bit constraints, blocky aliased edges, nostalgic gaming aesthetic), DIGITAL PAINTING (visible brush stroke textures, color blending effects, digital smudging, layered transparency, artistic brush patterns, painterly color mixing), CONCEPT ART (highly detailed environmental storytelling, dramatic atmospheric lighting, professional matte painting quality, cinematic composition, mood-driven color schemes, film/game production value), WATERCOLOR (transparent color washes with bleeding edges, visible paper grain texture, color pooling effects, soft wet-on-wet blending, traditional media imperfections, organic flow patterns), OIL PAINTING (thick impasto brush strokes, visible canvas weave, rich color saturation, traditional artistic techniques, paint texture buildup, classical fine art quality), PENCIL SKETCH (graphite shading gradients, paper tooth texture, construction lines, artistic hatching patterns, monochromatic values, hand-drawn imperfections), INK DRAWING (bold black line work, crosshatching shading techniques, pen nib variations, stark contrast, traditional illustration methods), COMIC BOOK STYLE (bold black outlines, Ben-Day dot halftone patterns, dramatic chiaroscuro lighting, speech bubble integration, panel-based composition, pop art influence), MANGA STYLE (black and white with screentone patterns, dynamic panel layouts, speed lines, dramatic close-ups, Japanese visual storytelling), MINIMALIST (geometric simplification, limited color palette, negative space usage, clean modern design, essential elements only), ABSTRACT (non-representational forms, color field exploration, geometric or organic abstraction, emotional color usage, artistic interpretation over realism), SURREAL (dreamlike impossible physics, Dalí-esque melting forms, unexpected object combinations, subconscious imagery, reality distortion), GOTHIC (dark romantic themes, ornate Victorian details, dramatic chiaroscuro lighting, religious iconography, medieval influences, macabre elements), STEAMPUNK (brass and copper mechanical details, Victorian-era clothing, steam-powered machinery, clockwork mechanisms, industrial aesthetic, retro-futuristic technology), CYBERPUNK (neon lighting in dark urban environments, holographic displays, cybernetic implants, rain-slicked streets, dystopian atmosphere, electric blue/pink color schemes), FANTASY ART (magical particle effects, mythical creature anatomy, epic landscape vistas, enchanted lighting, medieval/renaissance influences, otherworldly elements), SCI-FI ART (sleek futuristic technology, space environments, alien architectural forms, advanced materials, cosmic lighting effects, speculative design). Respond with ONLY the most specific detected style name. Analyze every visual detail meticulously.";
       
-      const styleGenCfg = { maxOutputTokens: 50, temperature: 0.3 };
+      const styleGenCfg = { maxOutputTokens: 400, temperature: 0.3 };
       const detectedStyle = await generateWithImagesREST({ apiKey, model, text: styleDetectionPrompt, imageDataUrls, generationConfig: styleGenCfg });
       console.log("🎨 Detected style:", detectedStyle);
 
@@ -285,8 +297,8 @@ function App() {
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
         const model = envModel || "gemini-2.0-flash";
         const genCfg = speedMode === 'Quality'
-          ? { maxOutputTokens: 50, temperature: 0.3 }
-          : { maxOutputTokens: 30, temperature: 0.3 };
+          ? { maxOutputTokens: 500, temperature: 0.3 }
+          : { maxOutputTokens: 400, temperature: 0.3 };
 
         const instructionFast =
           "Identify the core artistic style of this image in 2-4 words. Examples: 'anime style', 'photorealistic', 'watercolor painting', 'digital art', 'oil painting', 'comic book style', 'sketch', 'pixel art', etc. Be concise and focus only on the fundamental artistic approach.";
@@ -322,8 +334,8 @@ function App() {
         useStyle: !!styleAnalysis
       });
       
-      if (combinedPrompt !== prompt) {
-        setPrompt(combinedPrompt);
+      if (combinedPrompt !== rawPrompt) {
+        setRawPrompt(combinedPrompt);
         setEditorSeed(combinedPrompt);
         
         // Determine the appropriate source label based on what's combined
@@ -348,11 +360,14 @@ function App() {
         }
       }
     } else {
-      // Clear prompt when no analyses are present
+      // Clear prompt when no analyses are present, but only if it was generated from individual analyses
+      // Don't clear prompts from main image analysis (gemini-mm) or manual editor input
       if (prompt && (lastSource === "subject" || lastSource === "scene" || lastSource === "style" || 
-                     lastSource?.includes("subject") || lastSource?.includes("scene") || lastSource?.includes("style"))) {
+                     (lastSource?.includes("subject") || lastSource?.includes("scene") || lastSource?.includes("style")) && 
+                     lastSource !== "gemini-mm")) {
         setPrompt("");
         setEditorSeed("");
+        setRawPrompt("");
         setLastSource(undefined);
       }
     }
@@ -409,7 +424,7 @@ function App() {
       const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
 
       const analyzedDirect = await generateWithImagesREST({ apiKey, model, text: instruction, imageDataUrls, generationConfig: genCfg });
-      setPrompt(analyzedDirect);
+      setRawPrompt(analyzedDirect);
       setEditorSeed(analyzedDirect);
       setLastSource("gemini-mm");
     } catch (e2) {
@@ -493,7 +508,7 @@ function App() {
       console.log("🎨 Step 1: Running style detection analysis");
       const styleDetectionPrompt = "Analyze this image and identify ONLY the artistic style. Look for these specific indicators: KAWAII (large eyes, rounded features, pastel colors, cute proportions, soft shading), STUDIO GHIBLI ANIME (soft watercolor backgrounds, detailed environments, gentle cel-shading, warm lighting), MODERN ANIME (sharp cel-shading, vibrant colors, clean line art, stylized proportions), CLASSIC ANIME (traditional animation style, hand-drawn quality), 3D RENDER (CGI appearance, smooth surfaces, digital lighting, volumetric effects), REALISTIC (photographic quality, natural lighting, detailed textures), CARTOON (simplified shapes, bold outlines, flat colors), CHIBI (super-deformed proportions, oversized head), PIXEL ART (blocky, low resolution, retro gaming style), DIGITAL ART (digital painting, soft brushstrokes, digital effects), WATERCOLOR (soft washes, bleeding colors, traditional media), OIL PAINTING (thick brushstrokes, rich textures, traditional art). Respond with ONLY the detected style name (e.g., 'Studio Ghibli anime', 'Modern anime', 'Kawaii 3D render', 'Digital art', etc.). Be specific and accurate.";
       
-      const styleGenCfg = { maxOutputTokens: 50, temperature: 0.3 };
+      const styleGenCfg = { maxOutputTokens: 400, temperature: 0.3 };
       const detectedStyle = await generateWithImagesREST({ apiKey, model, text: styleDetectionPrompt, imageDataUrls, generationConfig: styleGenCfg });
       console.log("🎨 Detected style:", detectedStyle);
 
@@ -681,12 +696,10 @@ function App() {
 
   const handleClearAll = () => {
     console.log("🧹 Clearing all application state...");
-    
     // Clear all prompts and text
     setPrompt("");
     setEditorSeed("");
-    
-    // Clear all image arrays
+    setRawPrompt(""); // <-- Ensure rawPrompt is also cleared
     setImages([]);
     setSubjectImages([]);
     setSceneImages([]);
@@ -794,8 +807,8 @@ function App() {
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
         const model = envModel || "gemini-2.0-flash";
         const genCfg = speedMode === 'Quality'
-          ? { maxOutputTokens: 50, temperature: 0.8 } // Higher temperature for more variation
-          : { maxOutputTokens: 30, temperature: 0.7 };
+          ? { maxOutputTokens: 500, temperature: 0.8 } // Higher temperature for more variation
+          : { maxOutputTokens: 400, temperature: 0.7 };
         
         const baseInstructionFast = "You are a professional prompt engineer. Analyze the input image and produce a single, vivid, 1–2 sentence prompt suitable for image generation models. Include subject, setting, style, lighting, composition, lens, and mood. Don't invent details not visible.";
         const baseInstructionQuality = "Analyze these images in detail and create a comprehensive, descriptive prompt based on what you see. Expand important details (subject, context, style, lighting, composition, lens, mood, constraints). Return only the improved prompt.";
@@ -908,6 +921,8 @@ function App() {
               initialText={editorSeed}
               initialSpeedMode={speedMode}
               onSpeedModeChange={setSpeedMode}
+              rewriteStyle={rewriteStyle}
+              onRewriteStyleChange={setRewriteStyle}
               onSend={handleSend}
               onClear={() => { handleClearAll(); setEditorExpanded(false); }}
               onResizeStart={() => setEditorExpanded(true)}

@@ -5,7 +5,7 @@ export type RewriteStyle = 'Descriptive' | 'Concise' | 'Marketing' | 'Technical'
 export type SpeedMode = 'Fast' | 'Quality';
 
 interface DM2PromptEditorProps {
-  onSend: (finalPrompt: string) => void;
+  onSend: (finalPrompt: string, rewriteStyle: RewriteStyle) => void;
   onClear?: () => void;
   initialText?: string;
   onResizeStart?: () => void;
@@ -13,6 +13,9 @@ interface DM2PromptEditorProps {
   // Added: allow App to control/read speed mode
   initialSpeedMode?: SpeedMode;
   onSpeedModeChange?: (mode: SpeedMode) => void;
+  // Added: allow App to control/read rewrite style
+  rewriteStyle?: RewriteStyle;
+  onRewriteStyleChange?: (style: RewriteStyle) => void;
   // Style/Scene descriptors and toggles
   styleDesc?: string;
   sceneDesc?: string;
@@ -22,8 +25,12 @@ interface DM2PromptEditorProps {
   onToggleScene?: (v: boolean) => void;
 }
 
-export default function DM2PromptEditor({ onSend, onClear, initialText, onResizeStart, onResizeEnd, initialSpeedMode, onSpeedModeChange, styleDesc = "", sceneDesc = "", useStyle = true, useScene = true, onToggleStyle, onToggleScene }: DM2PromptEditorProps) {
-  const [rewriteStyle, setRewriteStyle] = useState<RewriteStyle>('Descriptive');
+export default function DM2PromptEditor({ onSend, onClear, initialText, onResizeStart, onResizeEnd, initialSpeedMode, onSpeedModeChange, rewriteStyle: externalRewriteStyle, onRewriteStyleChange, styleDesc = "", sceneDesc = "", useStyle = true, useScene = true, onToggleStyle, onToggleScene }: DM2PromptEditorProps) {
+  // Use external rewrite style if provided, otherwise use internal state
+  const [internalRewriteStyle, setInternalRewriteStyle] = useState<RewriteStyle>('Descriptive');
+  const rewriteStyle = externalRewriteStyle || internalRewriteStyle;
+  const setRewriteStyle = onRewriteStyleChange || setInternalRewriteStyle;
+  
   const [speedMode, setSpeedMode] = useState<SpeedMode>('Fast');
   const [autoRefine, setAutoRefine] = useState<boolean>(true);
   const [promptCount, setPromptCount] = useState<number>(1);
@@ -149,7 +156,7 @@ export default function DM2PromptEditor({ onSend, onClear, initialText, onResize
     // Stub rewrite: build final prompt matching controls
     const header = `[${rewriteStyle} | ${speedMode}${autoRefine ? ' +AutoRefine' : ''} | count:${promptCount}${draft ? ' | draft' : ''}]`;
     const finalPrompt = `${header}\n\n${text.trim()}`;
-    onSend(finalPrompt);
+    onSend(finalPrompt, rewriteStyle);
   };
 
   const handleClear = () => {
@@ -182,7 +189,11 @@ export default function DM2PromptEditor({ onSend, onClear, initialText, onResize
         <label className="text-xs text-text-secondary dark:text-dark-text-secondary">Rewrite Style</label>
         <select
           value={rewriteStyle}
-          onChange={(e) => setRewriteStyle(e.target.value as RewriteStyle)}
+          onChange={(e) => {
+            const newStyle = e.target.value as RewriteStyle;
+            console.log('🎯 Rewrite style changed to:', newStyle);
+            setRewriteStyle(newStyle);
+          }}
           className="rounded-md bg-panel-secondary dark:bg-dark-panel-secondary text-text-primary dark:text-dark-text-primary border border-border dark:border-dark-border text-sm px-2 py-1"
         >
           <option>Descriptive</option>

@@ -10,9 +10,10 @@ export default defineConfig({
     },
   },
   // Use repo base when building for GitHub Pages project site
-  base: process.env.NODE_ENV === 'production' ? '/Genie-Prompt-Generator/' : '/',
+  base: '/',
   server: {
-    port: 8085,
+    port: 5173,
+    strictPort: true,
     open: true,
   },
   build: {

@@ -7,6 +7,8 @@
     "dev": "vite",
     "server": "node server.js",
     "dev:full": "concurrently \"npm run server\" \"npm run dev\"",
+    "start": "concurrently \"npm run server\" \"npm run dev\" --kill-others-on-fail",
+    "start:clean": "concurrently \"npm run server\" \"npm run dev\" --kill-others-on-fail --restart-tries 3",
     "build": "vite build",
     "build:prod": "vite build --mode production",
     "preview": "vite preview --port 8085 --open",

@@ -58,14 +58,15 @@ export async function callGeminiClassic(prompt, model = 'gemini-2.5-flash') {
 }
 
 // Image analysis with Classic API
-export async function callGeminiWithImages(prompt, imageDataUrls, model = 'gemini-2.5-flash') {
+export async function callGeminiWithImages(prompt, imageDataUrls, model = 'gemini-2.5-flash', generationConfig = null) {
   const endpoint = `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${process.env.GOOGLE_API_KEY}`;
   
   console.log('🔧 Gemini Image API Call:', { 
     model, 
     endpoint: endpoint.replace(/key=.+/, 'key=***'), 
     promptLength: prompt.length, 
-    imageCount: imageDataUrls.length 
+    imageCount: imageDataUrls.length,
+    generationConfig: generationConfig
   });
 
   const parts = [
@@ -89,11 +90,11 @@ export async function callGeminiWithImages(prompt, imageDataUrls, model = 'gemin
     },
     body: JSON.stringify({
       contents: [{ role: 'user', parts }],
-      generationConfig: {
+      generationConfig: generationConfig || {
         temperature: 0.9,
         topP: 0.9,
         topK: 40,
-        maxOutputTokens: 512,
+        maxOutputTokens: 1000,
       },
     }),
   });
@@ -126,16 +127,27 @@ app.post('/api/gemini/text', async (req, res) => {
 
 app.post('/api/gemini/images', async (req, res) => {
   try {
-    const { prompt, imageDataUrls, model } = req.body;
+    console.log('🔧 Received image analysis request');
+    const { prompt, imageDataUrls, model, generationConfig } = req.body;
+    
+    console.log('🔧 Request params:', {
+      promptLength: prompt?.length,
+      imageCount: imageDataUrls?.length,
+      model,
+      generationConfig
+    });
     
     if (!prompt || !imageDataUrls || !Array.isArray(imageDataUrls)) {
+      console.log('❌ Invalid request parameters');
       return res.status(400).json({ error: 'Prompt and imageDataUrls array are required' });
     }
 
-    const result = await callGeminiWithImages(prompt, imageDataUrls, model);
+    console.log('🔧 Calling Gemini API...');
+    const result = await callGeminiWithImages(prompt, imageDataUrls, model, generationConfig);
+    console.log('✅ Gemini API call successful');
     res.json(result);
   } catch (error) {
-    console.error('Image analysis error:', error);
+    console.error('❌ Image analysis error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -172,13 +184,13 @@ app.listen(PORT, () => {
   console.log(`🧪 Test endpoint: http://localhost:${PORT}/api/test`);
   
   // Run startup test
-  setTimeout(async () => {
-    try {
-      console.log('🧪 Running startup test...');
-      await callGeminiClassic('ping');
-      console.log('✅ Startup test successful - API key is working');
-    } catch (error) {
-      console.error('❌ Startup test failed:', error.message);
-    }
-  }, 1000);
+  // setTimeout(async () => {
+  //   try {
+  //     console.log('🧪 Running startup test...');
+  //     await callGeminiClassic('ping');
+  //     console.log('✅ Startup test successful - API key is working');
+  //   } catch (error) {
+  //     console.error('❌ Startup test failed:', error.message);
+  //   }
+  // }, 1000);
 });
