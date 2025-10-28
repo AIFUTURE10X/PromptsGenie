@@ -23,6 +23,11 @@
   status = 200
 
 [[redirects]]
+  from = "/api/storyboards/generate"
+  to = "/.netlify/functions/storyboards-generate"
+  status = 200
+
+[[redirects]]
   from = "/api/storyboards/generate-frame"
   to = "/.netlify/functions/storyboards-generate-frame"
   status = 200
