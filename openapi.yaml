@@ -130,8 +130,235 @@ paths:
         '500':
           description: Server error
 
+  /storyboards/generate:
+    post:
+      summary: Generate a new 7-frame storyboard
+      operationId: generateStoryboard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoryboardGenerateRequest'
+      responses:
+        '200':
+          description: Generated storyboard
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoryboardResponse'
+        '400':
+          description: Validation error
+        '429':
+          description: Rate limit exceeded
+        '500':
+          description: Server error
+
+  /storyboards/extend:
+    post:
+      summary: Extend an existing storyboard with extra frames
+      operationId: extendStoryboard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoryboardExtendRequest'
+      responses:
+        '200':
+          description: Extended storyboard
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoryboardResponse'
+        '400':
+          description: Validation error
+        '404':
+          description: Storyboard not found
+        '429':
+          description: Rate limit exceeded
+        '500':
+          description: Server error
+
+  /storyboards/plan:
+    post:
+      summary: Plan a storyboard with 7 frames
+      operationId: planStoryboard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoryboardPlanRequest'
+      responses:
+        '200':
+          description: Storyboard plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoryboardPlanResponse'
+        '400':
+          description: Validation error
+        '429':
+          description: Rate limit exceeded
+        '500':
+          description: Server error
+
+  /storyboards/edit:
+    post:
+      summary: Edit a storyboard frame
+      operationId: editStoryboardFrame
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoryboardEditRequest'
+      responses:
+        '200':
+          description: Edited storyboard
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoryboardResponse'
+        '400':
+          description: Validation error
+        '404':
+          description: Storyboard not found
+        '429':
+          description: Rate limit exceeded
+        '500':
+          description: Server error
+
 components:
   schemas:
+    StoryboardGenerateRequest:
+      type: object
+      required:
+        - storyboardId
+        - plan
+      properties:
+        storyboardId:
+          type: string
+        plan:
+          type: object
+          required:
+            - frames
+          properties:
+            frames:
+              type: array
+              minItems: 7
+              maxItems: 7
+              items:
+                $ref: '#/components/schemas/StoryboardFramePlan'
+    StoryboardExtendRequest:
+      type: object
+      required:
+        - storyboardId
+        - extraFrames
+      properties:
+        storyboardId:
+          type: string
+        extraFrames:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoryboardFramePlan'
+    StoryboardPlanRequest:
+      type: object
+      required:
+        - storyboardId
+        - intent
+      properties:
+        storyboardId:
+          type: string
+        intent:
+          type: string
+    StoryboardEditRequest:
+      type: object
+      required:
+        - storyboardId
+        - frameIndex
+        - newDescription
+      properties:
+        storyboardId:
+          type: string
+        frameIndex:
+          type: integer
+        newDescription:
+          type: string
+    StoryboardFramePlan:
+      type: object
+      required:
+        - description
+      properties:
+        description:
+          type: string
+        aspectRatio:
+          type: string
+          enum: ["16:9", "1:1"]
+        palette:
+          type: string
+        references:
+          type: array
+          items:
+            type: object
+            properties:
+              role:
+                type: string
+                enum: [subject, scene, style]
+              url:
+                type: string
+    StoryboardResponse:
+      type: object
+      required:
+        - storyboardId
+        - frames
+        - plan
+      properties:
+        storyboardId:
+          type: string
+        frames:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoryboardFrame'
+        plan:
+          type: object
+          properties:
+            frames:
+              type: array
+              items:
+                $ref: '#/components/schemas/StoryboardFramePlan'
+        seed:
+          type: integer
+    StoryboardFrame:
+      type: object
+      required:
+        - frame
+        - description
+        - seed
+        - image_url
+      properties:
+        frame:
+          type: integer
+        description:
+          type: string
+        seed:
+          type: integer
+        image_url:
+          type: string
+    StoryboardPlanResponse:
+      type: object
+      required:
+        - storyboardId
+        - frames
+      properties:
+        storyboardId:
+          type: string
+        frames:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoryboardFramePlan'
+
     AnalyzeImageRequest:
       type: object
       properties:

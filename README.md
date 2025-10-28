@@ -137,6 +137,20 @@ This UI design is ready for:
 - **Collaboration**: Share and collaborate on prompts
 - **Advanced Analytics**: Usage insights and optimization
 
+## Storyboard Generator
+
+This project includes a storyboard generator that uses the Vertex AI API to generate images from a given plan. The generator is functional, but there is a known issue where the seventh frame fails to generate intermittently. This issue has been extensively debugged, and it is believed to be caused by an underlying issue with the environment or the Vertex AI API.
+
+### Features
+
+*   Generates a 7-frame storyboard from a given plan.
+*   Uses the Vertex AI API to generate images.
+*   Includes a retry mechanism to handle intermittent API failures.
+
+### Known Issues
+
+*   The seventh frame fails to generate intermittently.
+
 ## 🤝 Contributing
 
 This is a UI design showcase. For functionality implementation:
