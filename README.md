@@ -26,13 +26,18 @@ A beautiful, modern React application for AI-powered prompt generation and image
 
 ### Deployment Options
 
-**Option 1: Deploy to Vercel (Recommended)**
+**Option 1: Deploy to Netlify (Recommended)**
 - ✅ Zero server management
+- ✅ Serverless functions for API
 - ✅ Automatic HTTPS & CDN
 - ✅ Free tier available
-- 📖 See [VERCEL-DEPLOYMENT.md](./VERCEL-DEPLOYMENT.md) for complete guide
+- 📖 See [NETLIFY-DEPLOYMENT.md](./NETLIFY-DEPLOYMENT.md) for complete guide
 
-**Option 2: Local Development**
+**Option 2: Deploy to Vercel**
+- ✅ Alternative serverless platform
+- 📖 See [VERCEL-DEPLOYMENT.md](./VERCEL-DEPLOYMENT.md) for guide
+
+**Option 3: Local Development**
 
 ### Prerequisites
 - Node.js 18+
