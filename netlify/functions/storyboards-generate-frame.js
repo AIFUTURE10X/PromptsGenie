@@ -2,7 +2,7 @@ import { GoogleAuth } from 'google-auth-library';
 
 async function getAccessToken() {
   try {
-    // Parse the credentials from environment variable (stored as JSON string in Vercel)
+    // Parse the credentials from environment variable (stored as JSON string in Netlify)
     const credentials = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON
       ? JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON)
       : null;
@@ -25,32 +25,45 @@ async function getAccessToken() {
   }
 }
 
-export default async function handler(req, res) {
-  // Enable CORS
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
-
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+export const handler = async (event, context) => {
+  // Handle CORS preflight
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS'
+      },
+      body: ''
+    };
   }
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  if (event.httpMethod !== 'POST') {
+    return {
+      statusCode: 405,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({ error: 'Method not allowed' })
+    };
   }
 
   try {
-    const { description, frameIndex, storyboardId } = req.body;
+    const { description, frameIndex, storyboardId } = JSON.parse(event.body);
 
     if (!description || typeof frameIndex !== 'number') {
-      return res.status(400).json({
-        error: 'Invalid request. Must include description and frameIndex'
-      });
+      return {
+        statusCode: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({
+          error: 'Invalid request. Must include description and frameIndex'
+        })
+      };
     }
 
     const model = 'imagegeneration@006';
@@ -89,34 +102,62 @@ export default async function handler(req, res) {
 
       if (imageBase64) {
         // Return the base64 image data directly to client
-        res.status(200).json({
-          success: true,
-          frameIndex,
-          imageData: `data:image/png;base64,${imageBase64}`,
-          description
-        });
+        return {
+          statusCode: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({
+            success: true,
+            frameIndex,
+            imageData: `data:image/png;base64,${imageBase64}`,
+            description
+          })
+        };
       } else {
         const availableKeys = Object.keys(data || {}).join(', ');
         const errorMessage = `Predictions not found in response. Available keys: ${availableKeys}`;
         console.error(errorMessage);
-        res.status(500).json({
-          success: false,
-          error: errorMessage
-        });
+        return {
+          statusCode: 500,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({
+            success: false,
+            error: errorMessage
+          })
+        };
       }
     } else {
       const errorText = await response.text();
       console.error(`Image generation failed for frame ${frameIndex + 1} with status ${response.status}: ${errorText}`);
-      res.status(response.status).json({
-        success: false,
-        error: errorText
-      });
+      return {
+        statusCode: response.status,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({
+          success: false,
+          error: errorText
+        })
+      };
     }
   } catch (error) {
     console.error('Error in generate-frame:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
+    return {
+      statusCode: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({
+        success: false,
+        error: error.message
+      })
+    };
   }
-}
+};
