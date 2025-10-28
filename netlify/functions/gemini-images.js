@@ -47,28 +47,34 @@ async function callGeminiWithImages(prompt, imageDataUrls, model = 'gemini-2.5-f
   return response.json();
 }
 
-export default async function handler(req, res) {
-  // Enable CORS
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
-
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+exports.handler = async (event, context) => {
+  // Handle CORS preflight
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS'
+      },
+      body: ''
+    };
   }
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  if (event.httpMethod !== 'POST') {
+    return {
+      statusCode: 405,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({ error: 'Method not allowed' })
+    };
   }
 
   try {
     console.log('🔧 Received image analysis request');
-    const { prompt, imageDataUrls, model, generationConfig } = req.body;
+    const { prompt, imageDataUrls, model, generationConfig } = JSON.parse(event.body);
 
     console.log('🔧 Request params:', {
       promptLength: prompt?.length,
@@ -79,15 +85,37 @@ export default async function handler(req, res) {
 
     if (!prompt || !imageDataUrls || !Array.isArray(imageDataUrls)) {
       console.log('❌ Invalid request parameters');
-      return res.status(400).json({ error: 'Prompt and imageDataUrls array are required' });
+      return {
+        statusCode: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ error: 'Prompt and imageDataUrls array are required' })
+      };
     }
 
     console.log('🔧 Calling Gemini API...');
     const result = await callGeminiWithImages(prompt, imageDataUrls, model, generationConfig);
     console.log('✅ Gemini API call successful');
-    res.status(200).json(result);
+
+    return {
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify(result)
+    };
   } catch (error) {
     console.error('❌ Image analysis error:', error);
-    res.status(500).json({ error: error.message });
+    return {
+      statusCode: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({ error: error.message })
+    };
   }
-}
+};

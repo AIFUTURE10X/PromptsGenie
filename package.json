@@ -15,8 +15,7 @@
     "preview:build": "npm run build && npm run preview",
     "clean": "rimraf dist",
     "build:clean": "npm run clean && npm run build",
-    "test": "vitest",
-    "vercel-build": "vite build"
+    "test": "vitest"
   },
   "dependencies": {
     "@radix-ui/react-collapsible": "^1.0.3",
