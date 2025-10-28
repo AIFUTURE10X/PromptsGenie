@@ -869,6 +869,15 @@ function App() {
       <BackgroundCanvas color="#000000" opacity={1} effect="grain" effectOpacity={0.06} />
       <div className="max-w-6xl mx-auto px-4">
         <BrandHeader logoSrc="Genie.png" />
+        {/* Test button to verify hot reload */}
+        <div className="flex justify-center mt-4">
+          <button
+            onClick={() => alert('Hot reload is working! 🎉')}
+            className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+          >
+            Test Button - Hot Reload Check
+          </button>
+        </div>
       </div>
       <div className="max-w-6xl mx-auto py-6 px-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
