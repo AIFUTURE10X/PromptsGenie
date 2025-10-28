@@ -24,8 +24,18 @@ A beautiful, modern React application for AI-powered prompt generation and image
 
 ## 🚀 Getting Started
 
+### Deployment Options
+
+**Option 1: Deploy to Vercel (Recommended)**
+- ✅ Zero server management
+- ✅ Automatic HTTPS & CDN
+- ✅ Free tier available
+- 📖 See [VERCEL-DEPLOYMENT.md](./VERCEL-DEPLOYMENT.md) for complete guide
+
+**Option 2: Local Development**
+
 ### Prerequisites
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 
 ### Installation

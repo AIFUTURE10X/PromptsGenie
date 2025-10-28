@@ -11,12 +11,17 @@ pnpm-debug.log*
 # Env files
 .env*
 !.env.example
+!.env.production.example
 
 # Editor / OS
 .vscode/
 .idea/
 .DS_Store
 *.swp
+
+# Vercel
+.vercel
+.vercel.json
 
 # Legacy heavy folders (if copied accidentally)
 DreamMix-Prompt-Generator/
