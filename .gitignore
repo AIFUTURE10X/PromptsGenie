@@ -12,6 +12,13 @@ pnpm-debug.log*
 .env*
 !.env.example
 !.env.production.example
+!.env.server.example
+
+# Google Cloud credentials (NEVER commit these!)
+*credentials*.json
+*service-account*.json
+google-*.json
+gcloud-*.json
 
 # Editor / OS
 .vscode/

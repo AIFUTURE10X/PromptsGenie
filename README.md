@@ -56,17 +56,23 @@ A beautiful, modern React application for AI-powered prompt generation and image
    npm install
    ```
 
-3. **Set up environment variables**
+3. **Set up Google API credentials**
+
+   📖 **See [GOOGLE_API_SETUP.md](./GOOGLE_API_SETUP.md) for complete setup instructions**
+
+   Quick start:
    ```bash
+   # Copy environment templates
    cp .env.example .env
+   cp .env.server.example .env.server
    ```
-   
-   Edit `.env` and add your API keys:
-   ```env
-   VITE_GEMINI_API_KEY=your_gemini_api_key_here
-   VITE_GEMINI_MODEL_TEXT=gemini-1.5-flash
-   VITE_GEMINI_MODEL_IMAGES=gemini-1.5-flash
-   ```
+
+   You'll need:
+   - Google Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+   - Google Cloud Project with Vertex AI enabled
+   - Service account JSON credentials
+
+   Edit `.env` and `.env.server` with your credentials.
 
 4. **Start the development server**
    ```bash
@@ -123,12 +129,32 @@ src/
 
 ## 🔧 Configuration
 
+### Google API Setup
+
+This application requires Google Cloud credentials for AI features. See [GOOGLE_API_SETUP.md](./GOOGLE_API_SETUP.md) for detailed instructions.
+
+**Required Credentials:**
+- **GOOGLE_API_KEY**: Gemini API key for text and image generation
+- **GOOGLE_PROJECT_ID**: Google Cloud Project ID for Vertex AI
+- **GOOGLE_APPLICATION_CREDENTIALS**: Service account JSON (local) or JSON string (production)
+
 ### Environment Variables
-- `VITE_GEMINI_API_KEY`: Google Gemini API key
-- `VITE_GEMINI_MODEL_TEXT`: Text generation model
-- `VITE_GEMINI_MODEL_IMAGES`: Image analysis model
+
+**Frontend (.env):**
+- `VITE_GEMINI_API_KEY`: Google Gemini API key (embedded in client)
+- `VITE_GEMINI_MODEL_TEXT`: Text generation model (default: gemini-1.5-flash)
+- `VITE_GEMINI_MODEL_IMAGES`: Image analysis model (default: gemini-2.5-flash)
 - `API_BASE_URL`: Backend API URL
 - `PORT`: Development server port
+
+**Backend (.env.server):**
+- `GOOGLE_API_KEY`: Google Gemini API key for server-side calls
+- `GOOGLE_PROJECT_ID`: Google Cloud Project ID
+- `GOOGLE_APPLICATION_CREDENTIALS`: Path to service account JSON file
+
+**Production (Netlify):**
+- Set all variables in Netlify dashboard under Site settings > Environment variables
+- Use `GOOGLE_APPLICATION_CREDENTIALS_JSON` with minified JSON string
 
 ### Build Configuration
 - **Vite**: Fast build tool and dev server
