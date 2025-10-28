@@ -869,6 +869,9 @@ function App() {
       <BackgroundCanvas color="#000000" opacity={1} effect="grain" effectOpacity={0.06} />
       <div className="max-w-6xl mx-auto px-4">
         <BrandHeader logoSrc="Genie.png" />
+        <button className="bg-purple-600 text-white px-6 py-2 rounded-lg font-bold text-lg mt-4">
+          Test
+        </button>
       </div>
       <div className="max-w-6xl mx-auto py-6 px-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
