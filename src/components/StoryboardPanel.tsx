@@ -24,6 +24,9 @@ function StoryboardPanel() {
   const [selectedFrame, setSelectedFrame] = React.useState<number>(0);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [resultsCount, setResultsCount] = React.useState<number>(7);
+  const [aspectRatio, setAspectRatio] = React.useState<string>("16:9");
+  const [generationMode, setGenerationMode] = React.useState<string>("auto");
   const API_BASE = "/api/storyboards";
 
   function generateStoryboardId(intent: string) {
@@ -71,7 +74,7 @@ function StoryboardPanel() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE}/ping`);
+      const response = await fetch('/api/ping');
       if (!response.ok) throw new Error(await response.text());
       const data = await response.json();
       console.log("Ping response:", data);
@@ -125,7 +128,7 @@ function StoryboardPanel() {
         <h2 className="text-xl font-bold mb-2">Storyboard</h2>
         <div className="mb-2">
           <textarea
-            className="border rounded px-2 py-1 mr-2 bg-gray-900 text-white placeholder-gray-400 w-full h-20 resize"
+            className="border rounded px-2 py-1 mr-2 bg-gray-900 text-white placeholder-gray-400 w-full h-20 resize-y"
             placeholder="Storyboard intent (e.g. 'A hero's journey')"
             value={intent}
             onChange={e => setIntent(e.target.value)}
@@ -165,11 +168,11 @@ function StoryboardPanel() {
             <div style={{ marginBottom: '16px', display: 'flex', gap: '12px', alignItems: 'center' }}>
               <label style={{ color: '#fff' }}>
                 Results:
-                <input type="number" min={1} max={20} defaultValue={storyboard.frames.length} style={{ width: '60px', marginLeft: '8px', background: '#222', color: '#fff', borderRadius: '4px', border: '1px solid #444' }} />
+                <input type="number" min={1} max={20} value={resultsCount} onChange={e => setResultsCount(Number(e.target.value))} style={{ width: '60px', marginLeft: '8px', background: '#222', color: '#fff', borderRadius: '4px', border: '1px solid #444' }} />
               </label>
               <label style={{ color: '#fff' }}>
                 Aspect Ratio:
-                <select style={{ marginLeft: '8px', background: '#222', color: '#fff', borderRadius: '4px', border: '1px solid #444' }}>
+                <select value={aspectRatio} onChange={e => setAspectRatio(e.target.value)} style={{ marginLeft: '8px', background: '#222', color: '#fff', borderRadius: '4px', border: '1px solid #444' }}>
                   <option value="16:9">16:9</option>
                   <option value="4:3">4:3</option>
                   <option value="1:1">1:1</option>
@@ -177,7 +180,7 @@ function StoryboardPanel() {
               </label>
               <label style={{ color: '#fff' }}>
                 Mode:
-                <select style={{ marginLeft: '8px', background: '#222', color: '#fff', borderRadius: '4px', border: '1px solid #444' }}>
+                <select value={generationMode} onChange={e => setGenerationMode(e.target.value)} style={{ marginLeft: '8px', background: '#222', color: '#fff', borderRadius: '4px', border: '1px solid #444' }}>
                   <option value="auto">Auto</option>
                   <option value="manual">Manual</option>
                 </select>
@@ -185,7 +188,7 @@ function StoryboardPanel() {
             </div>
             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: '16px' }}>
               {/* Sidebar Navigation */}
-              <div style={{ width: '120px', minWidth: '120px', background: '#222a', borderRadius: '8px', padding: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ width: '120px', minWidth: '120px', background: '#222', borderRadius: '8px', padding: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <h4 style={{ color: '#fff', marginBottom: '8px', fontSize: '1em' }}>Scenes</h4>
                 {storyboard.frames.length > 0 ? (
                   storyboard.frames.map((frame, idx) => (
@@ -210,7 +213,7 @@ function StoryboardPanel() {
                 )}
               </div>
               {/* Main Frame Viewer */}
-              <div style={{ flex: 1, minHeight: '220px', background: '#222a', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ flex: 1, minHeight: '220px', background: '#222', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {/* Horizontal Thumbnail Viewer */}
                 <div style={{ display: 'flex', flexDirection: 'row', gap: '8px', overflowX: 'auto', marginBottom: '12px' }}>
                   {storyboard.frames.map((frame, idx) => (
@@ -253,10 +256,8 @@ function StoryboardPanel() {
                             }
                           }}
                         />
-                        <label htmlFor={`upload-image-${selectedFrame}`}>
-                          <button style={{ background: '#3af', color: '#fff', border: 'none', borderRadius: '6px', padding: '6px 12px', cursor: 'pointer', marginTop: '8px' }}>
-                            Upload Image
-                          </button>
+                        <label htmlFor={`upload-image-${selectedFrame}`} style={{ background: '#3af', color: '#fff', border: 'none', borderRadius: '6px', padding: '6px 12px', cursor: 'pointer', marginTop: '8px', display: 'inline-block' }}>
+                          Upload Image
                         </label>
                       </div>
                     </div>

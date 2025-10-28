@@ -489,8 +489,9 @@ app.get('/api/storyboards/metrics', (req, res) => {
 
 async function getAccessToken() {
   try {
+    const keyFilePath = process.env.GOOGLE_APPLICATION_CREDENTIALS || join(__dirname, 'gen-lang-client-0478811083-eaff1cc67090.json');
     const auth = new GoogleAuth({
-      keyFile: "C:\\PromptsGenie\\gen-lang-client-0478811083-eaff1cc67090.json",
+      keyFile: keyFilePath,
       scopes: 'https://www.googleapis.com/auth/cloud-platform'
     });
     const client = await auth.getClient();
