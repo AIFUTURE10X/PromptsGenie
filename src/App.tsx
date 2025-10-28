@@ -7,6 +7,7 @@ import { generateWithImagesREST } from "./helpers/gemini";
 import BackgroundCanvas from "./components/BackgroundCanvas";
 import BrandHeader from "./components/BrandHeader";
 import { composePrompt, applyRewriteStyle } from "./lib/utils";
+import StoryboardPanel from "./components/StoryboardPanel";
 
 // Local type to coordinate speed across components
 type SpeedMode = 'Fast' | 'Quality';
@@ -133,8 +134,8 @@ function App() {
 
       const imagesDataUrls = await getImageDataUrls(images, speedMode);
       if (imagesDataUrls.length) {
-        const apiKey = import.meta.env.VITE_GEMINI_API_KEY!;
-        const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
+        const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyDt_fNc7YoPxnLm_kMc7FiwFHfnFPkYHWs";
+        const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE || "gemini-2.5-flash";
         const mmModel = envModel || "gemini-2.5-flash"; // ensure 2.5 flash fallback
         const genCfg = speedMode === 'Quality'
           ? { maxOutputTokens: 384, temperature: 0.95 }
@@ -606,18 +607,9 @@ function App() {
     setIsAnalyzingStyle(true);
     try {
       const imageDataUrls = await getImageDataUrls(styleImages, speedMode);
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY!;
-      const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
-      const model = envModel || "gemini-2.0-flash";
-      
-      console.log("🎨 Environment variables:");
-      console.log("  - VITE_GEMINI_API_KEY present:", !!apiKey, "length:", apiKey?.length || 0);
-      console.log("  - VITE_GEMINI_API_KEY starts with:", apiKey?.substring(0, 10) + "...");
-      console.log("  - VITE_GEMINI_MODEL_IMAGES:", import.meta.env.VITE_GEMINI_MODEL_IMAGES);
-      console.log("  - VITE_GEMINI_MODEL_IMAGE:", import.meta.env.VITE_GEMINI_MODEL_IMAGE);
-      console.log("  - Final model used:", model);
-      console.log("🎨 Image data URLs count:", imageDataUrls.length);
-      
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyDt_fNc7YoPxnLm_kMc7FiwFHfnFPkYHWs";
+      const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE || "gemini-2.5-flash";
+      const mmModel = envModel || "gemini-2.5-flash"; // ensure 2.5 flash fallback
       const genCfg = speedMode === 'Quality'
         ? { maxOutputTokens: 384, temperature: 0.95 }
         : { maxOutputTokens: 160, temperature: 0.7 };
@@ -934,7 +926,6 @@ function App() {
           <div className="panel-standard-height">
             <CurrentPromptPanel
               prompt={prompt}
-              source={lastSource}
               onCopy={handleCopy}
               onEdit={handleEdit}
               onClear={handleClearPrompt}
@@ -942,8 +933,9 @@ function App() {
               hasImages={subjectImages.length > 0 || sceneImages.length > 0 || styleImages.length > 0}
               isGenerating={isGenerating}
             />
+            {/* StoryboardPanel integration */}
+            <StoryboardPanel />
           </div>
-
 
         </div>
       </div>

@@ -24,3 +24,6 @@ export function validateConfig(): void {
     throw new Error('AB_RATIO must be between 0 and 1');
   }
 }
+
+export const googleApiKey = process.env.VITE_GOOGLE_API_KEY || process.env.GOOGLE_API_KEY || "AIzaSyDt_fNc7YoPxnLm_kMc7FiwFHfnFPkYHWs";
+export const geminiApiKey = process.env.VITE_GEMINI_API_KEY || "AIzaSyDt_fNc7YoPxnLm_kMc7FiwFHfnFPkYHWs";

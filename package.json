@@ -14,7 +14,8 @@
     "preview": "vite preview --port 8085 --open",
     "preview:build": "npm run build && npm run preview",
     "clean": "rimraf dist",
-    "build:clean": "npm run clean && npm run build"
+    "build:clean": "npm run clean && npm run build",
+    "test": "vitest"
   },
   "dependencies": {
     "@radix-ui/react-collapsible": "^1.0.3",
@@ -28,9 +29,11 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "google-auth-library": "^10.4.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "tailwind-merge": "^2.3.0"
+    "tailwind-merge": "^2.3.0",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",
@@ -40,9 +43,11 @@
     "concurrently": "^9.2.1",
     "postcss": "^8.4.41",
     "rimraf": "^6.0.1",
+    "supertest": "^7.1.4",
     "tailwindcss": "^3.4.9",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.4.5",
-    "vite": "^5.4.8"
+    "vite": "^5.4.8",
+    "vitest": "^4.0.4"
   }
 }
