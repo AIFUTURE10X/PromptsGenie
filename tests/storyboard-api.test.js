@@ -7,15 +7,24 @@ const serverUrl = 'http://localhost:8085';
 
 describe('Storyboard API Endpoints', () => {
   let storyboardId;
+  let plan;
+
+  beforeAll(async () => {
+    // Generate storyboardId and plan first
+    storyboardId = 'sb_test_' + Date.now();
+    const planRes = await request(serverUrl)
+      .post('/api/storyboards/plan')
+      .send({ storyboardId, intent: 'A hero saves the world' });
+    plan = planRes.body;
+  });
 
   it('should generate a new storyboard', async () => {
     const res = await request(serverUrl)
       .post('/api/storyboards/generate')
-      .send({ intent: 'A hero saves the world', aspectRatio: '16:9', seed: 'test-seed' });
+      .send({ storyboardId, plan });
     expect(res.status).toBe(200);
     expect(res.body.storyboardId).toBeDefined();
     expect(res.body.frames).toHaveLength(7);
-    storyboardId = res.body.storyboardId;
   });
 
   it('should extend an existing storyboard', async () => {
@@ -31,13 +40,13 @@ describe('Storyboard API Endpoints', () => {
       .post('/api/storyboards/plan')
       .send({ storyboardId, intent: 'A hero saves the world' });
     expect(res.status).toBe(200);
-    expect(res.body.plan).toHaveLength(7);
+    expect(res.body.frames).toHaveLength(7);
   });
 
   it('should edit a storyboard frame', async () => {
     const res = await request(serverUrl)
       .post('/api/storyboards/edit')
-      .send({ storyboardId, frameIndex: 0, description: 'Edited frame description' });
+      .send({ storyboardId, frameIndex: 0, newDescription: 'Edited frame description' });
     expect(res.status).toBe(200);
     expect(res.body.frames[0].description).toBe('Edited frame description');
   });
