@@ -11,8 +11,8 @@
 Run these commands in your terminal (in the PromptsGenie folder):
 
 ```powershell
-npx netlify env:set GOOGLE_API_KEY "AIzaSyDixIwjpAsWCTqcMtx429wdlzRCTLamW9I" --force
-npx netlify env:set VITE_GEMINI_API_KEY "AIzaSyCrj4NFfVxRpGSA0dOYifPnBECnb12h_I4" --force
+npx netlify env:set GOOGLE_API_KEY "YOUR_API_KEY_HERE" --force
+npx netlify env:set VITE_GEMINI_API_KEY "YOUR_API_KEY_HERE" --force
 ```
 
 ## Step 3: Redeploy

@@ -25,5 +25,5 @@ export function validateConfig(): void {
   }
 }
 
-export const googleApiKey = process.env.VITE_GOOGLE_API_KEY || process.env.GOOGLE_API_KEY || "AIzaSyDt_fNc7YoPxnLm_kMc7FiwFHfnFPkYHWs";
-export const geminiApiKey = process.env.VITE_GEMINI_API_KEY || "AIzaSyDt_fNc7YoPxnLm_kMc7FiwFHfnFPkYHWs";
+export const googleApiKey = process.env.VITE_GOOGLE_API_KEY || process.env.GOOGLE_API_KEY || "";
+export const geminiApiKey = process.env.VITE_GEMINI_API_KEY || "";

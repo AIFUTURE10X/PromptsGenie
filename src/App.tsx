@@ -137,7 +137,7 @@ function App() {
 
       const imagesDataUrls = await getImageDataUrls(images, speedMode);
       if (imagesDataUrls.length) {
-        const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyDt_fNc7YoPxnLm_kMc7FiwFHfnFPkYHWs";
+        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE || "gemini-2.5-flash";
         const mmModel = envModel || "gemini-2.5-flash"; // ensure 2.5 flash fallback
         const genCfg = speedMode === 'Quality'
@@ -563,7 +563,7 @@ function App() {
     setIsAnalyzingStyle(true);
     try {
       const imageDataUrls = await getImageDataUrls(styleImages, speedMode);
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyDt_fNc7YoPxnLm_kMc7FiwFHfnFPkYHWs";
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
       const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE || "gemini-2.5-flash";
       const mmModel = envModel || "gemini-2.5-flash"; // ensure 2.5 flash fallback
       const genCfg = speedMode === 'Quality'
