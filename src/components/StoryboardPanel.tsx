@@ -8,6 +8,9 @@ import {
   Sparkles,
   X,
   Maximize2,
+  Edit,
+  RotateCw,
+  GripVertical,
 } from "lucide-react";
 
 // Type definitions for storyboard and plan
@@ -28,7 +31,12 @@ interface StoryboardPlan {
   frames: { description: string }[];
 }
 
-function StoryboardPanel() {
+interface StoryboardPanelProps {
+  initialPrompt?: string;
+  onBackToPrompts?: () => void;
+}
+
+function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPanelProps) {
   const [intent, setIntent] = React.useState<string>("");
   const [plan, setPlan] = React.useState<StoryboardPlan | null>(null);
   const [storyboard, setStoryboard] = React.useState<Storyboard | null>(null);
@@ -40,7 +48,52 @@ function StoryboardPanel() {
   const [generationMode, setGenerationMode] = React.useState<string>("auto");
   const [isPlanExpanded, setIsPlanExpanded] = React.useState<boolean>(false);
   const [isLightboxOpen, setIsLightboxOpen] = React.useState<boolean>(false);
+  const [draggedIndex, setDraggedIndex] = React.useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = React.useState<number | null>(null);
   const API_BASE = "/api/storyboards";
+
+  // Auto-populate with initial prompt
+  React.useEffect(() => {
+    if (initialPrompt && !intent) {
+      setIntent(initialPrompt);
+    }
+  }, [initialPrompt, intent]);
+
+  // Load saved storyboard from localStorage on mount
+  React.useEffect(() => {
+    const savedStoryboard = localStorage.getItem('lastStoryboard');
+    const savedPlan = localStorage.getItem('lastPlan');
+    if (savedStoryboard) {
+      try {
+        const parsed = JSON.parse(savedStoryboard);
+        setStoryboard(parsed);
+      } catch (e) {
+        console.error('Failed to parse saved storyboard', e);
+      }
+    }
+    if (savedPlan) {
+      try {
+        const parsed = JSON.parse(savedPlan);
+        setPlan(parsed);
+      } catch (e) {
+        console.error('Failed to parse saved plan', e);
+      }
+    }
+  }, []);
+
+  // Save storyboard to localStorage whenever it changes
+  React.useEffect(() => {
+    if (storyboard) {
+      localStorage.setItem('lastStoryboard', JSON.stringify(storyboard));
+    }
+  }, [storyboard]);
+
+  // Save plan to localStorage whenever it changes
+  React.useEffect(() => {
+    if (plan) {
+      localStorage.setItem('lastPlan', JSON.stringify(plan));
+    }
+  }, [plan]);
 
   function generateStoryboardId(intent: string) {
     // Simple deterministic hash for storyboardId
@@ -153,14 +206,57 @@ function StoryboardPanel() {
     }
   };
 
+  // Regenerate a single frame
+  const regenerateFrame = async (frameIndex: number) => {
+    if (!storyboard || !plan) return;
+
+    setError(null);
+    const frames = [...storyboard.frames];
+
+    // Set frame status to pending
+    frames[frameIndex] = {
+      ...frames[frameIndex],
+      status: "pending",
+      image_url: ""
+    };
+    setStoryboard({ ...storyboard, frames: [...frames] });
+
+    try {
+      const frameResponse = await fetch(`${API_BASE}/generate-frame`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          storyboardId: storyboard.storyboardId,
+          frameIndex: frameIndex,
+          description: frames[frameIndex].description,
+          aspectRatio: aspectRatio,
+        }),
+      });
+
+      if (frameResponse.ok) {
+        const frameData = await frameResponse.json();
+        frames[frameIndex] = frameData.frame;
+        setStoryboard({ ...storyboard, frames: [...frames] });
+      } else {
+        setError(`Failed to regenerate frame ${frameIndex + 1}`);
+        // Restore original frame on error
+        frames[frameIndex] = storyboard.frames[frameIndex];
+        setStoryboard({ ...storyboard, frames: [...frames] });
+      }
+    } catch (frameError) {
+      console.error(`Error regenerating frame ${frameIndex + 1}:`, frameError);
+      setError(`Error regenerating frame ${frameIndex + 1}`);
+    }
+  };
+
   return (
-    <div className="w-full h-full flex gap-6 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-xl shadow-2xl p-6">
-      {/* Left Column - Storyboard Gallery (60% width) */}
+    <div className="w-full h-full flex flex-col lg:flex-row gap-6 p-6 min-h-[600px]">
+      {/* Left Column - Storyboard Gallery (responsive width) */}
       <motion.div
         initial={{ opacity: 0, x: -50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
-        className="flex-[3] flex flex-col min-w-0"
+        className="flex-1 lg:flex-[3] flex flex-col min-w-0"
       >
         <AnimatePresence mode="wait">
           {storyboard && storyboard.frames && storyboard.frames.length > 0 ? (
@@ -185,7 +281,7 @@ function StoryboardPanel() {
 
               {/* Scrollable Grid */}
               <div className="flex-1 overflow-y-auto custom-scrollbar pr-2">
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
                   {storyboard.frames.map((frame, idx) => (
                     <motion.div
                       key={frame?.id || `frame-${idx}`}
@@ -288,20 +384,43 @@ function StoryboardPanel() {
                         </motion.div>
                       )}
 
-                      {/* Download Button */}
+                      {/* Action Buttons */}
                       {frame?.image_url && (
-                        <motion.button
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          whileHover={{ opacity: 1, scale: 1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // Download logic
-                          }}
-                          className="absolute bottom-5 right-5 p-3 bg-purple-600 hover:bg-purple-700 rounded-xl shadow-lg transition-all"
-                        >
-                          <Download className="w-5 h-5 text-white" />
-                        </motion.button>
+                        <div className="absolute bottom-5 right-5 flex gap-2">
+                          {/* Regenerate Button */}
+                          <motion.button
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            whileHover={{ opacity: 1, scale: 1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              regenerateFrame(idx);
+                            }}
+                            className="p-3 bg-orange-600 hover:bg-orange-700 rounded-xl shadow-lg transition-all"
+                            title="Regenerate this frame"
+                          >
+                            <RotateCw className="w-5 h-5 text-white" />
+                          </motion.button>
+
+                          {/* Download Button */}
+                          <motion.button
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            whileHover={{ opacity: 1, scale: 1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // Download logic
+                              const link = document.createElement('a');
+                              link.href = frame.image_url;
+                              link.download = `${frame.title || `scene-${idx + 1}`}.png`;
+                              link.click();
+                            }}
+                            className="p-3 bg-purple-600 hover:bg-purple-700 rounded-xl shadow-lg transition-all"
+                            title="Download this frame"
+                          >
+                            <Download className="w-5 h-5 text-white" />
+                          </motion.button>
+                        </div>
                       )}
                     </motion.div>
                   ))}
@@ -344,12 +463,12 @@ function StoryboardPanel() {
         </AnimatePresence>
       </motion.div>
 
-      {/* Right Column - Controls (40% width) */}
+      {/* Right Column - Controls (responsive width) */}
       <motion.div
         initial={{ opacity: 0, x: 50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="flex-[2] flex flex-col min-w-0 overflow-y-auto custom-scrollbar"
+        className="flex-1 lg:flex-[2] flex flex-col min-w-0 lg:min-w-[400px] overflow-y-auto custom-scrollbar"
       >
         {/* Header */}
         <motion.div
@@ -358,11 +477,21 @@ function StoryboardPanel() {
           transition={{ delay: 0.3 }}
           className="mb-6"
         >
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent flex items-center gap-2">
-            <Sparkles className="w-7 h-7 text-purple-400" />
-            AI Storyboard Generator
-          </h2>
-          <p className="text-gray-400 mt-2 text-sm">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent flex items-center gap-2">
+              <Sparkles className="w-7 h-7 text-purple-400" />
+              AI Storyboard Generator
+            </h2>
+            {onBackToPrompts && (
+              <button
+                onClick={onBackToPrompts}
+                className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1"
+              >
+                ← Back to Prompts
+              </button>
+            )}
+          </div>
+          <p className="text-gray-400 text-sm">
             Transform your ideas into visual narratives
           </p>
         </motion.div>
@@ -382,6 +511,11 @@ function StoryboardPanel() {
               onChange={(e) => setIntent(e.target.value)}
             />
             <Wand2 className="absolute top-4 right-4 w-5 h-5 text-gray-500" />
+            {initialPrompt && intent === initialPrompt && (
+              <div className="absolute top-2 left-2 bg-blue-600/20 border border-blue-500/50 rounded px-2 py-1">
+                <span className="text-xs text-blue-400">From Prompt Generator</span>
+              </div>
+            )}
           </div>
 
           {/* Number of Frames Selector */}
@@ -399,6 +533,25 @@ function StoryboardPanel() {
               <option value={5}>5 frames (Balanced)</option>
               <option value={7}>7 frames (Detailed)</option>
               <option value={10}>10 frames (Extended)</option>
+            </select>
+          </div>
+
+          {/* Aspect Ratio Selector */}
+          <div className="flex items-center gap-4 px-4 py-3 bg-gray-800/30 border border-gray-700 rounded-lg">
+            <label className="text-gray-300 font-medium flex items-center gap-2">
+              <Maximize2 className="w-4 h-4 text-purple-400" />
+              Aspect Ratio:
+            </label>
+            <select
+              value={aspectRatio}
+              onChange={(e) => setAspectRatio(e.target.value)}
+              className="flex-1 px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all cursor-pointer"
+            >
+              <option value="16:9">16:9 (Landscape)</option>
+              <option value="1:1">1:1 (Square)</option>
+              <option value="9:16">9:16 (Portrait)</option>
+              <option value="4:3">4:3 (Classic)</option>
+              <option value="21:9">21:9 (Ultrawide)</option>
             </select>
           </div>
 
@@ -542,11 +695,17 @@ function StoryboardPanel() {
                         </button>
                       </div>
 
-                      {/* Modal Content - Textarea Style */}
+                      {/* Modal Content - Editable Descriptions */}
                       <div
                         className="p-6 overflow-y-auto custom-scrollbar"
                         style={{ maxHeight: "calc(90vh - 200px)" }}
                       >
+                        <div className="mb-4 px-2">
+                          <p className="text-sm text-gray-400 flex items-center gap-2">
+                            <Edit className="w-4 h-4 text-purple-400" />
+                            Edit frame descriptions below before generating images
+                          </p>
+                        </div>
                         <div className="space-y-4">
                           {plan.frames.map((frame, idx) => (
                             <motion.div
@@ -554,9 +713,9 @@ function StoryboardPanel() {
                               initial={{ opacity: 0, x: -20 }}
                               animate={{ opacity: 1, x: 0 }}
                               transition={{ delay: idx * 0.05 }}
-                              className="flex gap-4 p-4 bg-gray-800/50 rounded-xl border border-gray-700 hover:bg-gray-800/70 transition-all group"
+                              className="flex gap-4 p-4 bg-gray-800/50 rounded-xl border border-gray-700 focus-within:border-purple-500 transition-all group"
                             >
-                              <div className="flex-shrink-0">
+                              <div className="flex-shrink-0 pt-1">
                                 <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center font-bold text-white text-lg shadow-lg group-hover:scale-110 transition-transform">
                                   {idx + 1}
                                 </div>
@@ -565,9 +724,16 @@ function StoryboardPanel() {
                                 <h4 className="text-sm font-semibold text-gray-400 mb-2">
                                   Scene {idx + 1}
                                 </h4>
-                                <p className="text-gray-300 leading-relaxed">
-                                  {frame.description}
-                                </p>
+                                <textarea
+                                  value={frame.description}
+                                  onChange={(e) => {
+                                    const updatedFrames = [...plan.frames];
+                                    updatedFrames[idx] = { description: e.target.value };
+                                    setPlan({ ...plan, frames: updatedFrames });
+                                  }}
+                                  className="w-full min-h-[80px] p-3 bg-gray-900/50 border border-gray-600 rounded-lg text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-y"
+                                  placeholder="Enter frame description..."
+                                />
                               </div>
                             </motion.div>
                           ))}
