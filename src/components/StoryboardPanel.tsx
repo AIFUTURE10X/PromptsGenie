@@ -306,7 +306,8 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
   // Toggle frame model
   const toggleFrameModel = (idx: number) => {
     const newModels = new Map(frameModels);
-    const currentModel = frameModels.get(idx) || defaultModel;
+    // Get the ACTUAL current model using getModelForFrame, not just the stored value
+    const currentModel = getModelForFrame(idx, storyboard?.frames[idx]);
     const nextModel: ImageModel = currentModel === "imagen3" ? "nano-banana" :
                                    currentModel === "nano-banana" ? "auto" : "imagen3";
     newModels.set(idx, nextModel);
@@ -505,14 +506,27 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
         frames[frameIndex] = frameData.frame;
         setStoryboard({ ...storyboard, frames: [...frames] });
       } else {
+        const errorText = await frameResponse.text();
+        console.error(`Failed to regenerate frame ${frameIndex + 1}:`, errorText);
         setError(`Failed to regenerate frame ${frameIndex + 1}`);
-        // Restore original frame on error
-        frames[frameIndex] = storyboard.frames[frameIndex];
+        // Set frame to error state
+        frames[frameIndex] = {
+          ...frames[frameIndex],
+          status: "error",
+          image_url: ""
+        };
         setStoryboard({ ...storyboard, frames: [...frames] });
       }
     } catch (frameError) {
       console.error(`Error regenerating frame ${frameIndex + 1}:`, frameError);
       setError(`Error regenerating frame ${frameIndex + 1}`);
+      // Set frame to error state
+      frames[frameIndex] = {
+        ...frames[frameIndex],
+        status: "error",
+        image_url: ""
+      };
+      setStoryboard({ ...storyboard, frames: [...frames] });
     }
   };
 
@@ -630,7 +644,7 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                           }
                         }}
                       >
-                        {/* Model Badge - Inside Image Container */}
+                        {/* Model Badge - Bottom Left of Image */}
                         {frame?.image_url && (
                           <motion.div
                             initial={{ scale: 0 }}
@@ -640,7 +654,7 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                               e.stopPropagation();
                               toggleFrameModel(idx);
                             }}
-                            className={`absolute top-4 right-4 z-30 px-3 py-1.5 rounded-full text-xs font-bold cursor-pointer transition-all hover:scale-110 shadow-lg ${
+                            className={`absolute bottom-4 left-4 z-30 px-3 py-1.5 rounded-full text-xs font-bold cursor-pointer transition-all hover:scale-110 shadow-xl ring-2 ring-black/50 ${
                               getModelForFrame(idx, frame) === "imagen3"
                                 ? "bg-green-600 text-white"
                                 : getModelForFrame(idx, frame) === "nano-banana"
