@@ -1,7 +1,7 @@
 import { GoogleAuth } from 'google-auth-library';
 
 // Classic Generative Language REST API implementation
-export async function callGeminiClassic(prompt, model = 'gemini-pro') {
+export async function callGeminiClassic(prompt, model = 'gemini-2.5-flash') {
   const apiKey = process.env.GOOGLE_API_KEY?.trim();
 
   if (!apiKey) {

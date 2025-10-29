@@ -1,4 +1,4 @@
-async function callGeminiClassic(prompt, model = 'gemini-pro') {
+async function callGeminiClassic(prompt, model = 'gemini-2.5-flash') {
   const endpoint = `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${process.env.GOOGLE_API_KEY}`;
 
   console.log('🔧 Gemini API Call:', { model, promptLength: prompt.length });
