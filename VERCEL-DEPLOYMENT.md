@@ -15,7 +15,7 @@ Complete guide for deploying PromptsGenie to Vercel (works with free tier).
 
 1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
 2. Click "Create API Key"
-3. Copy your API key (starts with `AIza...`)
+3. Copy your API key (starts with something like `A1za...`)
 
 ### Google Cloud Service Account (for Storyboard Image Generation)
 

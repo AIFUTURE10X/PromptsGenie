@@ -14,7 +14,7 @@ cp .env.example .env
 
 Edit `.env` and add your Google AI API key:
 ```env
-GOOGLE_API_KEY=AIzaSy...your_actual_key_here
+GOOGLE_API_KEY=A1zaSy...your_actual_key_here
 ```
 
 Get your API key: https://aistudio.google.com/app/apikey

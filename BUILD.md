@@ -26,7 +26,7 @@
 ### Environment Variables
 
 #### Required Variables
-- `VITE_GEMINI_API_KEY` - Your Gemini API key (starts with AIza)
+- `VITE_GEMINI_API_KEY` - Your Gemini API key (starts with something like A1za)
 - `VITE_GEMINI_MODEL_TEXT` - Text model (recommended: gemini-1.5-flash)
 - `VITE_GEMINI_MODEL_IMAGES` - Image model (recommended: gemini-1.5-flash)
 

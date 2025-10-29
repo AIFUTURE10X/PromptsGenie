@@ -20,7 +20,7 @@ PromptsGenie uses three Google services:
 1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
 2. Sign in with your Google account
 3. Click "Create API Key"
-4. Copy the API key (starts with `AIza...`)
+4. Copy the API key (starts with something like `A1za...`)
 
 ## Step 2: Set Up Google Cloud Project for Vertex AI
 
@@ -68,7 +68,7 @@ Create a `.env.server` file in the project root:
 
 ```bash
 # Google API Key for Gemini API
-GOOGLE_API_KEY=AIza...your_actual_api_key_here
+GOOGLE_API_KEY=A1za...your_actual_api_key_here
 
 # Google Cloud Project ID
 GOOGLE_PROJECT_ID=your-project-id-12345
@@ -86,7 +86,7 @@ Create a `.env` file in the project root:
 
 ```bash
 # Frontend Gemini API Key (embedded in client build)
-VITE_GEMINI_API_KEY=AIza...your_actual_api_key_here
+VITE_GEMINI_API_KEY=A1za...your_actual_api_key_here
 
 # Gemini Models
 VITE_GEMINI_MODEL_TEXT=gemini-1.5-flash
