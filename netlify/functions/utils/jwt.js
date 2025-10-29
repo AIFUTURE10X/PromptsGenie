@@ -38,11 +38,14 @@ export function createJWT(credentials) {
   const signatureInput = `${encodedHeader}.${encodedClaimSet}`;
 
   // Sign with RSA private key
+  // Handle private_key with escaped newlines (e.g., "\\n" → actual newlines)
+  const privateKey = credentials.private_key.replace(/\\n/g, '\n');
+  
   const sign = crypto.createSign('RSA-SHA256');
   sign.update(signatureInput);
   sign.end();
 
-  const signature = sign.sign(credentials.private_key, 'base64')
+  const signature = sign.sign(privateKey, 'base64')
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=+$/, '');

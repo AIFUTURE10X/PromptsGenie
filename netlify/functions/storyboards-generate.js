@@ -25,13 +25,33 @@ async function getAccessToken() {
       }),
     });
 
+    const responseText = await response.text();
+    
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ OAuth2 token exchange failed:', errorText);
-      throw new Error(`Token exchange failed: ${response.status}`);
+      console.error('❌ OAuth2 token exchange failed:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: responseText
+      });
+      throw new Error(`Token exchange failed: ${response.status} - ${responseText}`);
     }
 
-    const data = await response.json();
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('❌ Failed to parse OAuth2 response:', {
+        parseError: parseError.message,
+        responseText: responseText.substring(0, 200)
+      });
+      throw new Error(`Invalid OAuth2 response: ${parseError.message}`);
+    }
+
+    if (!data.access_token) {
+      console.error('❌ No access_token in response:', data);
+      throw new Error('OAuth2 response missing access_token');
+    }
+
     return data.access_token;
   } catch (error) {
     console.error('❌ Error getting access token:', error);
