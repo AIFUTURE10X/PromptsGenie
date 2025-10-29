@@ -620,34 +620,6 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                         {idx + 1}
                       </motion.div>
 
-                      {/* Model Badge */}
-                      {frame?.image_url && (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ delay: 0.2, type: "spring" }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleFrameModel(idx);
-                          }}
-                          className={`absolute bottom-24 right-5 z-40 px-3 py-1.5 rounded-full text-xs font-bold cursor-pointer transition-all hover:scale-110 shadow-lg ${
-                            getModelForFrame(idx, frame) === "imagen3"
-                              ? "bg-green-600 text-white"
-                              : getModelForFrame(idx, frame) === "nano-banana"
-                              ? "bg-orange-600 text-white"
-                              : "bg-blue-600 text-white"
-                          }`}
-                          title="Click to toggle model"
-                        >
-                          {getModelForFrame(idx, frame) === "imagen3"
-                            ? "Imagen 3"
-                            : getModelForFrame(idx, frame) === "nano-banana"
-                            ? "Nano 🍌"
-                            : "Auto"}
-                        </motion.div>
-                      )}
-
-
                       {/* Image Container */}
                       <div
                         className="aspect-video bg-gray-950 relative overflow-hidden cursor-pointer"
@@ -658,6 +630,32 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                           }
                         }}
                       >
+                        {/* Model Badge - Inside Image Container */}
+                        {frame?.image_url && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ delay: 0.2, type: "spring" }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleFrameModel(idx);
+                            }}
+                            className={`absolute top-4 right-4 z-30 px-3 py-1.5 rounded-full text-xs font-bold cursor-pointer transition-all hover:scale-110 shadow-lg ${
+                              getModelForFrame(idx, frame) === "imagen3"
+                                ? "bg-green-600 text-white"
+                                : getModelForFrame(idx, frame) === "nano-banana"
+                                ? "bg-orange-600 text-white"
+                                : "bg-blue-600 text-white"
+                            }`}
+                            title="Click to toggle model"
+                          >
+                            {getModelForFrame(idx, frame) === "imagen3"
+                              ? "Imagen 3"
+                              : getModelForFrame(idx, frame) === "nano-banana"
+                              ? "Nano 🍌"
+                              : "Auto"}
+                          </motion.div>
+                        )}
                         {frame?.status === "error" ? (
                           <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-red-950/20">
                             <div className="text-red-400 text-center px-4">
