@@ -2,12 +2,26 @@
 async function getAccessToken() {
   try {
     // Parse service account credentials from environment variable
-    const credentials = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON
-      ? JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON)
-      : null;
-
-    if (!credentials) {
+    // WORKAROUND: Netlify strips quotes from JSON env vars (known bug)
+    const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
+    
+    if (!credentialsJson) {
       throw new Error('GOOGLE_APPLICATION_CREDENTIALS_JSON not configured');
+    }
+
+    let credentials;
+    try {
+      // First try normal JSON parse (in case Netlify fixes their bug)
+      credentials = JSON.parse(credentialsJson);
+    } catch (jsonError) {
+      // If that fails, it's likely Netlify's quote-stripping bug
+      // Use eval in a controlled way to parse JavaScript object literal
+      console.log('⚠️ JSON parse failed, using eval fallback for Netlify bug');
+      credentials = eval('(' + credentialsJson + ')');
+    }
+
+    if (!credentials || !credentials.private_key || !credentials.client_email) {
+      throw new Error('Invalid credentials structure');
     }
 
     // Create JWT for OAuth2 token exchange

@@ -94,7 +94,19 @@ export async function getAccessToken() {
       throw new Error('GOOGLE_APPLICATION_CREDENTIALS_JSON is not configured');
     }
 
-    const credentials = JSON.parse(credsJson);
+    let credentials;
+    try {
+      // First try normal JSON parse
+      credentials = JSON.parse(credsJson);
+    } catch (jsonError) {
+      // Fallback: Use eval for Netlify's quote-stripping bug
+      console.log('⚠️ JSON parse failed, using eval fallback');
+      credentials = eval('(' + credsJson + ')');
+    }
+
+    if (!credentials || !credentials.private_key || !credentials.client_email) {
+      throw new Error('Invalid credentials structure');
+    }
 
     // Create JWT for OAuth2 token exchange
     const { createJWT } = await import('./jwt.js');
