@@ -43,7 +43,7 @@ Find this in your Google Cloud Console dashboard
 #### 3. Google Service Account Credentials
 ```
 Variable name: GOOGLE_APPLICATION_CREDENTIALS_JSON
-Value: {"type":"service_account","project_id":"...","private_key":"..."}
+Value: {"type":"service_account","project_id":"...","private_key":"YOUR_PRIVATE_KEY_HERE"}
 ```
 
 **How to get service account credentials:**

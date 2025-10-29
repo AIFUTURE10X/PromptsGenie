@@ -125,9 +125,9 @@ cat google-credentials.json | jq -c
 # Or use this online tool: https://jsonformatter.org/json-minify
 ```
 
-Example minified JSON:
+Example minified JSON structure (replace placeholders with your actual values):
 ```
-{"type":"service_account","project_id":"my-project-12345","private_key_id":"abc123...","private_key":"-----BEGIN PRIVATE KEY-----\n...","client_email":"...","client_id":"...","auth_uri":"...","token_uri":"..."}
+{"type":"service_account","project_id":"your-project-id","private_key_id":"your-key-id","private_key":"YOUR_PRIVATE_KEY_HERE","client_email":"your-service-account@project.iam.gserviceaccount.com","client_id":"your-client-id","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token"}
 ```
 
 Also add the frontend environment variables:
