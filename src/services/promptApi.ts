@@ -1,73 +1,25 @@
 export async function generateWithGemini(inputText: string, model?: string, allowFallback: boolean = true, temperature?: number): Promise<string> {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
-  console.log('Gemini API Key exists:', Boolean(apiKey));
-  console.log('Gemini API Key length:', apiKey?.length ?? 0);
-  const isPlaceholderKey = !!apiKey && (apiKey.includes('YOUR_API_KEY') || apiKey.includes('PLACEHOLDER') || apiKey === 'VITE_GEMINI_API_KEY');
-  if (!apiKey || isPlaceholderKey) {
-    console.info('ℹ️ No Gemini API key configured - using enhanced prompt fallback (this is normal)');
+  const chosenModel = model || (import.meta.env.VITE_GEMINI_MODEL_TEXT as string | undefined) || 'gemini-2.5-flash';
+  console.log('Gemini text: Using model:', chosenModel);
+  console.log('Gemini text: Input text length:', inputText?.length ?? 0);
+
+  const res = await fetch('/api/gemini/text', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt: inputText, model: chosenModel })
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    console.error('Gemini text (server) error:', res.status, errText);
     if (allowFallback) {
       const generic = inputText + ' — photorealistic, soft studio lighting, shallow depth of field, 50mm lens, balanced composition, high detail.';
       return generic.trim();
     }
-    throw new Error('Missing or placeholder VITE_GEMINI_API_KEY');
-  }
-
-  const chosenModel = model || (import.meta.env.VITE_GEMINI_MODEL_TEXT as string | undefined) || 'gemini-2.5-flash';
-  console.log('Gemini text: Using model:', chosenModel);
-  console.log('Gemini text: Input text length:', inputText?.length ?? 0);
-  if (temperature !== undefined) {
-    console.log('Gemini text: Using temperature:', temperature);
-  }
-  const url = `https://generativelanguage.googleapis.com/v1/models/${chosenModel}:generateContent?key=${apiKey}`;
-
-  const body: any = {
-    contents: [{ role: 'user', parts: [{ text: inputText }] }]
-  };
-
-  // Add generation config if temperature is specified
-  if (temperature !== undefined) {
-    body.generationConfig = {
-      temperature: Math.max(0.0, Math.min(2.0, temperature)), // Clamp between 0.0 and 2.0
-      topP: 0.95,
-      topK: 40
-    };
-  }
-
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-
-  // Enhanced error-aware fallback: if access/not-found, try 2.5→1.5 and flash→pro
-  if (!res.ok) {
-    const errText = await res.text();
-    console.error('Gemini text error:', res.status, errText);
-    if (/API key not valid/i.test(errText) || /INVALID_ARGUMENT/i.test(errText)) {
-      if (allowFallback) {
-        console.warn('Gemini API key invalid; returning generic fallback');
-        const generic = inputText + ' — photorealistic, soft studio lighting, shallow depth of field, 50mm lens, balanced composition, high detail.';
-        return generic.trim();
-      }
-      throw new Error('Gemini API key is invalid or not configured.');
-    }
-    if (allowFallback) {
-      const isAccessOrNotFound = res.status === 403 || res.status === 404 || /permission|access|not\s*found|unsupported|model/i.test(errText);
-      if (isAccessOrNotFound) {
-        let fallbackModel = chosenModel;
-        if (fallbackModel.includes('2.5')) fallbackModel = fallbackModel.replace('2.5', '1.5');
-        if (fallbackModel.includes('flash')) fallbackModel = fallbackModel.replace('flash', 'pro');
-        if (fallbackModel !== chosenModel) {
-          return generateWithGemini(inputText, fallbackModel, false, temperature);
-        }
-      }
-    }
-    throw new Error(`Gemini error ${res.status}: ${errText}`);
+    throw new Error(`Gemini server error ${res.status}: ${errText}`);
   }
 
   const data = await res.json();
-
-  // Robust extraction: first actual text part across candidates
   let textOut = '';
   for (const cand of data?.candidates ?? []) {
     for (const part of cand?.content?.parts ?? []) {
@@ -79,19 +31,10 @@ export async function generateWithGemini(inputText: string, model?: string, allo
     const parts = data?.candidates?.[0]?.content?.parts ?? [];
     textOut = parts.map((p: any) => p?.text ?? '').join('').trim();
   }
-  console.log('Gemini text response:', textOut);
-
-  // Flash → Pro fallback if empty
-  if (!textOut && allowFallback && chosenModel.includes('flash')) {
-    const fallbackModel = chosenModel.replace('flash', 'pro');
-    return generateWithGemini(inputText, fallbackModel, false);
-  }
-
   return textOut || '(No content returned)';
 }
 
 export async function generateWithGeminiImages(inputText: string, imageDataUrls: string[], model?: string, allowFallback: boolean = true): Promise<string> {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
   // Use passed-in model if provided, otherwise use env/default
   const resolvedModel = model || import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE || "gemini-2.5-flash";
   console.log('Gemini API Key exists:', Boolean(apiKey));

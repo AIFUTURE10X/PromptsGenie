@@ -14,8 +14,8 @@ export interface GenerateWithImagesRESTArgs {
 }
 
 export async function generateWithImagesREST({ apiKey, model, text, imageDataUrls, generationConfig }: GenerateWithImagesRESTArgs): Promise<string> {
-  // Now calling our server endpoint instead of Google directly
-  const endpoint = `http://localhost:8085/api/gemini/images`;
+  // Call Netlify Function (works in dev and prod)
+  const endpoint = `/api/gemini/images`;
   
   console.log("🔧 Server API Request Details:");
   console.log("  - Model:", model);
