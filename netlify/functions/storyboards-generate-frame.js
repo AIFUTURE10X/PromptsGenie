@@ -78,7 +78,7 @@ export const handler = async (event, context) => {
   }
 
   try {
-    const { description, frameIndex, storyboardId } = JSON.parse(event.body);
+    const { description, frameIndex, storyboardId, aspectRatio } = JSON.parse(event.body);
 
     if (!description || typeof frameIndex !== 'number') {
       return {
@@ -97,6 +97,15 @@ export const handler = async (event, context) => {
     const prompt = `Generate a cinematic storyboard frame: ${description}`;
     const endpoint = `https://us-central1-aiplatform.googleapis.com/v1/projects/${process.env.GOOGLE_PROJECT_ID}/locations/us-central1/publishers/google/models/${model}:predict`;
 
+    // Map aspect ratio to parameters
+    const aspectRatioMap = {
+      '16:9': { aspectRatio: '16:9' },
+      '1:1': { aspectRatio: '1:1' },
+      '9:16': { aspectRatio: '9:16' },
+      '4:3': { aspectRatio: '4:3' },
+      '21:9': { aspectRatio: '16:9' } // 21:9 not supported, use 16:9
+    };
+
     const body = {
       instances: [
         {
@@ -105,6 +114,7 @@ export const handler = async (event, context) => {
       ],
       parameters: {
         sampleCount: 1,
+        ...(aspectRatio && aspectRatioMap[aspectRatio] ? aspectRatioMap[aspectRatio] : {}),
       },
     };
 
@@ -128,7 +138,7 @@ export const handler = async (event, context) => {
       const imageBase64 = data?.predictions?.[0]?.bytesBase64Encoded;
 
       if (imageBase64) {
-        // Return the base64 image data directly to client
+        // Return frame object matching frontend interface
         return {
           statusCode: 200,
           headers: {
@@ -137,9 +147,13 @@ export const handler = async (event, context) => {
           },
           body: JSON.stringify({
             success: true,
-            frameIndex,
-            imageData: `data:image/png;base64,${imageBase64}`,
-            description
+            frame: {
+              id: `frame_${storyboardId}_${frameIndex}`,
+              image_url: `data:image/png;base64,${imageBase64}`,
+              title: `Scene ${frameIndex + 1}`,
+              description: description,
+              status: 'completed'
+            }
           })
         };
       } else {

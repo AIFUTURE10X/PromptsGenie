@@ -140,7 +140,7 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
     }
   };
 
-  // Generate storyboard
+  // Generate storyboard with parallel frame generation (3 at a time)
   const generateStoryboard = async () => {
     setLoading(true);
     setError(null);
@@ -157,31 +157,51 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
       // Set initial storyboard with pending frames
       setStoryboard(data);
 
-      // Now generate each frame individually to avoid 6MB response limit
+      // Generate frames in parallel (3 at a time for speed)
       const frames = [...data.frames];
-      for (let i = 0; i < frames.length; i++) {
-        try {
-          const frameResponse = await fetch(`${API_BASE}/generate-frame`, {
+      const PARALLEL_COUNT = 3;
+
+      for (let i = 0; i < frames.length; i += PARALLEL_COUNT) {
+        const batch = frames.slice(i, i + PARALLEL_COUNT);
+        const batchPromises = batch.map((frame, batchIndex) => {
+          const frameIndex = i + batchIndex;
+          return fetch(`${API_BASE}/generate-frame`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               storyboardId: data.storyboardId,
-              frameIndex: i,
-              description: frames[i].description,
+              frameIndex: frameIndex,
+              description: frames[frameIndex].description,
+              aspectRatio: aspectRatio,
             }),
-          });
+          })
+            .then(async (frameResponse) => {
+              if (frameResponse.ok) {
+                const frameData = await frameResponse.json();
+                return { frameIndex, frame: frameData.frame };
+              } else {
+                console.error(`Failed to generate frame ${frameIndex + 1}`);
+                return null;
+              }
+            })
+            .catch((frameError) => {
+              console.error(`Error generating frame ${frameIndex + 1}:`, frameError);
+              return null;
+            });
+        });
 
-          if (frameResponse.ok) {
-            const frameData = await frameResponse.json();
-            frames[i] = frameData.frame;
-            // Update storyboard with new frame
-            setStoryboard({ ...data, frames: [...frames] });
-          } else {
-            console.error(`Failed to generate frame ${i + 1}`);
+        // Wait for current batch to complete
+        const results = await Promise.all(batchPromises);
+
+        // Update frames with results
+        results.forEach((result) => {
+          if (result) {
+            frames[result.frameIndex] = result.frame;
           }
-        } catch (frameError) {
-          console.error(`Error generating frame ${i + 1}:`, frameError);
-        }
+        });
+
+        // Update storyboard with latest frames
+        setStoryboard({ ...data, frames: [...frames] });
       }
     } catch (e: any) {
       setError(e.message || "Failed to generate storyboard.");
