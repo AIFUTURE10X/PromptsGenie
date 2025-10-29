@@ -36,12 +36,12 @@ function StoryboardPanel() {
     // Simple deterministic hash for storyboardId
     let hash = 0;
     for (let i = 0; i < intent.length; i++) {
-      hash = ((hash << 5) - hash) + intent.charCodeAt(i);
+      hash = (hash << 5) - hash + intent.charCodeAt(i);
       hash |= 0;
     }
-    return 'sb_' + Math.abs(hash);
+    return "sb_" + Math.abs(hash);
   }
-  
+
   // Fetch storyboard plan
   const fetchStoryboardPlan = async () => {
     setLoading(true);
@@ -86,10 +86,10 @@ function StoryboardPanel() {
       });
       if (!response.ok) throw new Error(await response.text());
       const data: Storyboard = await response.json();
-      
+
       // Set initial storyboard with pending frames
       setStoryboard(data);
-      
+
       // Now generate each frame individually to avoid 6MB response limit
       const frames = [...data.frames];
       for (let i = 0; i < frames.length; i++) {
@@ -100,10 +100,10 @@ function StoryboardPanel() {
             body: JSON.stringify({
               storyboardId: data.storyboardId,
               frameIndex: i,
-              description: frames[i].description
+              description: frames[i].description,
             }),
           });
-          
+
           if (frameResponse.ok) {
             const frameData = await frameResponse.json();
             frames[i] = frameData.frame;
@@ -116,7 +116,6 @@ function StoryboardPanel() {
           console.error(`Error generating frame ${i + 1}:`, frameError);
         }
       }
-      
     } catch (e: any) {
       setError(e.message || "Failed to generate storyboard.");
     } finally {
@@ -152,7 +151,9 @@ function StoryboardPanel() {
           <Sparkles className="w-8 h-8 text-purple-400" />
           AI Storyboard Generator
         </h2>
-        <p className="text-gray-400 mt-2">Transform your ideas into visual narratives</p>
+        <p className="text-gray-400 mt-2">
+          Transform your ideas into visual narratives
+        </p>
       </motion.div>
 
       {/* Input Section */}
@@ -167,7 +168,7 @@ function StoryboardPanel() {
             className="w-full h-24 px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-none"
             placeholder="Describe your story... (e.g., 'A superhero discovers their powers and saves the city')"
             value={intent}
-            onChange={e => setIntent(e.target.value)}
+            onChange={(e) => setIntent(e.target.value)}
           />
           <Wand2 className="absolute top-4 right-4 w-5 h-5 text-gray-500" />
         </div>
@@ -275,7 +276,7 @@ function StoryboardPanel() {
               <Sparkles className="w-6 h-6 text-purple-400" />
               Generated Storyboard
             </h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {storyboard.frames.map((frame, idx) => (
                 <motion.div
@@ -305,7 +306,7 @@ function StoryboardPanel() {
                         <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
                       </div>
                     )}
-                    
+
                     {/* Overlay on hover */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
                       <div className="text-white">
@@ -316,12 +317,16 @@ function StoryboardPanel() {
 
                   {/* Description */}
                   <div className="p-4">
-                    <h4 className="font-semibold text-white mb-2">{frame.title}</h4>
-                    <p className="text-sm text-gray-400 line-clamp-2">{frame.description}</p>
+                    <h4 className="font-semibold text-white mb-2">
+                      {frame.title}
+                    </h4>
+                    <p className="text-sm text-gray-400 line-clamp-2">
+                      {frame.description}
+                    </p>
                   </div>
 
                   {/* Status indicator */}
-                  {frame.status === 'pending' && (
+                  {frame.status === "pending" && (
                     <div className="absolute top-2 right-2 z-10">
                       <Loader2 className="w-5 h-5 text-yellow-400 animate-spin" />
                     </div>
@@ -335,7 +340,5 @@ function StoryboardPanel() {
     </div>
   );
 }
-                          accept="image/*"
-
 
 export default StoryboardPanel;
