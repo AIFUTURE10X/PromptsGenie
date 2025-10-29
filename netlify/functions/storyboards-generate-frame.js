@@ -101,7 +101,7 @@ export const handler = async (event, context) => {
     };
 
     const model = modelMap[requestedModel] || modelMap['auto'];
-    console.log(`🎨 Using model: ${requestedModel || 'auto'} (${model})`);
+    console.log(`🎨 Frame ${frameIndex + 1}: Using model ${requestedModel || 'auto'} (${model})`);
 
     // Optimize prompt based on requested model type
     let prompt = '';
@@ -110,6 +110,9 @@ export const handler = async (event, context) => {
     } else {
       prompt = `Generate a cinematic storyboard frame: ${description}`;
     }
+
+    console.log(`📝 Frame ${frameIndex + 1} prompt: ${prompt.substring(0, 100)}...`);
+
     const endpoint = `https://us-central1-aiplatform.googleapis.com/v1/projects/${process.env.GOOGLE_PROJECT_ID}/locations/us-central1/publishers/google/models/${model}:predict`;
 
     // Map aspect ratio to parameters
@@ -135,7 +138,8 @@ export const handler = async (event, context) => {
 
     const accessToken = await getAccessToken();
 
-    console.log(`🔧 Generating frame ${frameIndex + 1}...`);
+    console.log(`🔧 Generating frame ${frameIndex + 1} - Calling Google Imagen API...`);
+    const startTime = Date.now();
 
     const response = await fetch(endpoint, {
       method: 'POST',
@@ -146,9 +150,11 @@ export const handler = async (event, context) => {
       body: JSON.stringify(body),
     });
 
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+
     if (response.ok) {
       const data = await response.json();
-      console.log(`🟦 Gemini API response for frame ${frameIndex + 1}:`, JSON.stringify(data, null, 2));
+      console.log(`✅ Frame ${frameIndex + 1} generated successfully in ${elapsed}s`);
 
       const imageBase64 = data?.predictions?.[0]?.bytesBase64Encoded;
 
@@ -173,8 +179,9 @@ export const handler = async (event, context) => {
         };
       } else {
         const availableKeys = Object.keys(data || {}).join(', ');
-        const errorMessage = `Predictions not found in response. Available keys: ${availableKeys}`;
-        console.error(errorMessage);
+        const errorMessage = `No image in API response. Available keys: ${availableKeys}`;
+        console.error(`❌ Frame ${frameIndex + 1}: ${errorMessage}`);
+        console.error(`Full API response:`, JSON.stringify(data, null, 2));
         return {
           statusCode: 500,
           headers: {
@@ -189,7 +196,8 @@ export const handler = async (event, context) => {
       }
     } else {
       const errorText = await response.text();
-      console.error(`Image generation failed for frame ${frameIndex + 1} with status ${response.status}: ${errorText}`);
+      console.error(`❌ Frame ${frameIndex + 1} failed in ${elapsed}s with status ${response.status}`);
+      console.error(`Error details:`, errorText);
       return {
         statusCode: response.status,
         headers: {
@@ -198,7 +206,7 @@ export const handler = async (event, context) => {
         },
         body: JSON.stringify({
           success: false,
-          error: errorText
+          error: `API error ${response.status}: ${errorText}`
         })
       };
     }

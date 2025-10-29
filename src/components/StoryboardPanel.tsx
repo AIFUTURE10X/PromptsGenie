@@ -366,9 +366,9 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
       // Set initial storyboard with pending frames
       setStoryboard(data);
 
-      // Generate frames in parallel (3 at a time for speed)
+      // Generate frames in parallel (2 at a time to avoid rate limits)
       const frames = [...data.frames];
-      const PARALLEL_COUNT = 3;
+      const PARALLEL_COUNT = 2; // Reduced from 3 to avoid API rate limiting
 
       for (let i = 0; i < frames.length; i += PARALLEL_COUNT) {
         const batch = frames.slice(i, i + PARALLEL_COUNT);
@@ -376,12 +376,9 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
           const frameIndex = i + batchIndex;
           const selectedModel = getModelForFrame(frameIndex, frames[frameIndex]);
 
-          // Create a timeout promise (60 seconds per frame)
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Frame generation timeout')), 60000)
-          );
+          console.log(`🎬 Starting frame ${frameIndex + 1}/${frames.length} with model: ${selectedModel}`);
 
-          const fetchPromise = fetch(`${API_BASE}/generate-frame`, {
+          return fetch(`${API_BASE}/generate-frame`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -395,10 +392,15 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
             .then(async (frameResponse) => {
               if (frameResponse.ok) {
                 const frameData = await frameResponse.json();
+                console.log(`✅ Frame ${frameIndex + 1} generated successfully`);
                 return { frameIndex, frame: frameData.frame };
               } else {
                 const errorText = await frameResponse.text();
-                console.error(`Failed to generate frame ${frameIndex + 1}:`, errorText);
+                console.error(`❌ Failed to generate frame ${frameIndex + 1}:`, {
+                  status: frameResponse.status,
+                  statusText: frameResponse.statusText,
+                  error: errorText
+                });
                 return {
                   frameIndex,
                   frame: {
@@ -410,21 +412,10 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
               }
             })
             .catch((frameError) => {
-              console.error(`Error generating frame ${frameIndex + 1}:`, frameError);
-              return {
-                frameIndex,
-                frame: {
-                  ...frames[frameIndex],
-                  status: "error",
-                  image_url: ""
-                }
-              };
-            });
-
-          // Race between fetch and timeout
-          return Promise.race([fetchPromise, timeoutPromise])
-            .catch((timeoutError) => {
-              console.error(`Timeout generating frame ${frameIndex + 1}:`, timeoutError);
+              console.error(`💥 Network error generating frame ${frameIndex + 1}:`, {
+                message: frameError.message,
+                stack: frameError.stack
+              });
               return {
                 frameIndex,
                 frame: {
