@@ -78,7 +78,7 @@ export const handler = async (event, context) => {
   }
 
   try {
-    const { description, frameIndex, storyboardId, aspectRatio } = JSON.parse(event.body);
+    const { description, frameIndex, storyboardId, aspectRatio, model: requestedModel } = JSON.parse(event.body);
 
     if (!description || typeof frameIndex !== 'number') {
       return {
@@ -93,8 +93,23 @@ export const handler = async (event, context) => {
       };
     }
 
-    const model = 'imagegeneration@006';
-    const prompt = `Generate a cinematic storyboard frame: ${description}`;
+    // Map frontend model names to Google API model identifiers
+    const modelMap = {
+      'imagen3': 'imagegeneration@006',      // Imagen 3 (general scenes)
+      'nano-banana': 'imagegeneration@006',  // Imagen 3 (character-optimized prompt)
+      'auto': 'imagegeneration@006'          // Default to Imagen 3
+    };
+
+    const model = modelMap[requestedModel] || modelMap['auto'];
+    console.log(`🎨 Using model: ${requestedModel || 'auto'} (${model})`);
+
+    // Optimize prompt based on requested model type
+    let prompt = '';
+    if (requestedModel === 'nano-banana') {
+      prompt = `Generate a highly detailed character-focused cinematic storyboard frame with emphasis on facial expressions and character emotions: ${description}`;
+    } else {
+      prompt = `Generate a cinematic storyboard frame: ${description}`;
+    }
     const endpoint = `https://us-central1-aiplatform.googleapis.com/v1/projects/${process.env.GOOGLE_PROJECT_ID}/locations/us-central1/publishers/google/models/${model}:predict`;
 
     // Map aspect ratio to parameters
