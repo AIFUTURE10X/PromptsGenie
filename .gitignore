@@ -34,3 +34,6 @@ gcloud-*.json
 DreamMix-Prompt-Generator/
 src-tauri/
 supabase/
+
+# Local Netlify folder
+.netlify

@@ -1,8 +1,7 @@
-import { GoogleAuth } from 'google-auth-library';
-
+// Get Google Cloud access token using OAuth2 JWT flow (no external libraries needed)
 async function getAccessToken() {
   try {
-    // Parse the credentials from environment variable (stored as JSON string in Netlify)
+    // Parse service account credentials from environment variable
     const credentials = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON
       ? JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON)
       : null;
@@ -11,14 +10,29 @@ async function getAccessToken() {
       throw new Error('GOOGLE_APPLICATION_CREDENTIALS_JSON not configured');
     }
 
-    const auth = new GoogleAuth({
-      credentials,
-      scopes: 'https://www.googleapis.com/auth/cloud-platform'
+    // Create JWT for OAuth2 token exchange
+    const { createJWT } = await import('./utils/jwt.js');
+    const jwt = createJWT(credentials);
+
+    // Exchange JWT for access token
+    const tokenEndpoint = 'https://oauth2.googleapis.com/token';
+    const response = await fetch(tokenEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+        assertion: jwt,
+      }),
     });
 
-    const client = await auth.getClient();
-    const accessToken = await client.getAccessToken();
-    return accessToken.token;
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ OAuth2 token exchange failed:', errorText);
+      throw new Error(`Token exchange failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.access_token;
   } catch (error) {
     console.error('❌ Error getting access token:', error);
     throw new Error('Could not get access token: ' + error.message);
