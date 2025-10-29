@@ -45,7 +45,7 @@ if (!API_KEY) {
 }
 
 // Classic Generative Language REST API implementation
-export async function callGeminiClassic(prompt, model = 'gemini-pro') {
+export async function callGeminiClassic(prompt, model = 'gemini-1.5-flash-latest') {
   const endpoint = `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${process.env.GOOGLE_API_KEY}`;
   
   console.log('🔧 Gemini API Call:', { model, endpoint: endpoint.replace(/key=.+/, 'key=***'), promptLength: prompt.length });
