@@ -70,22 +70,6 @@ function StoryboardPanel() {
     }
   };
 
-  const pingServer = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch('/api/ping');
-      if (!response.ok) throw new Error(await response.text());
-      const data = await response.json();
-      console.log("Ping response:", data);
-      alert("Ping successful! Check the console for details.");
-    } catch (e: any) {
-      setError(e.message || "Failed to ping server.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Generate storyboard
   const generateStoryboard = async () => {
     setLoading(true);
@@ -143,11 +127,6 @@ function StoryboardPanel() {
             onClick={generateStoryboard}
             disabled={loading || !plan}
           >Generate</button>
-          <button
-            className="bg-yellow-500 text-white px-3 py-1 rounded ml-2"
-            onClick={pingServer}
-            disabled={loading}
-          >Ping</button>
         </div>
         {loading && <div>Loading...</div>}
         {error && <div className="text-red-500">{error}</div>}

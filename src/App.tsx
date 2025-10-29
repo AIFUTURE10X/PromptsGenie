@@ -436,53 +436,6 @@ function App() {
   };
 
   // Manual trigger functions for independent analysis
-  // Test function to verify server and API key works
-  const testApiKey = async (apiKey: string) => {
-    try {
-      // Test server health first
-      const healthEndpoint = `http://localhost:3001/api/health`;
-      console.log("🔧 Testing server health:", healthEndpoint);
-      
-      const healthResponse = await fetch(healthEndpoint);
-      if (!healthResponse.ok) {
-        throw new Error(`Server not available: ${healthResponse.status}`);
-      }
-      
-      const healthData = await healthResponse.json();
-      console.log("🔧 Server health:", healthData);
-      
-      // Test actual API functionality
-      const testEndpoint = `http://localhost:3001/api/test`;
-      console.log("🔧 Testing API functionality:", testEndpoint);
-      
-      const response = await fetch(testEndpoint);
-      
-      if (response.ok) {
-        console.log("✅ API Key test successful");
-        return true;
-      } else {
-        const errorText = await response.text();
-        console.error("❌ API Key test failed:", response.status, errorText);
-        
-        // Provide specific error messages
-        if (response.status === 429) {
-          alert("API quota exceeded. Please check your Gemini API quota limits or try again later.");
-        } else if (response.status === 401) {
-          alert("Authentication failed. Please check your Gemini API key.");
-        } else if (response.status === 403) {
-          alert("Access forbidden. Please verify your API key has the necessary permissions.");
-        } else {
-          alert(`API test failed with status ${response.status}. Please check your API key and try again.`);
-        }
-        return false;
-      }
-    } catch (error) {
-      console.error("❌ API Key test error:", error);
-      alert("Network error during API test. Please check your internet connection and try again.");
-      return false;
-    }
-  };
-
   const runSubjectAnalysis = async () => {
     console.log("🔍 runSubjectAnalysis called, subjectImages.length:", subjectImages.length);
     if (subjectImages.length === 0) return;
@@ -869,9 +822,6 @@ function App() {
       <BackgroundCanvas color="#000000" opacity={1} effect="grain" effectOpacity={0.06} />
       <div className="max-w-6xl mx-auto px-4">
         <BrandHeader logoSrc="Genie.png" />
-        <button className="bg-purple-600 text-white px-6 py-2 rounded-lg font-bold text-lg mt-4">
-          Test
-        </button>
       </div>
       <div className="max-w-6xl mx-auto py-6 px-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
