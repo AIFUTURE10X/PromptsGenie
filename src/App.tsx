@@ -137,7 +137,7 @@ function App() {
 
       const imagesDataUrls = await getImageDataUrls(images, speedMode);
       if (imagesDataUrls.length) {
-        const apiKey = ""; // API key handled by serverless function
+        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE || "gemini-2.5-flash";
         const mmModel = envModel || "gemini-2.5-flash"; // ensure 2.5 flash fallback
         const genCfg = speedMode === 'Quality'
@@ -171,7 +171,7 @@ function App() {
       setIsAnalyzing(true);
       try {
         const imageDataUrls = await getImageDataUrls(images, speedMode);
-        const apiKey = "";
+        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
         const model = envModel || "gemini-2.0-flash"; // ensure 2.5 flash fallback
         const genCfg = speedMode === 'Quality'
@@ -211,7 +211,7 @@ function App() {
       setIsAnalyzingSubject(true);
       try {
         const imageDataUrls = await getImageDataUrls(subjectImages, speedMode);
-        const apiKey = "";
+        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
         const model = envModel || "gemini-2.0-flash";
         const genCfg = speedMode === 'Quality'
@@ -414,7 +414,7 @@ function App() {
     setIsAnalyzing(true);
     try {
       const imageDataUrls = await getImageDataUrls(images, speedMode);
-      const apiKey = "";
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
       const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
       const model = envModel || "gemini-2.5-flash";
       const genCfg = speedMode === 'Quality'
@@ -445,12 +445,12 @@ function App() {
     setIsAnalyzingSubject(true);
     try {
       const imageDataUrls = await getImageDataUrls(subjectImages, speedMode);
-      const apiKey = "";
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
       const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
       const model = envModel || "gemini-2.0-flash";
-      
+
       console.log("🔍 Environment variables:");
-      console.log("  - VITE_GEMINI_API_KEY present:", false, "length:", 0);
+      console.log("  - VITE_GEMINI_API_KEY present:", !!apiKey, "length:", apiKey?.length || 0);
       console.log("  - VITE_GEMINI_MODEL_IMAGES:", import.meta.env.VITE_GEMINI_MODEL_IMAGES);
       console.log("  - VITE_GEMINI_MODEL_IMAGE:", import.meta.env.VITE_GEMINI_MODEL_IMAGE);
       console.log("  - Final model used:", model);
@@ -510,12 +510,12 @@ function App() {
     setIsAnalyzingScene(true);
     try {
       const imageDataUrls = await getImageDataUrls(sceneImages, speedMode);
-      const apiKey = "";
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
       const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
       const model = envModel || "gemini-2.0-flash";
-      
+
       console.log("🌍 Environment variables:");
-      console.log("  - VITE_GEMINI_API_KEY present:", false, "length:", 0);
+      console.log("  - VITE_GEMINI_API_KEY present:", !!apiKey, "length:", apiKey?.length || 0);
       console.log("  - VITE_GEMINI_MODEL_IMAGES:", import.meta.env.VITE_GEMINI_MODEL_IMAGES);
       console.log("  - VITE_GEMINI_MODEL_IMAGE:", import.meta.env.VITE_GEMINI_MODEL_IMAGE);
       console.log("  - Final model used:", model);
@@ -561,7 +561,7 @@ function App() {
     setIsAnalyzingStyle(true);
     try {
       const imageDataUrls = await getImageDataUrls(styleImages, speedMode);
-      const apiKey = "";
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
       const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE || "gemini-2.5-flash";
       const mmModel = envModel || "gemini-2.5-flash"; // ensure 2.5 flash fallback
       const genCfg = speedMode === 'Quality'
