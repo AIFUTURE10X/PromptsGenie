@@ -8,6 +8,18 @@
   # Disable secrets scanning for client-side API keys
   SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
 
+# Production branch configuration
+[context.production]
+  command = "npm run build"
+
+# Branch deploy configuration - auto-deploy all branches
+[context.branch-deploy]
+  command = "npm run build"
+
+# Specific configuration for Main-Prompt-Gen-V2 branch
+[context.Main-Prompt-Gen-V2]
+  command = "npm run build"
+
 # API redirects to Netlify Functions
 [[redirects]]
   from = "/api/gemini/text"
