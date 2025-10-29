@@ -37,3 +37,6 @@ supabase/
 
 # Local Netlify folder
 .netlify
+
+# Claude Code settings (local only)
+.claude/

@@ -23,6 +23,9 @@ function App() {
   const [editorExpanded, setEditorExpanded] = useState(false);
   const [lastSource, setLastSource] = useState<"edge" | "gemini-mm" | "gemini-text" | "subject" | "scene" | "style" | undefined>(undefined);
   
+  // New state for UI mode management
+  const [currentMode, setCurrentMode] = useState<'prompt' | 'storyboard'>('prompt');
+  
   // Debug logging for state changes
   useEffect(() => {
     console.log("🔄 Prompt state changed:", prompt ? `"${prompt.substring(0, 50)}..."` : "EMPTY");
@@ -820,77 +823,128 @@ function App() {
   return (
     <div className="relative dark min-h-screen text-dark-text-primary">
       <BackgroundCanvas color="#000000" opacity={1} effect="grain" effectOpacity={0.06} />
-      <div className="max-w-6xl mx-auto px-4">
+      
+      {/* Header with Navigation */}
+      <div className="max-w-7xl mx-auto px-4">
         <BrandHeader logoSrc="Genie.png" />
-      </div>
-      <div className="max-w-6xl mx-auto py-6 px-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-          {/* Left: Image drop zone */}
-          <div className="panel-standard-height">
-            <ImageDropZone
-              images={images}
-              onImagesChange={setImages}
-              onRunAnalysis={handleRunAnalysis}
-              isAnalyzing={isAnalyzing}
-              onClearGeneral={handleClearGeneral}
-              autoAnalyze={autoAnalyze}
-              onAutoAnalyzeChange={setAutoAnalyze}
-              subjectImages={subjectImages}
-              onSubjectImagesChange={setSubjectImages}
-              onRunSubjectAnalysis={runSubjectAnalysis}
-              isAnalyzingSubject={isAnalyzingSubject}
-              subjectPreview={subjectPreview}
-              autoAnalyzeSubject={autoAnalyzeSubject}
-              onAutoAnalyzeSubjectChange={setAutoAnalyzeSubject}
-              sceneImages={sceneImages}
-              onSceneImagesChange={setSceneImages}
-              onRunSceneAnalysis={runSceneAnalysis}
-              isAnalyzingScene={isAnalyzingScene}
-              scenePreview={scenePreview}
-              autoAnalyzeScene={autoAnalyzeScene}
-              onAutoAnalyzeSceneChange={setAutoAnalyzeScene}
-              styleImages={styleImages}
-              onStyleImagesChange={setStyleImages}
-              onRunStyleAnalysis={runStyleAnalysis}
-              isAnalyzingStyle={isAnalyzingStyle}
-              stylePreview={stylePreview}
-              autoAnalyzeStyle={autoAnalyzeStyle}
-              onAutoAnalyzeStyleChange={setAutoAnalyzeStyle}
-              onAnalyzeAllStyles={analyzeAllStyles}
-            />
+        
+        {/* Mode Toggle Navigation */}
+        <div className="flex justify-center mt-4 mb-6">
+          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-1 flex gap-1">
+            <button
+              onClick={() => setCurrentMode('prompt')}
+              className={`px-6 py-2 rounded-md font-medium transition-all ${
+                currentMode === 'prompt'
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+              }`}
+            >
+              Prompt Generator
+            </button>
+            <button
+              onClick={() => setCurrentMode('storyboard')}
+              className={`px-6 py-2 rounded-md font-medium transition-all ${
+                currentMode === 'storyboard'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+              }`}
+            >
+              Storyboard Creator
+            </button>
           </div>
-
-          {/* Second: Prompt editor */}
-          <div className={editorExpanded ? "panel-auto-height" : "panel-standard-height"}>
-            <DM2PromptEditor
-              initialText={editorSeed}
-              initialSpeedMode={speedMode}
-              onSpeedModeChange={setSpeedMode}
-              rewriteStyle={rewriteStyle}
-              onRewriteStyleChange={setRewriteStyle}
-              onSend={handleSend}
-              onClear={() => { handleClearAll(); setEditorExpanded(false); }}
-              onResizeStart={() => setEditorExpanded(true)}
-              onResizeEnd={() => setEditorExpanded(true)}
-            />
-          </div>
-
-          {/* Third: Current prompt with actions */}
-          <div className="panel-standard-height">
-            <CurrentPromptPanel
-              prompt={prompt}
-              onCopy={handleCopy}
-              onEdit={handleEdit}
-              onClear={handleClearPrompt}
-              onRegenerate={handleRegenerate}
-              hasImages={subjectImages.length > 0 || sceneImages.length > 0 || styleImages.length > 0}
-              isGenerating={isGenerating}
-            />
-            {/* StoryboardPanel integration */}
-            <StoryboardPanel />
-          </div>
-
         </div>
+      </div>
+
+      {/* Content Area */}
+      <div className="max-w-7xl mx-auto px-4 pb-6">
+        {currentMode === 'prompt' ? (
+          /* Prompt Generation Mode */
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            {/* Left: Image drop zone */}
+            <div className="panel-standard-height">
+              <ImageDropZone
+                images={images}
+                onImagesChange={setImages}
+                onRunAnalysis={handleRunAnalysis}
+                isAnalyzing={isAnalyzing}
+                onClearGeneral={handleClearGeneral}
+                autoAnalyze={autoAnalyze}
+                onAutoAnalyzeChange={setAutoAnalyze}
+                subjectImages={subjectImages}
+                onSubjectImagesChange={setSubjectImages}
+                onRunSubjectAnalysis={runSubjectAnalysis}
+                isAnalyzingSubject={isAnalyzingSubject}
+                subjectPreview={subjectPreview}
+                autoAnalyzeSubject={autoAnalyzeSubject}
+                onAutoAnalyzeSubjectChange={setAutoAnalyzeSubject}
+                sceneImages={sceneImages}
+                onSceneImagesChange={setSceneImages}
+                onRunSceneAnalysis={runSceneAnalysis}
+                isAnalyzingScene={isAnalyzingScene}
+                scenePreview={scenePreview}
+                autoAnalyzeScene={autoAnalyzeScene}
+                onAutoAnalyzeSceneChange={setAutoAnalyzeScene}
+                styleImages={styleImages}
+                onStyleImagesChange={setStyleImages}
+                onRunStyleAnalysis={runStyleAnalysis}
+                isAnalyzingStyle={isAnalyzingStyle}
+                stylePreview={stylePreview}
+                autoAnalyzeStyle={autoAnalyzeStyle}
+                onAutoAnalyzeStyleChange={setAutoAnalyzeStyle}
+                onAnalyzeAllStyles={analyzeAllStyles}
+              />
+            </div>
+
+            {/* Second: Prompt editor */}
+            <div className={editorExpanded ? "panel-auto-height" : "panel-standard-height"}>
+              <DM2PromptEditor
+                initialText={editorSeed}
+                initialSpeedMode={speedMode}
+                onSpeedModeChange={setSpeedMode}
+                rewriteStyle={rewriteStyle}
+                onRewriteStyleChange={setRewriteStyle}
+                onSend={handleSend}
+                onClear={() => { handleClearAll(); setEditorExpanded(false); }}
+                onResizeStart={() => setEditorExpanded(true)}
+                onResizeEnd={() => setEditorExpanded(true)}
+              />
+            </div>
+
+            {/* Third: Current prompt with actions */}
+            <div className="panel-standard-height">
+              <CurrentPromptPanel
+                prompt={prompt}
+                onCopy={handleCopy}
+                onEdit={handleEdit}
+                onClear={handleClearPrompt}
+                onRegenerate={handleRegenerate}
+                hasImages={subjectImages.length > 0 || sceneImages.length > 0 || styleImages.length > 0}
+                isGenerating={isGenerating}
+              />
+              
+              {/* Quick Switch to Storyboard */}
+              {prompt && (
+                <div className="mt-4 p-4 bg-gray-800/30 border border-gray-700 rounded-lg">
+                  <h4 className="text-sm font-medium text-gray-300 mb-2">Ready to create a storyboard?</h4>
+                  <button
+                    onClick={() => setCurrentMode('storyboard')}
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-4 py-2 rounded-lg font-medium transition-all"
+                  >
+                    Create Storyboard →
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          /* Storyboard Mode */
+          <div className="min-h-[600px] bg-gray-900/50 border border-gray-700 rounded-xl">
+            <StoryboardPanel 
+              initialPrompt={prompt}
+              onBackToPrompts={() => setCurrentMode('prompt')}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
