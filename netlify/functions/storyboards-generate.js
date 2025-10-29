@@ -92,7 +92,7 @@ async function generateSingleFrame(description, frameIndex, accessToken) {
   console.log(`🔧 Generating frame ${frameIndex + 1}...`);
 
   let attempts = 0;
-  const maxAttempts = 3;
+  const maxAttempts = 2; // Reduced from 3 to avoid timeout
 
   while (attempts < maxAttempts) {
     try {
@@ -107,7 +107,7 @@ async function generateSingleFrame(description, frameIndex, accessToken) {
 
       if (response.ok) {
         const data = await response.json();
-        console.log(`🟦 Frame ${frameIndex + 1} API response received`);
+        console.log(`✅ Frame ${frameIndex + 1} generated successfully`);
 
         const imageBase64 = data?.predictions?.[0]?.bytesBase64Encoded;
 
@@ -142,7 +142,7 @@ async function generateSingleFrame(description, frameIndex, accessToken) {
         if (response.status >= 500 && attempts < maxAttempts - 1) {
           attempts++;
           console.log(`Retrying frame ${frameIndex + 1}, attempt ${attempts + 1}...`);
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          await new Promise(resolve => setTimeout(resolve, 500)); // Reduced from 2000ms
           continue;
         }
 
@@ -162,7 +162,7 @@ async function generateSingleFrame(description, frameIndex, accessToken) {
       if (attempts < maxAttempts - 1) {
         attempts++;
         console.log(`Retrying frame ${frameIndex + 1} after error, attempt ${attempts + 1}...`);
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 500)); // Reduced from 2000ms
         continue;
       }
 
@@ -227,17 +227,23 @@ export const handler = async (event, context) => {
     // Get access token once for all frames
     const accessToken = await getAccessToken();
 
-    // Generate all frames sequentially to avoid rate limits
+    // Generate frames in parallel to avoid timeout (max 3 at a time to avoid rate limits)
+    const batchSize = 3;
     const frames = [];
-    for (let i = 0; i < plan.frames.length; i++) {
-      const description = plan.frames[i]?.description || `Frame ${i + 1}`;
-      const frame = await generateSingleFrame(description, i, accessToken);
-      frames.push(frame);
-
-      // Add a delay between frames to avoid rate limiting
-      if (i < plan.frames.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
+    
+    for (let i = 0; i < plan.frames.length; i += batchSize) {
+      const batch = plan.frames.slice(i, i + batchSize);
+      const batchPromises = batch.map((frameData, idx) => {
+        const frameIndex = i + idx;
+        const description = frameData?.description || `Frame ${frameIndex + 1}`;
+        return generateSingleFrame(description, frameIndex, accessToken);
+      });
+      
+      // Wait for this batch to complete before starting next batch
+      const batchResults = await Promise.all(batchPromises);
+      frames.push(...batchResults);
+      
+      console.log(`✅ Completed batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(plan.frames.length / batchSize)}`);
     }
 
     const storyboard = {
