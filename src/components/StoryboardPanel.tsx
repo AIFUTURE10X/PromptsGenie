@@ -1,4 +1,6 @@
 import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Loader2, Wand2, Eye, Download, Sparkles } from "lucide-react";
 
 // Type definitions for storyboard and plan
 interface StoryboardFrame {
@@ -6,6 +8,7 @@ interface StoryboardFrame {
   image_url: string;
   title: string;
   description: string;
+  status?: string;
 }
 
 interface Storyboard {
@@ -138,157 +141,201 @@ function StoryboardPanel() {
   };
 
   return (
-    <>
-      <div className="panel-standard-height p-4 bg-white dark:bg-gray-900 rounded-lg shadow">
-        <h2 className="text-xl font-bold mb-2">Storyboard</h2>
-        <div className="mb-2">
+    <div className="panel-standard-height p-6 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-xl shadow-2xl">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-6"
+      >
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent flex items-center gap-2">
+          <Sparkles className="w-8 h-8 text-purple-400" />
+          AI Storyboard Generator
+        </h2>
+        <p className="text-gray-400 mt-2">Transform your ideas into visual narratives</p>
+      </motion.div>
+
+      {/* Input Section */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.1 }}
+        className="mb-6 space-y-4"
+      >
+        <div className="relative">
           <textarea
-            className="border rounded px-2 py-1 mr-2 bg-gray-900 text-white placeholder-gray-400 w-full h-20 resize-y"
-            placeholder="Storyboard intent (e.g. 'A hero's journey')"
+            className="w-full h-24 px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-none"
+            placeholder="Describe your story... (e.g., 'A superhero discovers their powers and saves the city')"
             value={intent}
             onChange={e => setIntent(e.target.value)}
           />
-          <button
-            className="bg-blue-600 text-white px-3 py-1 rounded mr-2"
+          <Wand2 className="absolute top-4 right-4 w-5 h-5 text-gray-500" />
+        </div>
+
+        <div className="flex gap-3">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-blue-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             onClick={fetchStoryboardPlan}
             disabled={loading || !intent}
-          >Plan</button>
-          <button
-            className="bg-green-600 text-white px-3 py-1 rounded"
+          >
+            {loading && !plan ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Planning...
+              </>
+            ) : (
+              <>
+                <Eye className="w-5 h-5" />
+                Generate Plan
+              </>
+            )}
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="flex-1 bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-green-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             onClick={generateStoryboard}
             disabled={loading || !plan}
-          >Generate</button>
+          >
+            {loading && plan ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-5 h-5" />
+                Generate Images
+              </>
+            )}
+          </motion.button>
         </div>
-        {loading && <div>Loading...</div>}
-        {error && <div className="text-red-500">{error}</div>}
+      </motion.div>
+
+      {/* Error Message */}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-4 p-4 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400"
+          >
+            {error}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Plan Display */}
+      <AnimatePresence>
         {plan && (
-          <div className="mb-2 text-gray-700 dark:text-gray-300">
-            <strong>Storyboard Plan:</strong>
-            <ul className="list-disc ml-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="mb-6 p-6 bg-gray-800/50 border border-gray-700 rounded-lg"
+          >
+            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <Eye className="w-5 h-5 text-blue-400" />
+              Storyboard Plan
+            </h3>
+            <ul className="space-y-3">
               {plan.frames.map((frame, idx) => (
-                <li key={idx}>{frame.description}</li>
+                <motion.li
+                  key={idx}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="flex gap-3 text-gray-300"
+                >
+                  <span className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center font-bold text-white text-sm">
+                    {idx + 1}
+                  </span>
+                  <span className="flex-1 pt-1">{frame.description}</span>
+                </motion.li>
               ))}
             </ul>
-          </div>
+          </motion.div>
         )}
-        {storyboard && (
-          <div className="storyboard-panel">
-            <h2>Storyboard</h2>
-            {/* Controls for results, aspect ratio, generation mode */}
-            <div style={{ marginBottom: '16px', display: 'flex', gap: '12px', alignItems: 'center' }}>
-              <label style={{ color: '#fff' }}>
-                Results:
-                <input type="number" min={1} max={20} value={resultsCount} onChange={e => setResultsCount(Number(e.target.value))} style={{ width: '60px', marginLeft: '8px', background: '#222', color: '#fff', borderRadius: '4px', border: '1px solid #444' }} />
-              </label>
-              <label style={{ color: '#fff' }}>
-                Aspect Ratio:
-                <select value={aspectRatio} onChange={e => setAspectRatio(e.target.value)} style={{ marginLeft: '8px', background: '#222', color: '#fff', borderRadius: '4px', border: '1px solid #444' }}>
-                  <option value="16:9">16:9</option>
-                  <option value="4:3">4:3</option>
-                  <option value="1:1">1:1</option>
-                </select>
-              </label>
-              <label style={{ color: '#fff' }}>
-                Mode:
-                <select value={generationMode} onChange={e => setGenerationMode(e.target.value)} style={{ marginLeft: '8px', background: '#222', color: '#fff', borderRadius: '4px', border: '1px solid #444' }}>
-                  <option value="auto">Auto</option>
-                  <option value="manual">Manual</option>
-                </select>
-              </label>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: '16px' }}>
-              {/* Sidebar Navigation */}
-              <div style={{ width: '120px', minWidth: '120px', background: '#222', borderRadius: '8px', padding: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <h4 style={{ color: '#fff', marginBottom: '8px', fontSize: '1em' }}>Scenes</h4>
-                {storyboard.frames.length > 0 ? (
-                  storyboard.frames.map((frame, idx) => (
-                    <button
-                      key={idx}
-                      style={{
-                        background: idx === selectedFrame ? '#3af' : '#333',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '6px',
-                        padding: '6px',
-                        cursor: 'pointer',
-                        fontWeight: idx === selectedFrame ? 'bold' : 'normal',
-                      }}
-                      onClick={() => setSelectedFrame(idx)}
-                    >
-                      Scene {idx + 1}
-                    </button>
-                  ))
-                ) : (
-                  <span style={{ color: '#aaa', fontSize: '0.9em' }}>No scenes yet</span>
-                )}
-              </div>
-              {/* Main Frame Viewer */}
-              <div style={{ flex: 1, minHeight: '220px', background: '#222', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {/* Horizontal Thumbnail Viewer */}
-                <div style={{ display: 'flex', flexDirection: 'row', gap: '8px', overflowX: 'auto', marginBottom: '12px' }}>
-                  {storyboard.frames.map((frame, idx) => (
-                    <div
-                      key={idx}
-                      className={`thumbnail ${selectedFrame === idx ? "selected" : ""}`}
-                      onClick={() => setSelectedFrame(idx)}
-                    >
+      </AnimatePresence>
+
+      {/* Storyboard Results */}
+      <AnimatePresence>
+        {storyboard && storyboard.frames && storyboard.frames.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="space-y-4"
+          >
+            <h3 className="text-2xl font-bold text-white flex items-center gap-2">
+              <Sparkles className="w-6 h-6 text-purple-400" />
+              Generated Storyboard
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {storyboard.frames.map((frame, idx) => (
+                <motion.div
+                  key={frame.id}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: idx * 0.1 }}
+                  whileHover={{ scale: 1.03, y: -5 }}
+                  className="group relative bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-purple-500/30 transition-all cursor-pointer"
+                  onClick={() => setSelectedFrame(idx)}
+                >
+                  {/* Frame Number Badge */}
+                  <div className="absolute top-2 left-2 z-10 w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center font-bold text-white text-sm shadow-lg">
+                    {idx + 1}
+                  </div>
+
+                  {/* Image */}
+                  <div className="aspect-video bg-gray-900 relative overflow-hidden">
+                    {frame.image_url ? (
                       <img
                         src={frame.image_url}
-                        alt={`Thumbnail ${idx + 1}`}
-                        style={{ width: "80px", height: "45px", objectFit: "cover" }}
+                        alt={frame.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       />
-                    </div>
-                  ))}
-                </div>
-                {/* Main Frame Viewer (optional for future stages) */}
-                {storyboard.frames.length > 0 ? (
-                  <>
-                    <div style={{ display: 'flex', flexDirection: 'row', gap: '12px', alignItems: 'center' }}>
-                      <img
-                        src={storyboard.frames[selectedFrame]?.image_url || ''}
-                        alt={`Scene ${selectedFrame + 1}`}
-                        style={{ width: '180px', height: '120px', objectFit: 'cover', borderRadius: '8px', background: '#111' }}
-                      />
-                      <div style={{ flex: 1 }}>
-                        <h3 style={{ color: '#fff', marginBottom: '6px' }}>{storyboard.frames[selectedFrame]?.title || `Scene ${selectedFrame + 1}`}</h3>
-                        <p style={{ color: '#ccc', fontSize: '1em' }}>{storyboard.frames[selectedFrame]?.description}</p>
-                        {/* Image Upload */}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          style={{ display: 'none' }}
-                          id={`upload-image-${selectedFrame}`}
-                          onChange={e => {
-                            const file = (e.target as HTMLInputElement).files?.[0];
-                            if (file) {
-                              // TODO: Implement upload logic here
-                              alert(`Selected image for frame ${selectedFrame + 1}: ${file.name}`);
-                            }
-                          }}
-                        />
-                        <label htmlFor={`upload-image-${selectedFrame}`} style={{ background: '#3af', color: '#fff', border: 'none', borderRadius: '6px', padding: '6px 12px', cursor: 'pointer', marginTop: '8px', display: 'inline-block' }}>
-                          Upload Image
-                        </label>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+                      </div>
+                    )}
+                    
+                    {/* Overlay on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                      <div className="text-white">
+                        <h4 className="font-bold text-sm">{frame.title}</h4>
                       </div>
                     </div>
-                    {/* Frame Actions */}
-                    <div style={{ marginTop: '8px', display: 'flex', gap: '8px' }}>
-                      <button style={{ background: '#444', color: '#fff', border: 'none', borderRadius: '6px', padding: '6px 12px', cursor: 'pointer' }}>Edit</button>
-                      <button style={{ background: '#444', color: '#fff', border: 'none', borderRadius: '6px', padding: '6px 12px', cursor: 'pointer' }}>Delete</button>
-                      <button style={{ background: '#444', color: '#fff', border: 'none', borderRadius: '6px', padding: '6px 12px', cursor: 'pointer' }}>Reorder</button>
+                  </div>
+
+                  {/* Description */}
+                  <div className="p-4">
+                    <h4 className="font-semibold text-white mb-2">{frame.title}</h4>
+                    <p className="text-sm text-gray-400 line-clamp-2">{frame.description}</p>
+                  </div>
+
+                  {/* Status indicator */}
+                  {frame.status === 'pending' && (
+                    <div className="absolute top-2 right-2 z-10">
+                      <Loader2 className="w-5 h-5 text-yellow-400 animate-spin" />
                     </div>
-                  </>
-                ) : (
-                  <span style={{ color: '#aaa', fontSize: '1em' }}>No storyboard generated yet.</span>
-                )}
-              </div>
+                  )}
+                </motion.div>
+              ))}
             </div>
-          </div>
+          </motion.div>
         )}
-        {/* Controls for generation, intent, etc. */}
-      </div>
-    </>
+      </AnimatePresence>
+    </div>
   );
 }
+                          accept="image/*"
+
 
 export default StoryboardPanel;
