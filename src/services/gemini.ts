@@ -1,10 +1,16 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Initialize the Gemini API
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyDt_fNc7YoPxnLm_kMc7FiwFHfnFPkYHWs";
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
 const GEMINI_MODEL_IMAGE = import.meta.env.VITE_GEMINI_MODEL_IMAGE || "gemini-2.5-flash";
 const GEMINI_MODEL_IMAGES = import.meta.env.VITE_GEMINI_MODEL_IMAGES || "gemini-2.5-flash";
-const genAI = new GoogleGenerativeAI(API_KEY);
+
+if (!GEMINI_API_KEY) {
+  console.error('VITE_GEMINI_API_KEY not configured');
+  throw new Error('Gemini API key not configured. Please set VITE_GEMINI_API_KEY environment variable.');
+}
+
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 // Get the generative model
 const MODEL_NAME = import.meta.env.VITE_GEMINI_MODEL_IMAGE || 'gemini-2.5-flash';
@@ -115,7 +121,7 @@ export async function analyzeImage(
 ): Promise<AnalyzeImageResult> {
   console.log('🔍 analyzeImage called with:', { fileName: imageFile.name, size: imageFile.size, options });
   
-  if (!API_KEY) {
+  if (!GEMINI_API_KEY) {
     console.error('❌ No API key found!');
     throw new Error('Gemini API key not configured');
   }
@@ -180,7 +186,7 @@ export async function textToPrompt(
 ): Promise<string> {
   console.log('📝 textToPrompt called with:', { intent, style, constraints });
   
-  if (!API_KEY) {
+  if (!GEMINI_API_KEY) {
     console.error('❌ No API key found for textToPrompt!');
     throw new Error('Gemini API key not configured');
   }

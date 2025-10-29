@@ -91,7 +91,7 @@ export async function generateWithGemini(inputText: string, model?: string, allo
 }
 
 export async function generateWithGeminiImages(inputText: string, imageDataUrls: string[], model?: string, allowFallback: boolean = true): Promise<string> {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyDt_fNc7YoPxnLm_kMc7FiwFHfnFPkYHWs";
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
   // Use passed-in model if provided, otherwise use env/default
   const resolvedModel = model || import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE || "gemini-2.5-flash";
   console.log('Gemini API Key exists:', Boolean(apiKey));
