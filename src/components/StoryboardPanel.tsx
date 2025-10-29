@@ -280,7 +280,7 @@ function StoryboardPanel() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {storyboard.frames.map((frame, idx) => (
                 <motion.div
-                  key={frame.id}
+                  key={frame?.id || `frame-${idx}`}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: idx * 0.1 }}
@@ -295,10 +295,10 @@ function StoryboardPanel() {
 
                   {/* Image */}
                   <div className="aspect-video bg-gray-900 relative overflow-hidden">
-                    {frame.image_url ? (
+                    {frame?.image_url ? (
                       <img
                         src={frame.image_url}
-                        alt={frame.title}
+                        alt={frame?.title || `Frame ${idx + 1}`}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       />
                     ) : (
@@ -310,23 +310,19 @@ function StoryboardPanel() {
                     {/* Overlay on hover */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
                       <div className="text-white">
-                        <h4 className="font-bold text-sm">{frame.title}</h4>
+                        <h4 className="font-bold text-sm">{frame?.title || `Scene ${idx + 1}`}</h4>
                       </div>
                     </div>
                   </div>
 
                   {/* Description */}
                   <div className="p-4">
-                    <h4 className="font-semibold text-white mb-2">
-                      {frame.title}
-                    </h4>
-                    <p className="text-sm text-gray-400 line-clamp-2">
-                      {frame.description}
-                    </p>
+                    <h4 className="font-semibold text-white mb-2">{frame?.title || `Scene ${idx + 1}`}</h4>
+                    <p className="text-sm text-gray-400 line-clamp-2">{frame?.description || 'Generating...'}</p>
                   </div>
 
                   {/* Status indicator */}
-                  {frame.status === "pending" && (
+                  {frame?.status === 'pending' && (
                     <div className="absolute top-2 right-2 z-10">
                       <Loader2 className="w-5 h-5 text-yellow-400 animate-spin" />
                     </div>
