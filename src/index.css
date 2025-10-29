@@ -127,7 +127,7 @@ All colors MUST be HSL.
 
 @layer utilities {
   .font-brand {
-    font-family: 'Corinthia', cursive;
+    font-family: "Corinthia", cursive;
     letter-spacing: 0;
   }
   .brand-tagline {
@@ -135,7 +135,7 @@ All colors MUST be HSL.
     letter-spacing: 0.05em;
   }
   .font-alumni {
-    font-family: 'Alumni Sans Pinstripe', sans-serif;
+    font-family: "Alumni Sans Pinstripe", sans-serif;
   }
 
   /* Panel height increased by 20% across breakpoints */
@@ -143,21 +143,54 @@ All colors MUST be HSL.
     height: 346px;
   }
   @media (min-width: 640px) {
-    .panel-standard-height { height: 403px; }
+    .panel-standard-height {
+      height: 403px;
+    }
   }
   @media (min-width: 768px) {
-    .panel-standard-height { height: 461px; }
+    .panel-standard-height {
+      height: 461px;
+    }
   }
   @media (min-width: 1024px) {
-    .panel-standard-height { height: 518px; }
+    .panel-standard-height {
+      height: 518px;
+    }
   }
   @media (min-width: 1280px) {
-    .panel-standard-height { height: 576px; }
+    .panel-standard-height {
+      height: 576px;
+    }
   }
 
   /* Hide scrollbars while retaining scroll behavior */
-  .no-scrollbar::-webkit-scrollbar { display: none; }
-  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Custom scrollbar for dark theme */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(31, 41, 55, 0.5);
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(107, 114, 128, 0.5);
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(107, 114, 128, 0.7);
+  }
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(107, 114, 128, 0.5) rgba(31, 41, 55, 0.5);
+  }
 
   /* Auto-growing panel: keeps minimum height per breakpoint, expands with content */
   .panel-auto-height {
@@ -166,23 +199,35 @@ All colors MUST be HSL.
     align-self: start;
   }
   @media (min-width: 640px) {
-    .panel-auto-height { min-height: 403px; }
+    .panel-auto-height {
+      min-height: 403px;
+    }
   }
   @media (min-width: 768px) {
-    .panel-auto-height { min-height: 461px; }
+    .panel-auto-height {
+      min-height: 461px;
+    }
   }
   @media (min-width: 1024px) {
-    .panel-auto-height { min-height: 518px; }
+    .panel-auto-height {
+      min-height: 518px;
+    }
   }
   @media (min-width: 1280px) {
-    .panel-auto-height { min-height: 576px; }
+    .panel-auto-height {
+      min-height: 576px;
+    }
   }
 
   @keyframes slow-spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
-  
+
   .slow-spin {
     animation: slow-spin 8s linear infinite;
   }

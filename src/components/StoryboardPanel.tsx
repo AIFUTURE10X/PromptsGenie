@@ -1,6 +1,14 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, Wand2, Eye, Download, Sparkles } from "lucide-react";
+import {
+  Loader2,
+  Wand2,
+  Eye,
+  Download,
+  Sparkles,
+  X,
+  Maximize2,
+} from "lucide-react";
 
 // Type definitions for storyboard and plan
 interface StoryboardFrame {
@@ -30,6 +38,8 @@ function StoryboardPanel() {
   const [resultsCount, setResultsCount] = React.useState<number>(7);
   const [aspectRatio, setAspectRatio] = React.useState<string>("16:9");
   const [generationMode, setGenerationMode] = React.useState<string>("auto");
+  const [isPlanExpanded, setIsPlanExpanded] = React.useState<boolean>(false);
+  const [isLightboxOpen, setIsLightboxOpen] = React.useState<boolean>(false);
   const API_BASE = "/api/storyboards";
 
   function generateStoryboardId(intent: string) {
@@ -53,7 +63,11 @@ function StoryboardPanel() {
       const requestOptions = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ storyboardId, intent }),
+        body: JSON.stringify({
+          storyboardId,
+          intent,
+          frameCount: resultsCount, // Send the selected frame count
+        }),
       };
       console.log("Sending request with options:", requestOptions);
       const response = await fetch(`${API_BASE}/plan`, requestOptions);
@@ -140,199 +154,455 @@ function StoryboardPanel() {
   };
 
   return (
-    <div className="panel-standard-height p-6 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-xl shadow-2xl">
-      {/* Header */}
+    <div className="w-full h-full flex gap-6 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-xl shadow-2xl p-6">
+      {/* Left Column - Storyboard Gallery (60% width) */}
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-6"
+        initial={{ opacity: 0, x: -50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex-[3] flex flex-col min-w-0"
       >
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent flex items-center gap-2">
-          <Sparkles className="w-8 h-8 text-purple-400" />
-          AI Storyboard Generator
-        </h2>
-        <p className="text-gray-400 mt-2">
-          Transform your ideas into visual narratives
-        </p>
-      </motion.div>
+        <AnimatePresence mode="wait">
+          {storyboard && storyboard.frames && storyboard.frames.length > 0 ? (
+            <motion.div
+              key="storyboard-content"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="h-full flex flex-col"
+            >
+              {/* Header */}
+              <div className="mb-6">
+                <h3 className="text-3xl font-bold text-white flex items-center gap-3">
+                  <Sparkles className="w-8 h-8 text-purple-400" />
+                  Generated Storyboard
+                </h3>
+                <p className="text-gray-400 mt-1">
+                  {storyboard.frames.length} scene
+                  {storyboard.frames.length !== 1 ? "s" : ""} generated
+                </p>
+              </div>
 
-      {/* Input Section */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.1 }}
-        className="mb-6 space-y-4"
-      >
-        <div className="relative">
-          <textarea
-            className="w-full h-24 px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-none"
-            placeholder="Describe your story... (e.g., 'A superhero discovers their powers and saves the city')"
-            value={intent}
-            onChange={(e) => setIntent(e.target.value)}
-          />
-          <Wand2 className="absolute top-4 right-4 w-5 h-5 text-gray-500" />
-        </div>
+              {/* Scrollable Grid */}
+              <div className="flex-1 overflow-y-auto custom-scrollbar pr-2">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                  {storyboard.frames.map((frame, idx) => (
+                    <motion.div
+                      key={frame?.id || `frame-${idx}`}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        delay: idx * 0.1,
+                        type: "spring",
+                        stiffness: 100,
+                      }}
+                      whileHover={{
+                        scale: 1.03,
+                        transition: { duration: 0.2 },
+                      }}
+                      className="group relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl overflow-hidden shadow-2xl hover:shadow-purple-500/40 transition-all cursor-pointer"
+                      onClick={() => setSelectedFrame(idx)}
+                    >
+                      {/* Frame Number Badge */}
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: idx * 0.1 + 0.2, type: "spring" }}
+                        className="absolute top-4 left-4 z-20 w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center font-bold text-white text-xl shadow-lg ring-4 ring-gray-900/50"
+                      >
+                        {idx + 1}
+                      </motion.div>
 
-        <div className="flex gap-3">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-blue-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            onClick={fetchStoryboardPlan}
-            disabled={loading || !intent}
-          >
-            {loading && !plan ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Planning...
-              </>
-            ) : (
-              <>
-                <Eye className="w-5 h-5" />
-                Generate Plan
-              </>
-            )}
-          </motion.button>
+                      {/* Image Container */}
+                      <div className="aspect-video bg-gray-950 relative overflow-hidden">
+                        {frame?.image_url ? (
+                          <motion.img
+                            src={frame.image_url}
+                            alt={frame?.title || `Frame ${idx + 1}`}
+                            initial={{ scale: 1.1, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ duration: 0.5 }}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <motion.div
+                              animate={{ rotate: 360 }}
+                              transition={{
+                                duration: 2,
+                                repeat: Infinity,
+                                ease: "linear",
+                              }}
+                            >
+                              <Loader2 className="w-12 h-12 text-purple-400" />
+                            </motion.div>
+                          </div>
+                        )}
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="flex-1 bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-green-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            onClick={generateStoryboard}
-            disabled={loading || !plan}
-          >
-            {loading && plan ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-5 h-5" />
-                Generate Images
-              </>
-            )}
-          </motion.button>
-        </div>
-      </motion.div>
+                        {/* Gradient Overlay on Hover */}
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          whileHover={{ opacity: 1 }}
+                          transition={{ duration: 0.3 }}
+                          className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent flex items-end p-6"
+                        >
+                          <div className="text-white w-full">
+                            <motion.h4
+                              initial={{ y: 20, opacity: 0 }}
+                              whileHover={{ y: 0, opacity: 1 }}
+                              transition={{ delay: 0.1 }}
+                              className="font-bold text-xl mb-2"
+                            >
+                              {frame?.title || `Scene ${idx + 1}`}
+                            </motion.h4>
+                            <motion.p
+                              initial={{ y: 20, opacity: 0 }}
+                              whileHover={{ y: 0, opacity: 1 }}
+                              transition={{ delay: 0.15 }}
+                              className="text-sm text-gray-300 line-clamp-2"
+                            >
+                              {frame?.description}
+                            </motion.p>
+                          </div>
+                        </motion.div>
+                      </div>
 
-      {/* Error Message */}
-      <AnimatePresence>
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="mb-4 p-4 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400"
-          >
-            {error}
-          </motion.div>
-        )}
-      </AnimatePresence>
+                      {/* Card Footer */}
+                      <div className="p-5 bg-gray-800/80 backdrop-blur-sm">
+                        <h4 className="font-semibold text-white mb-2 text-lg truncate">
+                          {frame?.title || `Scene ${idx + 1}`}
+                        </h4>
+                        <p className="text-sm text-gray-400 line-clamp-2 leading-relaxed">
+                          {frame?.description || "Generating scene..."}
+                        </p>
+                      </div>
 
-      {/* Plan Display */}
-      <AnimatePresence>
-        {plan && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="mb-6 p-6 bg-gray-800/50 border border-gray-700 rounded-lg"
-          >
-            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-              <Eye className="w-5 h-5 text-blue-400" />
-              Storyboard Plan
-            </h3>
-            <ul className="space-y-3">
-              {plan.frames.map((frame, idx) => (
-                <motion.li
-                  key={idx}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="flex gap-3 text-gray-300"
-                >
-                  <span className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center font-bold text-white text-sm">
-                    {idx + 1}
-                  </span>
-                  <span className="flex-1 pt-1">{frame.description}</span>
-                </motion.li>
-              ))}
-            </ul>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                      {/* Status Indicator */}
+                      {frame?.status === "pending" && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className="absolute top-4 right-4 z-20 bg-yellow-500/90 backdrop-blur-sm p-2 rounded-full shadow-lg"
+                        >
+                          <Loader2 className="w-5 h-5 text-white animate-spin" />
+                        </motion.div>
+                      )}
 
-      {/* Storyboard Results */}
-      <AnimatePresence>
-        {storyboard && storyboard.frames && storyboard.frames.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="space-y-4"
-          >
-            <h3 className="text-2xl font-bold text-white flex items-center gap-2">
-              <Sparkles className="w-6 h-6 text-purple-400" />
-              Generated Storyboard
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {storyboard.frames.map((frame, idx) => (
+                      {/* Download Button */}
+                      {frame?.image_url && (
+                        <motion.button
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          whileHover={{ opacity: 1, scale: 1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Download logic
+                          }}
+                          className="absolute bottom-5 right-5 p-3 bg-purple-600 hover:bg-purple-700 rounded-xl shadow-lg transition-all"
+                        >
+                          <Download className="w-5 h-5 text-white" />
+                        </motion.button>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="empty-state"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="h-full flex items-center justify-center"
+            >
+              <div className="text-center max-w-md">
                 <motion.div
-                  key={frame?.id || `frame-${idx}`}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: idx * 0.1 }}
-                  whileHover={{ scale: 1.03, y: -5 }}
-                  className="group relative bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-purple-500/30 transition-all cursor-pointer"
-                  onClick={() => setSelectedFrame(idx)}
+                  animate={{
+                    y: [0, -10, 0],
+                    rotate: [0, 5, -5, 0],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
                 >
-                  {/* Frame Number Badge */}
-                  <div className="absolute top-2 left-2 z-10 w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center font-bold text-white text-sm shadow-lg">
-                    {idx + 1}
-                  </div>
-
-                  {/* Image */}
-                  <div className="aspect-video bg-gray-900 relative overflow-hidden">
-                    {frame?.image_url ? (
-                      <img
-                        src={frame.image_url}
-                        alt={frame?.title || `Frame ${idx + 1}`}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
-                      </div>
-                    )}
-
-                    {/* Overlay on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                      <div className="text-white">
-                        <h4 className="font-bold text-sm">{frame?.title || `Scene ${idx + 1}`}</h4>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Description */}
-                  <div className="p-4">
-                    <h4 className="font-semibold text-white mb-2">{frame?.title || `Scene ${idx + 1}`}</h4>
-                    <p className="text-sm text-gray-400 line-clamp-2">{frame?.description || 'Generating...'}</p>
-                  </div>
-
-                  {/* Status indicator */}
-                  {frame?.status === 'pending' && (
-                    <div className="absolute top-2 right-2 z-10">
-                      <Loader2 className="w-5 h-5 text-yellow-400 animate-spin" />
-                    </div>
-                  )}
+                  <Sparkles className="w-20 h-20 mx-auto mb-6 text-purple-400/50" />
                 </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                <h3 className="text-2xl font-bold text-gray-300 mb-3">
+                  Your Storyboard Awaits
+                </h3>
+                <p className="text-gray-500 leading-relaxed">
+                  Enter your story idea in the panel to the right, generate a
+                  plan, and watch your vision come to life as stunning visual
+                  scenes.
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+
+      {/* Right Column - Controls (40% width) */}
+      <motion.div
+        initial={{ opacity: 0, x: 50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="flex-[2] flex flex-col min-w-0 overflow-y-auto custom-scrollbar"
+      >
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mb-6"
+        >
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent flex items-center gap-2">
+            <Sparkles className="w-7 h-7 text-purple-400" />
+            AI Storyboard Generator
+          </h2>
+          <p className="text-gray-400 mt-2 text-sm">
+            Transform your ideas into visual narratives
+          </p>
+        </motion.div>
+
+        {/* Input Section */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.4 }}
+          className="mb-6 space-y-4"
+        >
+          <div className="relative">
+            <textarea
+              className="w-full h-24 px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-none"
+              placeholder="Describe your story... (e.g., 'A superhero discovers their powers and saves the city')"
+              value={intent}
+              onChange={(e) => setIntent(e.target.value)}
+            />
+            <Wand2 className="absolute top-4 right-4 w-5 h-5 text-gray-500" />
+          </div>
+
+          {/* Number of Frames Selector */}
+          <div className="flex items-center gap-4 px-4 py-3 bg-gray-800/30 border border-gray-700 rounded-lg">
+            <label className="text-gray-300 font-medium flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-purple-400" />
+              Number of Frames:
+            </label>
+            <select
+              value={resultsCount}
+              onChange={(e) => setResultsCount(Number(e.target.value))}
+              className="flex-1 px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all cursor-pointer"
+            >
+              <option value={3}>3 frames (Quick)</option>
+              <option value={5}>5 frames (Balanced)</option>
+              <option value={7}>7 frames (Detailed)</option>
+              <option value={10}>10 frames (Extended)</option>
+            </select>
+          </div>
+
+          <div className="flex gap-3">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-blue-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              onClick={fetchStoryboardPlan}
+              disabled={loading || !intent}
+            >
+              {loading && !plan ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Planning...
+                </>
+              ) : (
+                <>
+                  <Eye className="w-5 h-5" />
+                  Generate Plan
+                </>
+              )}
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex-1 bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-green-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              onClick={generateStoryboard}
+              disabled={loading || !plan}
+            >
+              {loading && plan ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-5 h-5" />
+                  Generate Images
+                </>
+              )}
+            </motion.button>
+          </div>
+        </motion.div>
+
+        {/* Error Message */}
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mb-4 p-4 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400"
+            >
+              {error}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Plan Display - Compact Card with Lightbox */}
+        <AnimatePresence>
+          {plan && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="mb-6"
+            >
+              {/* Compact Plan Card */}
+              <motion.div
+                className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border border-gray-700 rounded-lg overflow-hidden shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
+                onClick={() => setIsLightboxOpen(true)}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+              >
+                <div className="p-4 bg-gradient-to-r from-blue-600/20 to-purple-600/20">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-blue-500/20 rounded-lg">
+                        <Eye className="w-5 h-5 text-blue-400" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-white">
+                          Storyboard Plan Generated
+                        </h3>
+                        <p className="text-sm text-gray-400">
+                          {plan.frames.length} scenes • Click to view full plan
+                        </p>
+                      </div>
+                    </div>
+                    <Maximize2 className="w-5 h-5 text-gray-400" />
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Lightbox Modal */}
+              <AnimatePresence>
+                {isLightboxOpen && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+                    onClick={() => setIsLightboxOpen(false)}
+                  >
+                    <motion.div
+                      initial={{ scale: 0.9, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.9, opacity: 0 }}
+                      transition={{
+                        type: "spring",
+                        damping: 25,
+                        stiffness: 300,
+                      }}
+                      className="relative w-full max-w-4xl max-h-[90vh] bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl shadow-2xl border border-gray-700 overflow-hidden"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {/* Modal Header */}
+                      <div className="flex items-center justify-between p-6 border-b border-gray-700 bg-gradient-to-r from-blue-600/20 to-purple-600/20">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-blue-500/20 rounded-lg">
+                            <Eye className="w-6 h-6 text-blue-400" />
+                          </div>
+                          <div>
+                            <h2 className="text-2xl font-bold text-white">
+                              Storyboard Plan
+                            </h2>
+                            <p className="text-sm text-gray-400">
+                              {plan.frames.length} scene
+                              {plan.frames.length !== 1 ? "s" : ""} ready to
+                              generate
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => setIsLightboxOpen(false)}
+                          className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
+                        >
+                          <X className="w-6 h-6 text-gray-400 hover:text-white" />
+                        </button>
+                      </div>
+
+                      {/* Modal Content - Textarea Style */}
+                      <div
+                        className="p-6 overflow-y-auto custom-scrollbar"
+                        style={{ maxHeight: "calc(90vh - 200px)" }}
+                      >
+                        <div className="space-y-4">
+                          {plan.frames.map((frame, idx) => (
+                            <motion.div
+                              key={idx}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: idx * 0.05 }}
+                              className="flex gap-4 p-4 bg-gray-800/50 rounded-xl border border-gray-700 hover:bg-gray-800/70 transition-all group"
+                            >
+                              <div className="flex-shrink-0">
+                                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center font-bold text-white text-lg shadow-lg group-hover:scale-110 transition-transform">
+                                  {idx + 1}
+                                </div>
+                              </div>
+                              <div className="flex-1">
+                                <h4 className="text-sm font-semibold text-gray-400 mb-2">
+                                  Scene {idx + 1}
+                                </h4>
+                                <p className="text-gray-300 leading-relaxed">
+                                  {frame.description}
+                                </p>
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Modal Footer */}
+                      <div className="p-6 border-t border-gray-700 bg-gray-900/50 flex justify-end gap-3">
+                        <button
+                          onClick={() => setIsLightboxOpen(false)}
+                          className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-semibold transition-colors"
+                        >
+                          Close
+                        </button>
+                        <button
+                          onClick={() => {
+                            setIsLightboxOpen(false);
+                            // Trigger generate storyboard
+                            setTimeout(() => generateStoryboard(), 100);
+                          }}
+                          className="px-6 py-2 bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white rounded-lg font-semibold shadow-lg hover:shadow-green-500/50 transition-all flex items-center gap-2"
+                        >
+                          <Sparkles className="w-5 h-5" />
+                          Generate Images
+                        </button>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+      {/* End Right Column */}
     </div>
   );
 }
