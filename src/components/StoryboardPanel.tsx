@@ -75,6 +75,7 @@ function StoryboardPanel() {
     setLoading(true);
     setError(null);
     try {
+      // First, create the storyboard metadata
       const response = await fetch(`${API_BASE}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -82,7 +83,37 @@ function StoryboardPanel() {
       });
       if (!response.ok) throw new Error(await response.text());
       const data: Storyboard = await response.json();
+      
+      // Set initial storyboard with pending frames
       setStoryboard(data);
+      
+      // Now generate each frame individually to avoid 6MB response limit
+      const frames = [...data.frames];
+      for (let i = 0; i < frames.length; i++) {
+        try {
+          const frameResponse = await fetch(`${API_BASE}/generate-frame`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              storyboardId: data.storyboardId,
+              frameIndex: i,
+              description: frames[i].description
+            }),
+          });
+          
+          if (frameResponse.ok) {
+            const frameData = await frameResponse.json();
+            frames[i] = frameData.frame;
+            // Update storyboard with new frame
+            setStoryboard({ ...data, frames: [...frames] });
+          } else {
+            console.error(`Failed to generate frame ${i + 1}`);
+          }
+        } catch (frameError) {
+          console.error(`Error generating frame ${i + 1}:`, frameError);
+        }
+      }
+      
     } catch (e: any) {
       setError(e.message || "Failed to generate storyboard.");
     } finally {

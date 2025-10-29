@@ -112,12 +112,16 @@ async function generateSingleFrame(description, frameIndex, accessToken) {
         const imageBase64 = data?.predictions?.[0]?.bytesBase64Encoded;
 
         if (imageBase64) {
+          // Instead of returning full base64, return a URL reference
+          // Frontend will need to fetch this separately or we store it
           return {
             id: `frame_${frameIndex + 1}`,
-            image_url: `data:image/png;base64,${imageBase64}`,
+            image_data: imageBase64, // Keep for now, will optimize in next iteration
+            image_url: `data:image/png;base64,${imageBase64.substring(0, 100)}...`, // Truncated preview
             title: `Scene ${frameIndex + 1}`,
             description,
-            success: true
+            success: true,
+            size: imageBase64.length
           };
         } else {
           const availableKeys = Object.keys(data || {}).join(', ');
@@ -227,34 +231,26 @@ export const handler = async (event, context) => {
     // Get access token once for all frames
     const accessToken = await getAccessToken();
 
-    // Generate frames in parallel to avoid timeout (max 3 at a time to avoid rate limits)
-    const batchSize = 3;
-    const frames = [];
+    // DON'T generate all frames here - just return success with frame metadata
+    // Frontend will call /storyboards/generate-frame for each frame individually
+    // This avoids the 6MB response limit
     
-    for (let i = 0; i < plan.frames.length; i += batchSize) {
-      const batch = plan.frames.slice(i, i + batchSize);
-      const batchPromises = batch.map((frameData, idx) => {
-        const frameIndex = i + idx;
-        const description = frameData?.description || `Frame ${frameIndex + 1}`;
-        return generateSingleFrame(description, frameIndex, accessToken);
-      });
-      
-      // Wait for this batch to complete before starting next batch
-      const batchResults = await Promise.all(batchPromises);
-      frames.push(...batchResults);
-      
-      console.log(`✅ Completed batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(plan.frames.length / batchSize)}`);
-    }
+    const frames = plan.frames.map((frameData, idx) => ({
+      id: `frame_${idx + 1}`,
+      title: `Scene ${idx + 1}`,
+      description: frameData?.description || `Frame ${idx + 1}`,
+      image_url: null, // Will be populated by individual frame generation
+      status: 'pending'
+    }));
 
     const storyboard = {
       storyboardId,
       frames,
-      plan
+      plan,
+      message: 'Storyboard plan created. Use /storyboards/generate-frame to generate each image individually.'
     };
-
-    // Log summary
-    const successCount = frames.filter(f => f.success !== false).length;
-    console.log(`✅ Storyboard generation complete: ${successCount}/7 frames successful`);
+    
+    console.log(`✅ Storyboard metadata created with ${frames.length} frames`);
 
     return {
       statusCode: 200,
