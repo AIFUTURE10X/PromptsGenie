@@ -17,12 +17,16 @@ import {
 } from "lucide-react";
 
 // Type definitions for storyboard and plan
+type ImageModel = "imagen3" | "nano-banana" | "auto";
+
 interface StoryboardFrame {
   id: string;
   image_url: string;
   title: string;
   description: string;
   status?: string;
+  model?: ImageModel;
+  isCharacterFocused?: boolean;
 }
 
 interface Storyboard {
@@ -32,7 +36,7 @@ interface Storyboard {
 
 interface StoryboardPlan {
   storyboardId: string;
-  frames: { description: string }[];
+  frames: { description: string; isCharacterFocused?: boolean }[];
 }
 
 interface StoryboardPanelProps {
@@ -59,6 +63,8 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
   const [selectedFrames, setSelectedFrames] = React.useState<Set<number>>(new Set());
   const [editingFrameTitle, setEditingFrameTitle] = React.useState<number | null>(null);
   const [menuOpenForFrame, setMenuOpenForFrame] = React.useState<number | null>(null);
+  const [defaultModel, setDefaultModel] = React.useState<ImageModel>("auto");
+  const [frameModels, setFrameModels] = React.useState<Map<number, ImageModel>>(new Map());
   const API_BASE = "/api/storyboards";
 
   // IndexedDB helper for large image storage
@@ -271,6 +277,42 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
     setEditingFrameTitle(null);
   };
 
+  // Determine which model to use for a frame
+  const getModelForFrame = (frameIndex: number, frame?: StoryboardFrame): ImageModel => {
+    // Check if frame has explicit model selection
+    if (frameModels.has(frameIndex)) {
+      return frameModels.get(frameIndex)!;
+    }
+
+    // Check if frame is marked as character-focused
+    if (frame?.isCharacterFocused) {
+      return "nano-banana";
+    }
+
+    // Use default model setting
+    if (defaultModel === "auto") {
+      // Auto mode: analyze frame description for character focus
+      const description = frame?.description || "";
+      const characterKeywords = ["character", "person", "face", "portrait", "close-up", "expression", "emotion"];
+      const hasCharacterFocus = characterKeywords.some(keyword =>
+        description.toLowerCase().includes(keyword)
+      );
+      return hasCharacterFocus ? "nano-banana" : "imagen3";
+    }
+
+    return defaultModel;
+  };
+
+  // Toggle frame model
+  const toggleFrameModel = (idx: number) => {
+    const newModels = new Map(frameModels);
+    const currentModel = frameModels.get(idx) || defaultModel;
+    const nextModel: ImageModel = currentModel === "imagen3" ? "nano-banana" :
+                                   currentModel === "nano-banana" ? "auto" : "imagen3";
+    newModels.set(idx, nextModel);
+    setFrameModels(newModels);
+  };
+
   // Fetch storyboard plan
   const fetchStoryboardPlan = async () => {
     setLoading(true);
@@ -331,7 +373,14 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
         const batch = frames.slice(i, i + PARALLEL_COUNT);
         const batchPromises = batch.map((frame, batchIndex) => {
           const frameIndex = i + batchIndex;
-          return fetch(`${API_BASE}/generate-frame`, {
+          const selectedModel = getModelForFrame(frameIndex, frames[frameIndex]);
+
+          // Create a timeout promise (60 seconds per frame)
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Frame generation timeout')), 60000)
+          );
+
+          const fetchPromise = fetch(`${API_BASE}/generate-frame`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -339,6 +388,7 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
               frameIndex: frameIndex,
               description: frames[frameIndex].description,
               aspectRatio: aspectRatio,
+              model: selectedModel,
             }),
           })
             .then(async (frameResponse) => {
@@ -346,13 +396,42 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                 const frameData = await frameResponse.json();
                 return { frameIndex, frame: frameData.frame };
               } else {
-                console.error(`Failed to generate frame ${frameIndex + 1}`);
-                return null;
+                const errorText = await frameResponse.text();
+                console.error(`Failed to generate frame ${frameIndex + 1}:`, errorText);
+                return {
+                  frameIndex,
+                  frame: {
+                    ...frames[frameIndex],
+                    status: "error",
+                    image_url: ""
+                  }
+                };
               }
             })
             .catch((frameError) => {
               console.error(`Error generating frame ${frameIndex + 1}:`, frameError);
-              return null;
+              return {
+                frameIndex,
+                frame: {
+                  ...frames[frameIndex],
+                  status: "error",
+                  image_url: ""
+                }
+              };
+            });
+
+          // Race between fetch and timeout
+          return Promise.race([fetchPromise, timeoutPromise])
+            .catch((timeoutError) => {
+              console.error(`Timeout generating frame ${frameIndex + 1}:`, timeoutError);
+              return {
+                frameIndex,
+                frame: {
+                  ...frames[frameIndex],
+                  status: "error",
+                  image_url: ""
+                }
+              };
             });
         });
 
@@ -408,6 +487,7 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
     setStoryboard({ ...storyboard, frames: [...frames] });
 
     try {
+      const selectedModel = getModelForFrame(frameIndex, frames[frameIndex]);
       const frameResponse = await fetch(`${API_BASE}/generate-frame`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -416,6 +496,7 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
           frameIndex: frameIndex,
           description: frames[frameIndex].description,
           aspectRatio: aspectRatio,
+          model: selectedModel,
         }),
       });
 
@@ -539,15 +620,53 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                         {idx + 1}
                       </motion.div>
 
+                      {/* Model Badge */}
+                      {frame?.image_url && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ delay: 0.2, type: "spring" }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleFrameModel(idx);
+                          }}
+                          className={`absolute bottom-24 right-5 z-40 px-3 py-1.5 rounded-full text-xs font-bold cursor-pointer transition-all hover:scale-110 shadow-lg ${
+                            getModelForFrame(idx, frame) === "imagen3"
+                              ? "bg-green-600 text-white"
+                              : getModelForFrame(idx, frame) === "nano-banana"
+                              ? "bg-orange-600 text-white"
+                              : "bg-blue-600 text-white"
+                          }`}
+                          title="Click to toggle model"
+                        >
+                          {getModelForFrame(idx, frame) === "imagen3"
+                            ? "Imagen 3"
+                            : getModelForFrame(idx, frame) === "nano-banana"
+                            ? "Nano 🍌"
+                            : "Auto"}
+                        </motion.div>
+                      )}
+
+
                       {/* Image Container */}
                       <div
                         className="aspect-video bg-gray-950 relative overflow-hidden cursor-pointer"
                         onClick={(e) => {
                           e.stopPropagation();
-                          openImageLightbox(idx);
+                          if (frame?.image_url) {
+                            openImageLightbox(idx);
+                          }
                         }}
                       >
-                        {frame?.image_url ? (
+                        {frame?.status === "error" ? (
+                          <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-red-950/20">
+                            <div className="text-red-400 text-center px-4">
+                              <X className="w-12 h-12 mx-auto mb-2" />
+                              <p className="font-semibold">Failed to generate</p>
+                              <p className="text-xs text-red-300 mt-1">Click regenerate to try again</p>
+                            </div>
+                          </div>
+                        ) : frame?.image_url ? (
                           <motion.img
                             src={frame.image_url}
                             alt={frame?.title || `Frame ${idx + 1}`}
@@ -689,6 +808,19 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                           >
                             <Edit className="w-4 h-4" />
                             Edit Title
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleFrameModel(idx);
+                              setMenuOpenForFrame(null);
+                            }}
+                            className="w-full px-4 py-2 text-left text-white hover:bg-gray-700 flex items-center gap-2 text-sm"
+                          >
+                            <Sparkles className="w-4 h-4" />
+                            <span>
+                              Model: <strong>{getModelForFrame(idx, frame) === "imagen3" ? "Imagen 3" : getModelForFrame(idx, frame) === "nano-banana" ? "Nano 🍌" : "Auto"}</strong>
+                            </span>
                           </button>
                           <button
                             onClick={(e) => {
@@ -885,6 +1017,28 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
               <option value="4:3">4:3 (Classic)</option>
               <option value="21:9">21:9 (Ultrawide)</option>
             </select>
+          </div>
+
+          {/* Image Model Selector */}
+          <div className="flex items-center gap-4 px-4 py-3 bg-gray-800/30 border border-gray-700 rounded-lg">
+            <label className="text-gray-300 font-medium flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-purple-400" />
+              Image Model:
+            </label>
+            <select
+              value={defaultModel}
+              onChange={(e) => setDefaultModel(e.target.value as ImageModel)}
+              className="flex-1 px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all cursor-pointer"
+            >
+              <option value="auto">Auto (Smart Selection)</option>
+              <option value="imagen3">Imagen 3 (General Scenes)</option>
+              <option value="nano-banana">Nano Banana (Characters)</option>
+            </select>
+          </div>
+          <div className="px-4 py-2 bg-blue-900/20 border border-blue-700/30 rounded-lg">
+            <p className="text-xs text-blue-300">
+              <strong>Auto mode:</strong> Uses Imagen 3 for most frames and Nano Banana for character-focused sequences automatically.
+            </p>
           </div>
 
           <div className="flex gap-3">
