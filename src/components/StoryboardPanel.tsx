@@ -435,7 +435,13 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                       </motion.div>
 
                       {/* Image Container */}
-                      <div className="aspect-video bg-gray-950 relative overflow-hidden">
+                      <div
+                        className="aspect-video bg-gray-950 relative overflow-hidden cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openImageLightbox(idx);
+                        }}
+                      >
                         {frame?.image_url ? (
                           <motion.img
                             src={frame.image_url}
@@ -443,11 +449,7 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                             initial={{ scale: 1.1, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             transition={{ duration: 0.5 }}
-                            className="w-full h-full object-cover cursor-pointer"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openImageLightbox(idx);
-                            }}
+                            className="w-full h-full object-cover"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
@@ -469,7 +471,7 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                           initial={{ opacity: 0 }}
                           whileHover={{ opacity: 1 }}
                           transition={{ duration: 0.3 }}
-                          className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent flex items-end p-6"
+                          className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent flex items-end p-6 pointer-events-none"
                         >
                           <div className="text-white w-full">
                             <motion.h4
