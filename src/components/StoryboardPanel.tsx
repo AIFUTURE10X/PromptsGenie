@@ -23,6 +23,7 @@ interface StoryboardFrame {
 }
 
 interface Storyboard {
+  storyboardId: string;
   frames: StoryboardFrame[];
 }
 
@@ -52,6 +53,75 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
   const [dragOverIndex, setDragOverIndex] = React.useState<number | null>(null);
   const API_BASE = "/api/storyboards";
 
+  // IndexedDB helper for large image storage
+  const openDB = async () => {
+    return new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open('StoryboardDB', 1);
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve(request.result);
+      request.onupgradeneeded = (event) => {
+        const db = (event.target as IDBOpenDBRequest).result;
+        if (!db.objectStoreNames.contains('storyboards')) {
+          db.createObjectStore('storyboards', { keyPath: 'id' });
+        }
+      };
+    });
+  };
+
+  const saveStoryboardToDB = async (sb: Storyboard) => {
+    try {
+      const db = await openDB();
+      const tx = db.transaction('storyboards', 'readwrite');
+      const store = tx.objectStore('storyboards');
+      await store.put({ id: 'lastStoryboard', data: sb });
+    } catch (e) {
+      console.error('Failed to save storyboard to IndexedDB:', e);
+    }
+  };
+
+  const loadStoryboardFromDB = async () => {
+    try {
+      const db = await openDB();
+      const tx = db.transaction('storyboards', 'readonly');
+      const store = tx.objectStore('storyboards');
+      return new Promise<any>((resolve, reject) => {
+        const request = store.get('lastStoryboard');
+        request.onsuccess = () => resolve(request.result?.data);
+        request.onerror = () => reject(request.error);
+      });
+    } catch (e) {
+      console.error('Failed to load storyboard from IndexedDB:', e);
+      return null;
+    }
+  };
+
+  const savePlanToDB = async (p: StoryboardPlan) => {
+    try {
+      const db = await openDB();
+      const tx = db.transaction('storyboards', 'readwrite');
+      const store = tx.objectStore('storyboards');
+      await store.put({ id: 'lastPlan', data: p });
+    } catch (e) {
+      console.error('Failed to save plan to IndexedDB:', e);
+    }
+  };
+
+  const loadPlanFromDB = async () => {
+    try {
+      const db = await openDB();
+      const tx = db.transaction('storyboards', 'readonly');
+      const store = tx.objectStore('storyboards');
+      return new Promise<any>((resolve, reject) => {
+        const request = store.get('lastPlan');
+        request.onsuccess = () => resolve(request.result?.data);
+        request.onerror = () => reject(request.error);
+      });
+    } catch (e) {
+      console.error('Failed to load plan from IndexedDB:', e);
+      return null;
+    }
+  };
+
   // Auto-populate with initial prompt
   React.useEffect(() => {
     if (initialPrompt && !intent) {
@@ -59,39 +129,32 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
     }
   }, [initialPrompt, intent]);
 
-  // Load saved storyboard from localStorage on mount
+  // Load saved storyboard from IndexedDB on mount
   React.useEffect(() => {
-    const savedStoryboard = localStorage.getItem('lastStoryboard');
-    const savedPlan = localStorage.getItem('lastPlan');
-    if (savedStoryboard) {
-      try {
-        const parsed = JSON.parse(savedStoryboard);
-        setStoryboard(parsed);
-      } catch (e) {
-        console.error('Failed to parse saved storyboard', e);
+    const loadSaved = async () => {
+      const savedStoryboard = await loadStoryboardFromDB();
+      const savedPlan = await loadPlanFromDB();
+      if (savedStoryboard) {
+        setStoryboard(savedStoryboard);
       }
-    }
-    if (savedPlan) {
-      try {
-        const parsed = JSON.parse(savedPlan);
-        setPlan(parsed);
-      } catch (e) {
-        console.error('Failed to parse saved plan', e);
+      if (savedPlan) {
+        setPlan(savedPlan);
       }
-    }
+    };
+    loadSaved();
   }, []);
 
-  // Save storyboard to localStorage whenever it changes
+  // Save storyboard to IndexedDB whenever it changes
   React.useEffect(() => {
     if (storyboard) {
-      localStorage.setItem('lastStoryboard', JSON.stringify(storyboard));
+      saveStoryboardToDB(storyboard);
     }
   }, [storyboard]);
 
-  // Save plan to localStorage whenever it changes
+  // Save plan to IndexedDB whenever it changes
   React.useEffect(() => {
     if (plan) {
-      localStorage.setItem('lastPlan', JSON.stringify(plan));
+      savePlanToDB(plan);
     }
   }, [plan]);
 
