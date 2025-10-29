@@ -27,6 +27,8 @@ function StoryboardPanel() {
   const [resultsCount, setResultsCount] = React.useState<number>(7);
   const [aspectRatio, setAspectRatio] = React.useState<string>("16:9");
   const [generationMode, setGenerationMode] = React.useState<string>("auto");
+  const [isLightboxOpen, setIsLightboxOpen] = React.useState<boolean>(false);
+  const [lightboxImageIndex, setLightboxImageIndex] = React.useState<number>(0);
   const API_BASE = "/api/storyboards";
 
   function generateStoryboardId(intent: string) {
@@ -38,6 +40,46 @@ function StoryboardPanel() {
     }
     return 'sb_' + Math.abs(hash);
   }
+
+  // Lightbox functions
+  const openLightbox = (index: number) => {
+    setLightboxImageIndex(index);
+    setIsLightboxOpen(true);
+  };
+
+  const closeLightbox = () => {
+    setIsLightboxOpen(false);
+  };
+
+  const goToPrevious = () => {
+    if (storyboard && storyboard.frames.length > 0) {
+      setLightboxImageIndex((prev) => (prev === 0 ? storyboard.frames.length - 1 : prev - 1));
+    }
+  };
+
+  const goToNext = () => {
+    if (storyboard && storyboard.frames.length > 0) {
+      setLightboxImageIndex((prev) => (prev === storyboard.frames.length - 1 ? 0 : prev + 1));
+    }
+  };
+
+  // Keyboard support for lightbox
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isLightboxOpen) return;
+
+      if (e.key === 'Escape') {
+        closeLightbox();
+      } else if (e.key === 'ArrowLeft') {
+        goToPrevious();
+      } else if (e.key === 'ArrowRight') {
+        goToNext();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isLightboxOpen, storyboard]);
   
   // Fetch storyboard plan
   const fetchStoryboardPlan = async () => {
@@ -225,7 +267,11 @@ function StoryboardPanel() {
                       <img
                         src={frame.image_url}
                         alt={`Thumbnail ${idx + 1}`}
-                        style={{ width: "80px", height: "45px", objectFit: "cover" }}
+                        style={{ width: "80px", height: "45px", objectFit: "cover", cursor: "pointer" }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openLightbox(idx);
+                        }}
                       />
                     </div>
                   ))}
@@ -237,7 +283,8 @@ function StoryboardPanel() {
                       <img
                         src={storyboard.frames[selectedFrame]?.image_url || ''}
                         alt={`Scene ${selectedFrame + 1}`}
-                        style={{ width: '180px', height: '120px', objectFit: 'cover', borderRadius: '8px', background: '#111' }}
+                        style={{ width: '180px', height: '120px', objectFit: 'cover', borderRadius: '8px', background: '#111', cursor: 'pointer' }}
+                        onClick={() => openLightbox(selectedFrame)}
                       />
                       <div style={{ flex: 1 }}>
                         <h3 style={{ color: '#fff', marginBottom: '6px' }}>{storyboard.frames[selectedFrame]?.title || `Scene ${selectedFrame + 1}`}</h3>
@@ -277,6 +324,131 @@ function StoryboardPanel() {
         )}
         {/* Controls for generation, intent, etc. */}
       </div>
+
+      {/* Lightbox Modal */}
+      {isLightboxOpen && storyboard && storyboard.frames.length > 0 && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.95)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+          }}
+          onClick={closeLightbox}
+        >
+          {/* Close Button */}
+          <button
+            style={{
+              position: 'absolute',
+              top: '20px',
+              right: '20px',
+              background: 'transparent',
+              border: 'none',
+              color: '#fff',
+              fontSize: '40px',
+              cursor: 'pointer',
+              padding: '10px',
+              lineHeight: '1',
+              zIndex: 10001,
+            }}
+            onClick={closeLightbox}
+            aria-label="Close lightbox"
+          >
+            &times;
+          </button>
+
+          {/* Previous Button */}
+          {storyboard.frames.length > 1 && (
+            <button
+              style={{
+                position: 'absolute',
+                left: '20px',
+                background: 'rgba(255, 255, 255, 0.2)',
+                border: 'none',
+                color: '#fff',
+                fontSize: '30px',
+                cursor: 'pointer',
+                padding: '15px 20px',
+                borderRadius: '4px',
+                zIndex: 10001,
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                goToPrevious();
+              }}
+              aria-label="Previous image"
+            >
+              &#8249;
+            </button>
+          )}
+
+          {/* Image Container */}
+          <div
+            style={{
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '20px',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={storyboard.frames[lightboxImageIndex]?.image_url || ''}
+              alt={`Scene ${lightboxImageIndex + 1}`}
+              style={{
+                maxWidth: '100%',
+                maxHeight: '80vh',
+                objectFit: 'contain',
+                borderRadius: '8px',
+              }}
+            />
+            <div style={{ textAlign: 'center', color: '#fff' }}>
+              <h3 style={{ marginBottom: '10px', fontSize: '24px' }}>
+                {storyboard.frames[lightboxImageIndex]?.title || `Scene ${lightboxImageIndex + 1}`}
+              </h3>
+              <p style={{ color: '#ccc', fontSize: '16px', maxWidth: '600px' }}>
+                {storyboard.frames[lightboxImageIndex]?.description}
+              </p>
+              <p style={{ color: '#888', fontSize: '14px', marginTop: '10px' }}>
+                {lightboxImageIndex + 1} / {storyboard.frames.length}
+              </p>
+            </div>
+          </div>
+
+          {/* Next Button */}
+          {storyboard.frames.length > 1 && (
+            <button
+              style={{
+                position: 'absolute',
+                right: '20px',
+                background: 'rgba(255, 255, 255, 0.2)',
+                border: 'none',
+                color: '#fff',
+                fontSize: '30px',
+                cursor: 'pointer',
+                padding: '15px 20px',
+                borderRadius: '4px',
+                zIndex: 10001,
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                goToNext();
+              }}
+              aria-label="Next image"
+            >
+              &#8250;
+            </button>
+          )}
+        </div>
+      )}
     </>
   );
 }
