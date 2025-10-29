@@ -49,6 +49,8 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
   const [generationMode, setGenerationMode] = React.useState<string>("auto");
   const [isPlanExpanded, setIsPlanExpanded] = React.useState<boolean>(false);
   const [isLightboxOpen, setIsLightboxOpen] = React.useState<boolean>(false);
+  const [isImageLightboxOpen, setIsImageLightboxOpen] = React.useState<boolean>(false);
+  const [lightboxImageIndex, setLightboxImageIndex] = React.useState<number>(0);
   const [draggedIndex, setDraggedIndex] = React.useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = React.useState<number | null>(null);
   const API_BASE = "/api/storyboards";
@@ -167,6 +169,46 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
     }
     return "sb_" + Math.abs(hash);
   }
+
+  // Image lightbox functions
+  const openImageLightbox = (index: number) => {
+    setLightboxImageIndex(index);
+    setIsImageLightboxOpen(true);
+  };
+
+  const closeImageLightbox = () => {
+    setIsImageLightboxOpen(false);
+  };
+
+  const goToPreviousImage = () => {
+    if (storyboard && storyboard.frames.length > 0) {
+      setLightboxImageIndex((prev) => (prev === 0 ? storyboard.frames.length - 1 : prev - 1));
+    }
+  };
+
+  const goToNextImage = () => {
+    if (storyboard && storyboard.frames.length > 0) {
+      setLightboxImageIndex((prev) => (prev === storyboard.frames.length - 1 ? 0 : prev + 1));
+    }
+  };
+
+  // Keyboard support for image lightbox
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isImageLightboxOpen) return;
+
+      if (e.key === 'Escape') {
+        closeImageLightbox();
+      } else if (e.key === 'ArrowLeft') {
+        goToPreviousImage();
+      } else if (e.key === 'ArrowRight') {
+        goToNextImage();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isImageLightboxOpen, storyboard]);
 
   // Fetch storyboard plan
   const fetchStoryboardPlan = async () => {
@@ -401,7 +443,11 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                             initial={{ scale: 1.1, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             transition={{ duration: 0.5 }}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openImageLightbox(idx);
+                            }}
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
@@ -852,6 +898,99 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
         </AnimatePresence>
       </motion.div>
       {/* End Right Column */}
+
+      {/* Image Lightbox Modal */}
+      <AnimatePresence>
+        {isImageLightboxOpen && storyboard && storyboard.frames.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center"
+            onClick={closeImageLightbox}
+          >
+            {/* Close Button */}
+            <button
+              className="absolute top-6 right-6 z-[10001] text-white/80 hover:text-white transition-colors"
+              onClick={closeImageLightbox}
+              aria-label="Close lightbox"
+            >
+              <X className="w-10 h-10" />
+            </button>
+
+            {/* Previous Button */}
+            {storyboard.frames.length > 1 && (
+              <button
+                className="absolute left-6 z-[10001] bg-white/20 hover:bg-white/30 text-white p-4 rounded-lg transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goToPreviousImage();
+                }}
+                aria-label="Previous image"
+              >
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  &#8249;
+                </motion.div>
+              </button>
+            )}
+
+            {/* Image Container */}
+            <div
+              className="max-w-[90vw] max-h-[90vh] flex flex-col items-center gap-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <motion.img
+                key={lightboxImageIndex}
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                src={storyboard.frames[lightboxImageIndex]?.image_url || ''}
+                alt={`Scene ${lightboxImageIndex + 1}`}
+                className="max-w-full max-h-[70vh] object-contain rounded-lg shadow-2xl"
+              />
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-center text-white max-w-2xl"
+              >
+                <h3 className="text-3xl font-bold mb-3">
+                  {storyboard.frames[lightboxImageIndex]?.title || `Scene ${lightboxImageIndex + 1}`}
+                </h3>
+                <p className="text-gray-300 text-lg mb-2">
+                  {storyboard.frames[lightboxImageIndex]?.description}
+                </p>
+                <p className="text-gray-500 text-sm">
+                  {lightboxImageIndex + 1} / {storyboard.frames.length}
+                </p>
+              </motion.div>
+            </div>
+
+            {/* Next Button */}
+            {storyboard.frames.length > 1 && (
+              <button
+                className="absolute right-6 z-[10001] bg-white/20 hover:bg-white/30 text-white p-4 rounded-lg transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goToNextImage();
+                }}
+                aria-label="Next image"
+              >
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  &#8250;
+                </motion.div>
+              </button>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
