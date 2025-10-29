@@ -11,6 +11,9 @@ import {
   Edit,
   RotateCw,
   GripVertical,
+  Trash2,
+  MoreVertical,
+  Check,
 } from "lucide-react";
 
 // Type definitions for storyboard and plan
@@ -53,6 +56,9 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
   const [lightboxImageIndex, setLightboxImageIndex] = React.useState<number>(0);
   const [draggedIndex, setDraggedIndex] = React.useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = React.useState<number | null>(null);
+  const [selectedFrames, setSelectedFrames] = React.useState<Set<number>>(new Set());
+  const [editingFrameTitle, setEditingFrameTitle] = React.useState<number | null>(null);
+  const [menuOpenForFrame, setMenuOpenForFrame] = React.useState<number | null>(null);
   const API_BASE = "/api/storyboards";
 
   // IndexedDB helper for large image storage
@@ -209,6 +215,61 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isImageLightboxOpen, storyboard]);
+
+  // Frame selection handlers
+  const toggleFrameSelection = (idx: number) => {
+    const newSelection = new Set(selectedFrames);
+    if (newSelection.has(idx)) {
+      newSelection.delete(idx);
+    } else {
+      newSelection.add(idx);
+    }
+    setSelectedFrames(newSelection);
+  };
+
+  // Download frame handler
+  const downloadFrame = async (frame: StoryboardFrame, idx: number) => {
+    try {
+      const response = await fetch(frame.image_url);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `storyboard-frame-${idx + 1}.png`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Failed to download frame:', error);
+      setError('Failed to download frame');
+    }
+  };
+
+  // Delete frame handler
+  const deleteFrame = (idx: number) => {
+    if (!storyboard) return;
+    if (confirm(`Are you sure you want to delete Scene ${idx + 1}?`)) {
+      const newFrames = storyboard.frames.filter((_, i) => i !== idx);
+      setStoryboard({ ...storyboard, frames: newFrames });
+      if (selectedFrame >= newFrames.length) {
+        setSelectedFrame(Math.max(0, newFrames.length - 1));
+      }
+      // Remove from selection if selected
+      const newSelection = new Set(selectedFrames);
+      newSelection.delete(idx);
+      setSelectedFrames(newSelection);
+    }
+  };
+
+  // Edit frame title handler
+  const updateFrameTitle = (idx: number, newTitle: string) => {
+    if (!storyboard) return;
+    const newFrames = [...storyboard.frames];
+    newFrames[idx] = { ...newFrames[idx], title: newTitle };
+    setStoryboard({ ...storyboard, frames: newFrames });
+    setEditingFrameTitle(null);
+  };
 
   // Fetch storyboard plan
   const fetchStoryboardPlan = async () => {
@@ -421,15 +482,59 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                         scale: 1.03,
                         transition: { duration: 0.2 },
                       }}
-                      className="group relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl overflow-hidden shadow-2xl hover:shadow-purple-500/40 transition-all cursor-pointer"
-                      onClick={() => setSelectedFrame(idx)}
+                      className="group relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl overflow-hidden shadow-2xl hover:shadow-purple-500/40 transition-all"
                     >
+                      {/* Top Controls Bar */}
+                      <div className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between p-3">
+                        {/* Left: Checkbox and Frame Number */}
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleFrameSelection(idx);
+                            }}
+                            className={`w-8 h-8 rounded-md border-2 flex items-center justify-center transition-all ${
+                              selectedFrames.has(idx)
+                                ? 'bg-purple-500 border-purple-500'
+                                : 'bg-gray-800/80 border-gray-600 hover:border-purple-400'
+                            }`}
+                          >
+                            {selectedFrames.has(idx) && (
+                              <Check className="w-5 h-5 text-white" />
+                            )}
+                          </button>
+                        </div>
+
+                        {/* Right: Edit and More buttons */}
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingFrameTitle(idx);
+                            }}
+                            className="bg-gray-800/80 hover:bg-gray-700 text-white p-2 rounded-md transition-all flex items-center gap-2"
+                          >
+                            <Edit className="w-4 h-4" />
+                            <span className="text-xs">Edit</span>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setMenuOpenForFrame(menuOpenForFrame === idx ? null : idx);
+                            }}
+                            className="bg-gray-800/80 hover:bg-gray-700 text-white p-2 rounded-md transition-all"
+                          >
+                            <MoreVertical className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+
                       {/* Frame Number Badge */}
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{ delay: idx * 0.1 + 0.2, type: "spring" }}
-                        className="absolute top-4 left-4 z-20 w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center font-bold text-white text-xl shadow-lg ring-4 ring-gray-900/50"
+                        className="absolute top-14 left-4 z-20 w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center font-bold text-white text-lg shadow-lg ring-4 ring-gray-900/50"
                       >
                         {idx + 1}
                       </motion.div>
@@ -496,12 +601,54 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
 
                       {/* Card Footer */}
                       <div className="p-5 bg-gray-800/80 backdrop-blur-sm">
-                        <h4 className="font-semibold text-white mb-2 text-lg truncate">
-                          {frame?.title || `Scene ${idx + 1}`}
-                        </h4>
-                        <p className="text-sm text-gray-400 line-clamp-2 leading-relaxed">
+                        {editingFrameTitle === idx ? (
+                          <input
+                            type="text"
+                            defaultValue={frame?.title || `Scene ${idx + 1}`}
+                            onBlur={(e) => updateFrameTitle(idx, e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                updateFrameTitle(idx, e.currentTarget.value);
+                              } else if (e.key === 'Escape') {
+                                setEditingFrameTitle(null);
+                              }
+                            }}
+                            autoFocus
+                            className="w-full bg-gray-700 text-white px-2 py-1 rounded mb-2 font-semibold text-lg"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        ) : (
+                          <h4 className="font-semibold text-white mb-2 text-lg truncate">
+                            {frame?.title || `Scene ${idx + 1}`}
+                          </h4>
+                        )}
+                        <p className="text-sm text-gray-400 line-clamp-2 leading-relaxed mb-3">
                           {frame?.description || "Generating scene..."}
                         </p>
+
+                        {/* Download and Delete Buttons */}
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              downloadFrame(frame, idx);
+                            }}
+                            className="p-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-all"
+                            title="Download"
+                          >
+                            <Download className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteFrame(idx);
+                            }}
+                            className="p-2 bg-gray-700 hover:bg-red-600 text-white rounded-lg transition-all"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
 
                       {/* Status Indicator */}
@@ -513,6 +660,60 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                         >
                           <Loader2 className="w-5 h-5 text-white animate-spin" />
                         </motion.div>
+                      )}
+
+                      {/* More Options Menu */}
+                      {menuOpenForFrame === idx && (
+                        <div
+                          className="absolute top-16 right-3 z-40 bg-gray-800 rounded-lg shadow-xl border border-gray-700 py-2 min-w-[160px]"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openImageLightbox(idx);
+                              setMenuOpenForFrame(null);
+                            }}
+                            className="w-full px-4 py-2 text-left text-white hover:bg-gray-700 flex items-center gap-2"
+                          >
+                            <Eye className="w-4 h-4" />
+                            View Fullscreen
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingFrameTitle(idx);
+                              setMenuOpenForFrame(null);
+                            }}
+                            className="w-full px-4 py-2 text-left text-white hover:bg-gray-700 flex items-center gap-2"
+                          >
+                            <Edit className="w-4 h-4" />
+                            Edit Title
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              downloadFrame(frame, idx);
+                              setMenuOpenForFrame(null);
+                            }}
+                            className="w-full px-4 py-2 text-left text-white hover:bg-gray-700 flex items-center gap-2"
+                          >
+                            <Download className="w-4 h-4" />
+                            Download
+                          </button>
+                          <div className="border-t border-gray-700 my-1"></div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteFrame(idx);
+                              setMenuOpenForFrame(null);
+                            }}
+                            className="w-full px-4 py-2 text-left text-red-400 hover:bg-gray-700 flex items-center gap-2"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            Delete
+                          </button>
+                        </div>
                       )}
 
                       {/* Action Buttons */}
