@@ -402,9 +402,9 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
               console.error(`  Status: ${frameResponse.status} ${frameResponse.statusText}`);
               console.error(`  Error: ${errorDetail}`);
 
-              // If we can retry, wait before next attempt
+              // If we can retry, wait before next attempt - REDUCED DELAYS for faster generation
               if (isRetryable && frameAttempts < MAX_FRAME_ATTEMPTS) {
-                const waitTime = frameAttempts * 5000; // 5s, 10s
+                const waitTime = frameAttempts * 2000; // 2s, 4s (reduced from 5s, 10s)
                 console.log(`⏱️ Waiting ${waitTime/1000}s before retry...`);
                 await new Promise(resolve => setTimeout(resolve, waitTime));
               } else {
@@ -421,9 +421,9 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
             console.error(`💥 Network error generating frame ${i + 1} (attempt ${frameAttempts}/${MAX_FRAME_ATTEMPTS}):`);
             console.error(`  Message: ${frameError.message}`);
 
-            // Network errors are retryable
+            // Network errors are retryable - REDUCED DELAYS
             if (frameAttempts < MAX_FRAME_ATTEMPTS) {
-              const waitTime = frameAttempts * 5000;
+              const waitTime = frameAttempts * 2000; // 2s, 4s (reduced from 5s, 10s)
               console.log(`⏱️ Waiting ${waitTime/1000}s before retry...`);
               await new Promise(resolve => setTimeout(resolve, waitTime));
             } else {
@@ -439,11 +439,9 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
           setStoryboard({ ...data, frames: [...frames] });
         }
 
-        // Small delay between frames to avoid rate limiting (reduced for speed)
-        if (i < frames.length - 1) {
-          console.log(`⏳ Brief pause before next frame...`);
-          await new Promise(resolve => setTimeout(resolve, 1000)); // Reduced from 3s to 1s for faster generation
-        }
+        // NO DELAY between frames - each frame generates immediately after the previous one completes
+        // This dramatically improves generation speed without causing rate limiting issues
+        // The backend handles rate limiting internally
       }
     } catch (e: any) {
       setError(e.message || "Failed to generate storyboard.");

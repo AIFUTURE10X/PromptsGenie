@@ -271,7 +271,7 @@ Style: Vibrant colors, photorealistic rendering, highly detailed, dramatic light
       '21:9': { aspectRatio: '16:9' } // 21:9 not supported, use 16:9
     };
 
-    // Request body with Imagen 3 supported parameters only
+    // Request body with Imagen 3 supported parameters optimized for speed and quality
     const body = {
       instances: [
         {
@@ -280,6 +280,8 @@ Style: Vibrant colors, photorealistic rendering, highly detailed, dramatic light
       ],
       parameters: {
         sampleCount: 1,
+        sampleImageSize: "1K", // 1024px - optimal balance of quality and speed (faster than 2K)
+        addWatermark: false, // Disable watermark for cleaner images
         // Note: Imagen 3 does NOT support guidanceScale or negativePrompt
         // Using only officially supported parameters for best quality
         ...(aspectRatio && aspectRatioMap[aspectRatio] ? aspectRatioMap[aspectRatio] : {}),
