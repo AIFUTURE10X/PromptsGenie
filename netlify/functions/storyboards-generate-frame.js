@@ -1,7 +1,14 @@
-// Simple hash function for prompt caching (cost optimization)
+// Enhanced hash function with normalization for better cache hits
 function hashPrompt(prompt, aspectRatio) {
+  // Normalize prompt for better cache matching
+  const normalized = prompt
+    .toLowerCase() // Case insensitive
+    .replace(/\s+/g, ' ') // Collapse multiple spaces
+    .replace(/[.,!?;:]+$/g, '') // Remove trailing punctuation
+    .trim(); // Remove leading/trailing whitespace
+
   let hash = 0;
-  const str = `${prompt}|${aspectRatio || '16:9'}`;
+  const str = `${normalized}|${aspectRatio || '16:9'}`;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
     hash = ((hash << 5) - hash) + char;
@@ -12,8 +19,25 @@ function hashPrompt(prompt, aspectRatio) {
 
 // In-memory cache for generated images (resets on function cold start)
 const imageCache = new Map();
-const CACHE_MAX_SIZE = 50; // Limit cache size to avoid memory issues
+const CACHE_MAX_SIZE = 200; // Increased for better cost savings (200 frames = ~100MB)
 const CACHE_TTL = 3600000; // 1 hour TTL
+
+// Analytics tracking (resets on function cold start)
+const analytics = {
+  cacheHits: 0,
+  cacheMisses: 0,
+  totalGenerations: 0,
+  totalFailures: 0,
+  averageGenerationTime: 0,
+  get hitRate() {
+    const total = this.cacheHits + this.cacheMisses;
+    return total > 0 ? ((this.cacheHits / total) * 100).toFixed(1) : 0;
+  },
+  get successRate() {
+    const total = this.totalGenerations + this.totalFailures;
+    return total > 0 ? ((this.totalGenerations / total) * 100).toFixed(1) : 0;
+  }
+};
 
 // Get Google Cloud access token using OAuth2 JWT flow (no external libraries needed)
 async function getAccessToken() {
@@ -106,6 +130,7 @@ export const handler = async (event, context) => {
       descriptionLength: description?.length
     });
 
+    // Input validation to prevent wasted API calls
     if (!description || typeof frameIndex !== 'number') {
       console.error('❌ Invalid request parameters');
       return {
@@ -120,11 +145,41 @@ export const handler = async (event, context) => {
       };
     }
 
+    // Validate description quality to avoid wasted $0.04 API calls
+    const cleanDescription = description.trim();
+    if (cleanDescription.length < 10) {
+      console.error('❌ Description too short for quality generation');
+      return {
+        statusCode: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({
+          error: 'Description too short. Please provide at least 10 characters for quality image generation (minimum: detailed scene description).'
+        })
+      };
+    }
+
+    if (cleanDescription.length > 1000) {
+      console.error('❌ Description too long');
+      return {
+        statusCode: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({
+          error: 'Description too long. Please keep it under 1000 characters for optimal results.'
+        })
+      };
+    }
+
     // Use single model for all frames
     const model = 'imagegeneration@006';
 
-    // Simple universal prompt that works for all frame types
-    const prompt = `A cinematic storyboard frame: ${description}`;
+    // Enhanced prompt for better quality and consistency
+    const prompt = `Cinematic storyboard frame, professional composition, clear visual storytelling: ${description}. High-quality digital art style, dramatic lighting.`;
 
     console.log(`📝 Frame ${frameIndex + 1}: ${prompt}`);
 
@@ -132,7 +187,9 @@ export const handler = async (event, context) => {
     const cacheKey = hashPrompt(prompt, aspectRatio);
     const cached = imageCache.get(cacheKey);
     if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
+      analytics.cacheHits++;
       console.log(`💰 Cache HIT for frame ${frameIndex + 1} - saving API call cost!`);
+      console.log(`📊 Analytics: ${analytics.cacheHits} hits, ${analytics.cacheMisses} misses, ${analytics.hitRate}% hit rate`);
       return {
         statusCode: 200,
         headers: {
@@ -152,7 +209,9 @@ export const handler = async (event, context) => {
         })
       };
     }
+    analytics.cacheMisses++;
     console.log(`🔍 Cache MISS for frame ${frameIndex + 1} - will generate new image`);
+    console.log(`📊 Analytics: ${analytics.cacheHits} hits, ${analytics.cacheMisses} misses, ${analytics.hitRate}% hit rate`);
 
     const endpoint = `https://us-central1-aiplatform.googleapis.com/v1/projects/${process.env.GOOGLE_PROJECT_ID}/locations/us-central1/publishers/google/models/${model}:predict`;
 
@@ -165,7 +224,7 @@ export const handler = async (event, context) => {
       '21:9': { aspectRatio: '16:9' } // 21:9 not supported, use 16:9
     };
 
-    // Simple request body
+    // Enhanced request body with quality parameters
     const body = {
       instances: [
         {
@@ -174,6 +233,8 @@ export const handler = async (event, context) => {
       ],
       parameters: {
         sampleCount: 1,
+        guidanceScale: 18, // Higher = more prompt adherence (range: 1-20, default: 15)
+        negativePrompt: 'blurry, low quality, distorted, deformed, text, watermark, signature', // Avoid these
         ...(aspectRatio && aspectRatioMap[aspectRatio] ? aspectRatioMap[aspectRatio] : {}),
       },
     };
@@ -208,7 +269,12 @@ export const handler = async (event, context) => {
           const imageBase64 = data?.predictions?.[0]?.bytesBase64Encoded;
 
           if (imageBase64) {
+            // Track successful generation
+            analytics.totalGenerations++;
+            analytics.averageGenerationTime = ((analytics.averageGenerationTime * (analytics.totalGenerations - 1)) + parseFloat(elapsed)) / analytics.totalGenerations;
+
             console.log(`✅ Frame ${frameIndex + 1} generated successfully in ${elapsed}s (attempt ${attempts})`);
+            console.log(`📊 Success rate: ${analytics.successRate}%, Avg time: ${analytics.averageGenerationTime.toFixed(2)}s`);
 
             // Store in cache for future requests (cost optimization)
             if (imageCache.size >= CACHE_MAX_SIZE) {
@@ -290,9 +356,11 @@ export const handler = async (event, context) => {
       }
     }
 
-    // All attempts failed
+    // All attempts failed - track failure
+    analytics.totalFailures++;
     const errorMsg = `Failed after ${attempts} attempts: ${lastError}`;
     console.error(`❌ Frame ${frameIndex + 1} - ${errorMsg}`);
+    console.error(`📊 Failure tracked. Success rate: ${analytics.successRate}%`);
     console.error(`Frame ${frameIndex + 1} details:`, {
       storyboardId,
       frameIndex,
