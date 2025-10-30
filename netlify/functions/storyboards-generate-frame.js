@@ -297,12 +297,12 @@ Style: Vibrant colors, photorealistic rendering, dramatic lighting, professional
       },
     };
 
-    // Retry logic - optimized to 2 attempts to handle empty API responses
-    // 2 attempts with short delay should stay under 10s Netlify timeout
-    // Frontend will handle additional retries if needed
+    // Retry logic - 3 attempts with increasing delays to handle empty API responses
+    // Common issue: Imagen API returns 200 but no image data (rate limiting/safety)
+    // Exponential backoff helps with rate limiting and transient issues
     let attempts = 0;
     let lastError = null;
-    const MAX_ATTEMPTS = 2; // 2 attempts to handle intermittent empty responses
+    const MAX_ATTEMPTS = 3; // 3 attempts to handle intermittent empty responses
 
     while (attempts < MAX_ATTEMPTS) {
       attempts++;
@@ -404,9 +404,9 @@ Style: Vibrant colors, photorealistic rendering, dramatic lighting, professional
             }
 
             if (attempts < MAX_ATTEMPTS) {
-              // Fixed 2s delay to stay under 10s total (attempt 1: ~3s, wait: 2s, attempt 2: ~3s = ~8s)
-              const waitTime = 2000; // Fixed 2s delay
-              console.log(`⏱️ Retrying frame ${frameIndex + 1} in ${waitTime/1000} seconds...`);
+              // Exponential backoff: 3s, 6s, 12s to handle rate limiting
+              const waitTime = Math.min(3000 * attempts, 12000); // 3s, 6s, 12s (capped at 12s)
+              console.log(`⏱️ Retrying frame ${frameIndex + 1} in ${waitTime/1000} seconds... (attempt ${attempts}/${MAX_ATTEMPTS})`);
               await new Promise(resolve => setTimeout(resolve, waitTime));
               continue; // Try again
             } else {
@@ -422,14 +422,16 @@ Style: Vibrant colors, photorealistic rendering, dramatic lighting, professional
           console.warn(`⚠️ Frame ${frameIndex + 1} attempt ${attempts} failed in ${elapsed}s: ${lastError}`);
 
           if (attempts < MAX_ATTEMPTS && response.status >= 500) {
-            // Retry on 5xx server errors
-            console.log(`Retrying in 2 seconds...`);
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Retry on 5xx server errors with exponential backoff
+            const waitTime = Math.min(3000 * attempts, 12000);
+            console.log(`Server error - retrying in ${waitTime/1000}s... (attempt ${attempts}/${MAX_ATTEMPTS})`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
             continue;
           } else if (response.status === 429) {
-            // Rate limit - wait a bit but stay under timeout
-            console.log(`Rate limited - waiting 3 seconds before retry...`);
-            await new Promise(resolve => setTimeout(resolve, 3000));
+            // Rate limit - wait longer before retry
+            const waitTime = Math.min(5000 * attempts, 15000); // 5s, 10s, 15s for rate limits
+            console.log(`Rate limited - waiting ${waitTime/1000}s before retry... (attempt ${attempts}/${MAX_ATTEMPTS})`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
             if (attempts < MAX_ATTEMPTS) continue;
           } else {
             // 4xx client errors don't retry
@@ -440,8 +442,9 @@ Style: Vibrant colors, photorealistic rendering, dramatic lighting, professional
         lastError = fetchError.message;
         console.warn(`⚠️ Frame ${frameIndex + 1} attempt ${attempts} network error: ${lastError}`);
         if (attempts < MAX_ATTEMPTS) {
-          console.log(`Retrying in 2 seconds...`);
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          const waitTime = Math.min(3000 * attempts, 12000);
+          console.log(`Network error - retrying in ${waitTime/1000}s... (attempt ${attempts}/${MAX_ATTEMPTS})`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
           continue;
         }
       }
