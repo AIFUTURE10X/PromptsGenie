@@ -13,6 +13,7 @@ import {
   Trash2,
   MoreVertical,
   Check,
+  Sparkles,
 } from "lucide-react";
 
 // Type definitions for storyboard and plan
@@ -58,6 +59,8 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
   const [selectedFrames, setSelectedFrames] = React.useState<Set<number>>(new Set());
   const [editingFrameTitle, setEditingFrameTitle] = React.useState<number | null>(null);
   const [menuOpenForFrame, setMenuOpenForFrame] = React.useState<number | null>(null);
+  const [cacheHits, setCacheHits] = React.useState<number>(0);
+  const [totalFramesGenerated, setTotalFramesGenerated] = React.useState<number>(0);
   const API_BASE = "/api/storyboards";
 
   // IndexedDB helper for large image storage
@@ -346,7 +349,15 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
             .then(async (frameResponse) => {
               if (frameResponse.ok) {
                 const frameData = await frameResponse.json();
-                console.log(`✅ Frame ${frameIndex + 1} generated successfully`);
+                // Track cache hits for cost monitoring
+                const cacheStatus = frameResponse.headers.get('X-Cache');
+                if (cacheStatus === 'HIT') {
+                  setCacheHits(prev => prev + 1);
+                  console.log(`💰 Frame ${frameIndex + 1} loaded from cache - saved API cost!`);
+                } else {
+                  setTotalFramesGenerated(prev => prev + 1);
+                  console.log(`✅ Frame ${frameIndex + 1} generated successfully`);
+                }
                 return { frameIndex, frame: frameData.frame };
               } else {
                 // Parse error response
@@ -885,6 +896,23 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
           <p className="text-gray-400 text-sm">
             Transform your ideas into visual narratives
           </p>
+          {(cacheHits > 0 || totalFramesGenerated > 0) && (
+            <div className="mt-3 flex items-center gap-2 text-xs">
+              <div className="px-3 py-1.5 bg-green-900/30 border border-green-700/50 rounded-lg">
+                <span className="text-green-400">💰 Cost Savings: {cacheHits} frames cached</span>
+              </div>
+              <div className="px-3 py-1.5 bg-blue-900/30 border border-blue-700/50 rounded-lg">
+                <span className="text-blue-400">🎨 Generated: {totalFramesGenerated} frames</span>
+              </div>
+              {cacheHits > 0 && (
+                <div className="px-3 py-1.5 bg-purple-900/30 border border-purple-700/50 rounded-lg">
+                  <span className="text-purple-400">
+                    ⚡ {Math.round((cacheHits / (cacheHits + totalFramesGenerated)) * 100)}% saved
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
         </motion.div>
 
         {/* Input Section */}

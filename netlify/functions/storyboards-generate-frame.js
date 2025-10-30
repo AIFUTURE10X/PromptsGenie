@@ -1,3 +1,20 @@
+// Simple hash function for prompt caching (cost optimization)
+function hashPrompt(prompt, aspectRatio) {
+  let hash = 0;
+  const str = `${prompt}|${aspectRatio || '16:9'}`;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return Math.abs(hash).toString(36);
+}
+
+// In-memory cache for generated images (resets on function cold start)
+const imageCache = new Map();
+const CACHE_MAX_SIZE = 50; // Limit cache size to avoid memory issues
+const CACHE_TTL = 3600000; // 1 hour TTL
+
 // Get Google Cloud access token using OAuth2 JWT flow (no external libraries needed)
 async function getAccessToken() {
   try {
@@ -111,6 +128,32 @@ export const handler = async (event, context) => {
 
     console.log(`📝 Frame ${frameIndex + 1}: ${prompt}`);
 
+    // Check cache first (cost optimization)
+    const cacheKey = hashPrompt(prompt, aspectRatio);
+    const cached = imageCache.get(cacheKey);
+    if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
+      console.log(`💰 Cache HIT for frame ${frameIndex + 1} - saving API call cost!`);
+      return {
+        statusCode: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'X-Cache': 'HIT'
+        },
+        body: JSON.stringify({
+          success: true,
+          frame: {
+            id: `frame_${storyboardId}_${frameIndex}`,
+            image_url: cached.imageBase64,
+            title: `Scene ${frameIndex + 1}`,
+            description: description,
+            status: 'completed'
+          }
+        })
+      };
+    }
+    console.log(`🔍 Cache MISS for frame ${frameIndex + 1} - will generate new image`);
+
     const endpoint = `https://us-central1-aiplatform.googleapis.com/v1/projects/${process.env.GOOGLE_PROJECT_ID}/locations/us-central1/publishers/google/models/${model}:predict`;
 
     // Map aspect ratio to parameters
@@ -135,16 +178,17 @@ export const handler = async (event, context) => {
       },
     };
 
-    // Retry logic - up to 3 attempts
+    // Retry logic - up to 2 attempts (cost optimization: reduce from 3 to 2)
     let attempts = 0;
     let lastError = null;
+    const MAX_ATTEMPTS = 2; // Reduced from 3 to save costs on failures
 
-    while (attempts < 3) {
+    while (attempts < MAX_ATTEMPTS) {
       attempts++;
       try {
         const accessToken = await getAccessToken();
 
-        console.log(`🔧 Frame ${frameIndex + 1} - Attempt ${attempts}/3 - Calling Google Imagen API...`);
+        console.log(`🔧 Frame ${frameIndex + 1} - Attempt ${attempts}/${MAX_ATTEMPTS} - Calling Google Imagen API...`);
         const startTime = Date.now();
 
         const response = await fetch(endpoint, {
@@ -165,12 +209,29 @@ export const handler = async (event, context) => {
 
           if (imageBase64) {
             console.log(`✅ Frame ${frameIndex + 1} generated successfully in ${elapsed}s (attempt ${attempts})`);
+
+            // Store in cache for future requests (cost optimization)
+            if (imageCache.size >= CACHE_MAX_SIZE) {
+              // Remove oldest entry if cache is full
+              const firstKey = imageCache.keys().next().value;
+              imageCache.delete(firstKey);
+              console.log(`🗑️ Cache full, removed oldest entry`);
+            }
+            imageCache.set(cacheKey, {
+              imageBase64: `data:image/png;base64,${imageBase64}`,
+              timestamp: Date.now()
+            });
+            console.log(`💾 Cached frame ${frameIndex + 1} (cache size: ${imageCache.size}/${CACHE_MAX_SIZE})`);
+
             // Success! Return frame object
             return {
               statusCode: 200,
               headers: {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
+                'Access-Control-Allow-Origin': '*',
+                'X-Cache': 'MISS',
+                'X-Generation-Time': `${elapsed}s`,
+                'X-Attempts': attempts.toString()
               },
               body: JSON.stringify({
                 success: true,
@@ -188,7 +249,7 @@ export const handler = async (event, context) => {
             const availableKeys = Object.keys(data || {}).join(', ');
             lastError = `No image in API response. Available keys: ${availableKeys}`;
             console.warn(`⚠️ Frame ${frameIndex + 1} attempt ${attempts}: ${lastError}`);
-            if (attempts < 3) {
+            if (attempts < MAX_ATTEMPTS) {
               console.log(`Retrying in 2 seconds...`);
               await new Promise(resolve => setTimeout(resolve, 2000));
               continue; // Try again
@@ -203,7 +264,7 @@ export const handler = async (event, context) => {
           lastError = `API error ${response.status}: ${errorText}`;
           console.warn(`⚠️ Frame ${frameIndex + 1} attempt ${attempts} failed in ${elapsed}s: ${lastError}`);
 
-          if (attempts < 3 && response.status >= 500) {
+          if (attempts < MAX_ATTEMPTS && response.status >= 500) {
             // Retry on 5xx server errors
             console.log(`Retrying in 2 seconds...`);
             await new Promise(resolve => setTimeout(resolve, 2000));
@@ -212,7 +273,7 @@ export const handler = async (event, context) => {
             // Rate limit - wait longer
             console.log(`Rate limited - waiting 5 seconds before retry...`);
             await new Promise(resolve => setTimeout(resolve, 5000));
-            if (attempts < 3) continue;
+            if (attempts < MAX_ATTEMPTS) continue;
           } else {
             // 4xx client errors don't retry
             break;
@@ -221,7 +282,7 @@ export const handler = async (event, context) => {
       } catch (fetchError) {
         lastError = fetchError.message;
         console.warn(`⚠️ Frame ${frameIndex + 1} attempt ${attempts} network error: ${lastError}`);
-        if (attempts < 3) {
+        if (attempts < MAX_ATTEMPTS) {
           console.log(`Retrying in 2 seconds...`);
           await new Promise(resolve => setTimeout(resolve, 2000));
           continue;
