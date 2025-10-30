@@ -263,11 +263,12 @@ export const handler = async (event, context) => {
       },
     };
 
-    // Retry logic - reduced to 1 attempt to avoid 504 timeouts on Netlify free tier
-    // Frontend will handle retries if this fails (frontend has no timeout limit)
+    // Retry logic - optimized to 2 attempts to handle empty API responses
+    // 2 attempts with short delay should stay under 10s Netlify timeout
+    // Frontend will handle additional retries if needed
     let attempts = 0;
     let lastError = null;
-    const MAX_ATTEMPTS = 1; // Reduced from 3 to stay under 10s timeout limit
+    const MAX_ATTEMPTS = 2; // 2 attempts to handle intermittent empty responses
 
     while (attempts < MAX_ATTEMPTS) {
       attempts++;
@@ -369,9 +370,9 @@ export const handler = async (event, context) => {
             }
 
             if (attempts < MAX_ATTEMPTS) {
-              // Exponential backoff: 3s, 6s, 12s
-              const waitTime = Math.pow(2, attempts) * 1500; // 3s, 6s, 12s
-              console.log(`⏱️ Retrying frame ${frameIndex + 1} in ${waitTime/1000} seconds (exponential backoff)...`);
+              // Fixed 2s delay to stay under 10s total (attempt 1: ~3s, wait: 2s, attempt 2: ~3s = ~8s)
+              const waitTime = 2000; // Fixed 2s delay
+              console.log(`⏱️ Retrying frame ${frameIndex + 1} in ${waitTime/1000} seconds...`);
               await new Promise(resolve => setTimeout(resolve, waitTime));
               continue; // Try again
             } else {
