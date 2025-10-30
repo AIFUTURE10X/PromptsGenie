@@ -358,13 +358,24 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
               console.log(`✅ Frame ${i + 1} generated successfully`);
             }
           } else {
-            // Parse error response
+            // Parse error response (read body only once to avoid "body stream already read" error)
             let errorDetail = 'Unknown error';
             try {
-              const errorData = await frameResponse.json();
-              errorDetail = errorData.error || JSON.stringify(errorData);
-            } catch {
-              errorDetail = await frameResponse.text();
+              // Clone the response so we can read it multiple ways if needed
+              const responseText = await frameResponse.text();
+              try {
+                const errorData = JSON.parse(responseText);
+                errorDetail = errorData.error || JSON.stringify(errorData);
+              } catch {
+                errorDetail = responseText || frameResponse.statusText;
+              }
+            } catch (readError: any) {
+              errorDetail = `Failed to read error response: ${readError.message}`;
+            }
+
+            // Special handling for timeout errors
+            if (frameResponse.status === 504) {
+              errorDetail = 'Server timeout - The frame generation took too long. Try again or use a simpler description.';
             }
 
             console.error(`❌ Failed to generate frame ${i + 1}:`);
