@@ -136,80 +136,110 @@ export const handler = async (event, context) => {
       },
     };
 
-    const accessToken = await getAccessToken();
+    // Retry logic - up to 3 attempts
+    let attempts = 0;
+    let lastError = null;
 
-    console.log(`🔧 Generating frame ${frameIndex + 1} - Calling Google Imagen API...`);
-    const startTime = Date.now();
+    while (attempts < 3) {
+      attempts++;
+      try {
+        const accessToken = await getAccessToken();
 
-    const response = await fetch(endpoint, {
-      method: 'POST',
+        console.log(`🔧 Frame ${frameIndex + 1} - Attempt ${attempts}/3 - Calling Google Imagen API...`);
+        const startTime = Date.now();
+
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(body),
+        });
+
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+
+        if (response.ok) {
+          const data = await response.json();
+
+          const imageBase64 = data?.predictions?.[0]?.bytesBase64Encoded;
+
+          if (imageBase64) {
+            console.log(`✅ Frame ${frameIndex + 1} generated successfully in ${elapsed}s (attempt ${attempts})`);
+            // Success! Return frame object
+            return {
+              statusCode: 200,
+              headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+              },
+              body: JSON.stringify({
+                success: true,
+                frame: {
+                  id: `frame_${storyboardId}_${frameIndex}`,
+                  image_url: `data:image/png;base64,${imageBase64}`,
+                  title: `Scene ${frameIndex + 1}`,
+                  description: description,
+                  status: 'completed'
+                }
+              })
+            };
+          } else {
+            // API returned 200 but no image - might be rate limiting or temp issue
+            const availableKeys = Object.keys(data || {}).join(', ');
+            lastError = `No image in API response. Available keys: ${availableKeys}`;
+            console.warn(`⚠️ Frame ${frameIndex + 1} attempt ${attempts}: ${lastError}`);
+            if (attempts < 3) {
+              console.log(`Retrying in 2 seconds...`);
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              continue; // Try again
+            }
+          }
+        } else {
+          // API returned error status
+          const errorText = await response.text();
+          lastError = `API error ${response.status}: ${errorText}`;
+          console.warn(`⚠️ Frame ${frameIndex + 1} attempt ${attempts} failed in ${elapsed}s: ${lastError}`);
+
+          if (attempts < 3 && response.status >= 500) {
+            // Retry on 5xx server errors
+            console.log(`Retrying in 2 seconds...`);
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            continue;
+          } else if (response.status === 429) {
+            // Rate limit - wait longer
+            console.log(`Rate limited - waiting 5 seconds before retry...`);
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            if (attempts < 3) continue;
+          } else {
+            // 4xx client errors don't retry
+            break;
+          }
+        }
+      } catch (fetchError) {
+        lastError = fetchError.message;
+        console.warn(`⚠️ Frame ${frameIndex + 1} attempt ${attempts} network error: ${lastError}`);
+        if (attempts < 3) {
+          console.log(`Retrying in 2 seconds...`);
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          continue;
+        }
+      }
+    }
+
+    // All attempts failed
+    console.error(`❌ Frame ${frameIndex + 1} failed after ${attempts} attempts. Last error: ${lastError}`);
+    return {
+      statusCode: 500,
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
+        'Access-Control-Allow-Origin': '*'
       },
-      body: JSON.stringify(body),
-    });
-
-    const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
-
-    if (response.ok) {
-      const data = await response.json();
-      console.log(`✅ Frame ${frameIndex + 1} generated successfully in ${elapsed}s`);
-
-      const imageBase64 = data?.predictions?.[0]?.bytesBase64Encoded;
-
-      if (imageBase64) {
-        // Return frame object matching frontend interface
-        return {
-          statusCode: 200,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          },
-          body: JSON.stringify({
-            success: true,
-            frame: {
-              id: `frame_${storyboardId}_${frameIndex}`,
-              image_url: `data:image/png;base64,${imageBase64}`,
-              title: `Scene ${frameIndex + 1}`,
-              description: description,
-              status: 'completed'
-            }
-          })
-        };
-      } else {
-        const availableKeys = Object.keys(data || {}).join(', ');
-        const errorMessage = `No image in API response. Available keys: ${availableKeys}`;
-        console.error(`❌ Frame ${frameIndex + 1}: ${errorMessage}`);
-        console.error(`Full API response:`, JSON.stringify(data, null, 2));
-        return {
-          statusCode: 500,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          },
-          body: JSON.stringify({
-            success: false,
-            error: errorMessage
-          })
-        };
-      }
-    } else {
-      const errorText = await response.text();
-      console.error(`❌ Frame ${frameIndex + 1} failed in ${elapsed}s with status ${response.status}`);
-      console.error(`Error details:`, errorText);
-      return {
-        statusCode: response.status,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify({
-          success: false,
-          error: `API error ${response.status}: ${errorText}`
-        })
-      };
-    }
+      body: JSON.stringify({
+        success: false,
+        error: `Failed after ${attempts} attempts: ${lastError}`
+      })
+    };
   } catch (error) {
     console.error('Error in generate-frame:', error);
     return {
