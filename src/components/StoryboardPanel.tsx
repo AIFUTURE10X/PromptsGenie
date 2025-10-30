@@ -630,7 +630,7 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
               </div>
 
               {/* Scrollable Grid */}
-              <div className="flex-1 overflow-y-auto custom-scrollbar pr-2">
+              <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 rounded-lg p-4" style={{ backgroundColor: '#C2410C' }}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
                   {storyboard.frames.map((frame, idx) => (
                     <motion.div
@@ -646,8 +646,7 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                         scale: 1.03,
                         transition: { duration: 0.2 },
                       }}
-                      className="group relative rounded-2xl overflow-hidden shadow-2xl hover:shadow-orange-500/40 transition-all"
-                      style={{ background: 'linear-gradient(to bottom right, #C2410C, #9A3412)' }}
+                      className="group relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl overflow-hidden shadow-2xl hover:shadow-purple-500/40 transition-all"
                     >
                       {/* Top Controls Bar */}
                       <div className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between p-3">
@@ -775,7 +774,7 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                       </div>
 
                       {/* Card Footer */}
-                      <div className="p-5 backdrop-blur-sm" style={{ backgroundColor: 'rgba(194, 65, 12, 0.8)' }}>
+                      <div className="p-5 bg-gray-800/80 backdrop-blur-sm">
                         {editingFrameTitle === idx ? (
                           <input
                             type="text"
