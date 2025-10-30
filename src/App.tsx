@@ -172,19 +172,37 @@ function App() {
 
   // Auto-analyze images when they are added, honoring Speed Mode (existing behavior)
   useEffect(() => {
+    console.log("🔍 Auto-analyze useEffect triggered - images:", images.length, "autoAnalyze:", autoAnalyze);
     let cancelled = false;
     const run = async () => {
-      if (!autoAnalyze || images.length === 0) return;
+      if (!autoAnalyze) {
+        console.log("⏸️ Auto-analyze is disabled");
+        return;
+      }
+      if (images.length === 0) {
+        console.log("⏸️ No images to analyze");
+        return;
+      }
+
+      console.log("🎬 Starting auto-analyze for", images.length, "image(s)");
       setIsAnalyzing(true);
       try {
         const imageDataUrls = await getImageDataUrls(images, speedMode);
+        console.log("✅ Images converted to data URLs");
+
         const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+        if (!apiKey) {
+          console.error("❌ No Gemini API key found!");
+          alert("Gemini API key is missing. Please check your environment variables.");
+          return;
+        }
+
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
-        const model = envModel || "gemini-2.0-flash"; // ensure 2.5 flash fallback
+        const model = envModel || "gemini-2.0-flash";
         const genCfg = speedMode === 'Quality'
           ? { maxOutputTokens: 500, temperature: 0.3 }
           : { maxOutputTokens: 400, temperature: 0.3 };
-        console.log("Gemini MM model (auto):", model, "config:", genCfg);
+        console.log("📡 Calling Gemini with model:", model, "config:", genCfg);
 
         const instructionFast =
           "You are a professional prompt engineer. Analyze the input image and produce a single, vivid, 1–2 sentence prompt suitable for image generation models. Include subject, setting, style, lighting, composition, lens, and mood. Don't invent details not visible.";
@@ -193,15 +211,26 @@ function App() {
         const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
 
         const analyzedDirect = await generateWithImagesREST({ apiKey, model, text: instruction, imageDataUrls, generationConfig: genCfg });
-        console.log("📸 Auto-analyze completed, result:", analyzedDirect.substring(0, 100) + "...");
+        console.log("📸 Auto-analyze API call completed!");
+        console.log("📝 Result:", analyzedDirect);
+
         if (!cancelled) {
-          setRawPrompt(analyzedDirect); // This will trigger useEffect to update prompt and editorSeed
-          setLastSource("gemini-mm");
+          if (analyzedDirect && analyzedDirect.trim()) {
+            console.log("✅ Setting rawPrompt with analyzed result");
+            setRawPrompt(analyzedDirect);
+            setLastSource("gemini-mm");
+          } else {
+            console.error("❌ Analysis result is empty!");
+          }
         }
       } catch (e2) {
-        console.error("Auto-analyze direct call failed", e2);
+        console.error("❌ Auto-analyze failed with error:", e2);
+        alert(`Image analysis failed: ${e2.message || 'Unknown error'}`);
       } finally {
-        if (!cancelled) setIsAnalyzing(false);
+        if (!cancelled) {
+          console.log("🏁 Auto-analyze finished, setting isAnalyzing to false");
+          setIsAnalyzing(false);
+        }
       }
     };
     run();
@@ -335,6 +364,7 @@ function App() {
 
   // Combine subject, scene, and style analysis results into the main prompt
   useEffect(() => {
+    // Only process if we have at least one specialized analysis
     if (subjectAnalysis || sceneAnalysis || styleAnalysis) {
       const combinedPrompt = composePrompt({
         userText: '', // Start fresh for combined analysis
@@ -346,14 +376,14 @@ function App() {
       });
 
       console.log("🎨 Combined analysis prompt:", combinedPrompt.substring(0, 100) + "...");
-      if (combinedPrompt !== rawPrompt) {
+      if (combinedPrompt && combinedPrompt !== rawPrompt) {
         setRawPrompt(combinedPrompt); // This will trigger useEffect to update prompt and editorSeed
-        
+
         // Determine the appropriate source label based on what's combined
         const hasSubject = !!subjectAnalysis;
         const hasScene = !!sceneAnalysis;
         const hasStyle = !!styleAnalysis;
-        
+
         if (hasSubject && hasScene && hasStyle) {
           setLastSource("subject+scene+style");
         } else if (hasSubject && hasScene) {
@@ -370,19 +400,9 @@ function App() {
           setLastSource("style");
         }
       }
-    } else {
-      // Clear prompt when no analyses are present, but only if it was generated from individual analyses
-      // Don't clear prompts from main image analysis (gemini-mm) or manual editor input
-      if (prompt && (lastSource === "subject" || lastSource === "scene" || lastSource === "style" || 
-                     (lastSource?.includes("subject") || lastSource?.includes("scene") || lastSource?.includes("style")) && 
-                     lastSource !== "gemini-mm")) {
-        setPrompt("");
-        setEditorSeed("");
-        setRawPrompt("");
-        setLastSource(undefined);
-      }
     }
-  }, [subjectAnalysis, sceneAnalysis, styleAnalysis, prompt, lastSource]);
+    // Removed the else block that was clearing prompts - this was interfering with main image analysis
+  }, [subjectAnalysis, sceneAnalysis, styleAnalysis, rawPrompt]); // Removed prompt and lastSource from dependencies
 
   // Generate preview URLs for image thumbnails
   useEffect(() => {
