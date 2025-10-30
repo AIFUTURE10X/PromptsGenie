@@ -60,15 +60,34 @@ export async function generateWithImagesREST({ apiKey, model, text, imageDataUrl
   console.log("🔍 Server response JSON:", json);
   console.log("🔍 Server response type:", typeof json);
   console.log("🔍 Server response keys:", Object.keys(json || {}));
-  
+
   const candidates = json?.candidates || [];
   console.log("🔍 Candidates found:", candidates.length);
   console.log("🔍 First candidate:", candidates[0]);
-  
+
+  // Deep inspection of candidate structure
+  if (candidates[0]) {
+    console.log("🔎 DEEP INSPECTION OF CANDIDATE:");
+    console.log("  - candidate keys:", Object.keys(candidates[0]));
+    console.log("  - candidate.content:", candidates[0].content);
+    if (candidates[0].content) {
+      console.log("  - content keys:", Object.keys(candidates[0].content));
+      console.log("  - content.parts:", candidates[0].content.parts);
+      if (candidates[0].content.parts) {
+        console.log("  - parts is array:", Array.isArray(candidates[0].content.parts));
+        console.log("  - parts length:", candidates[0].content.parts.length);
+        if (candidates[0].content.parts[0]) {
+          console.log("  - first part:", candidates[0].content.parts[0]);
+          console.log("  - first part keys:", Object.keys(candidates[0].content.parts[0]));
+        }
+      }
+    }
+  }
+
   const textOut = candidates[0]?.content?.parts?.map((p: any) => p.text).join("\n") || "";
   console.log("🔍 Extracted text:", textOut);
   console.log("🔍 Extracted text length:", textOut.length);
-  
+
   return textOut.trim();
 }
 

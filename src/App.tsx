@@ -22,9 +22,21 @@ function App() {
   const [autoAnalyze, setAutoAnalyze] = useState(true);
   const [editorExpanded, setEditorExpanded] = useState(false);
   const [lastSource, setLastSource] = useState<"edge" | "gemini-mm" | "gemini-text" | "subject" | "scene" | "style" | undefined>(undefined);
-  
+
   // New state for UI mode management
   const [currentMode, setCurrentMode] = useState<'prompt' | 'storyboard'>('prompt');
+
+  // Missing state variables that are referenced but not declared
+  const [useStyle, setUseStyle] = useState(true);
+  const [useScene, setUseScene] = useState(true);
+  const [styleDesc, setStyleDesc] = useState("");
+  const [sceneDesc, setSceneDesc] = useState("");
+  const [isSimpleStyleActive, setIsSimpleStyleActive] = useState(false);
+  const [originalPromptBeforeSimple, setOriginalPromptBeforeSimple] = useState("");
+
+  // Placeholder functions for missing handlers (not used in current UI but referenced)
+  const setStyleFile = (file?: File) => { /* Reserved for future use */ };
+  const setSceneFile = (file?: File) => { /* Reserved for future use */ };
   
   // Debug logging for state changes
   useEffect(() => {
@@ -293,10 +305,17 @@ function App() {
     let cancelled = false;
     const run = async () => {
       if (!autoAnalyzeSubject || subjectImages.length === 0) return;
+
+      // CRITICAL: Validate API key before proceeding
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      if (!apiKey) {
+        console.error("❌ VITE_GEMINI_API_KEY not found - cannot auto-analyze subject");
+        return;
+      }
+
       setIsAnalyzingSubject(true);
       try {
         const imageDataUrls = await getImageDataUrls(subjectImages, speedMode);
-        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
         const model = envModel || "gemini-2.0-flash";
         const genCfg = speedMode === 'Quality'
@@ -342,10 +361,17 @@ function App() {
     let cancelled = false;
     const run = async () => {
       if (!autoAnalyzeScene || sceneImages.length === 0) return;
+
+      // CRITICAL: Validate API key before proceeding
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      if (!apiKey) {
+        console.error("❌ VITE_GEMINI_API_KEY not found - cannot auto-analyze scene");
+        return;
+      }
+
       setIsAnalyzingScene(true);
       try {
         const imageDataUrls = await getImageDataUrls(sceneImages, speedMode);
-        const apiKey = import.meta.env.VITE_GEMINI_API_KEY!;
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
         const model = envModel || "gemini-2.0-flash";
         const genCfg = speedMode === 'Quality'
@@ -379,10 +405,17 @@ function App() {
     let cancelled = false;
     const run = async () => {
       if (!autoAnalyzeStyle || styleImages.length === 0) return;
+
+      // CRITICAL: Validate API key before proceeding
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      if (!apiKey) {
+        console.error("❌ VITE_GEMINI_API_KEY not found - cannot auto-analyze style");
+        return;
+      }
+
       setIsAnalyzingStyle(true);
       try {
         const imageDataUrls = await getImageDataUrls(styleImages, speedMode);
-        const apiKey = import.meta.env.VITE_GEMINI_API_KEY!;
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
         const model = envModel || "gemini-2.0-flash";
         const genCfg = speedMode === 'Quality'
@@ -429,19 +462,13 @@ function App() {
         setRawPrompt(combinedPrompt); // This will trigger useEffect to update prompt and editorSeed
 
         // Determine the appropriate source label based on what's combined
+        // Note: lastSource type only supports single sources, so we prioritize
         const hasSubject = !!subjectAnalysis;
         const hasScene = !!sceneAnalysis;
         const hasStyle = !!styleAnalysis;
 
-        if (hasSubject && hasScene && hasStyle) {
-          setLastSource("subject+scene+style");
-        } else if (hasSubject && hasScene) {
-          setLastSource("subject+scene");
-        } else if (hasSubject && hasStyle) {
-          setLastSource("subject+style");
-        } else if (hasScene && hasStyle) {
-          setLastSource("scene+style");
-        } else if (hasSubject) {
+        // Prioritize subject > scene > style for combined analyses
+        if (hasSubject) {
           setLastSource("subject");
         } else if (hasScene) {
           setLastSource("scene");
@@ -825,7 +852,10 @@ function App() {
         
         // Use the same logic as auto-analysis but with variation
         const imageDataUrls = await getImageDataUrls(images, speedMode);
-        const apiKey = import.meta.env.VITE_GEMINI_API_KEY!;
+        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+        if (!apiKey) {
+          throw new Error("VITE_GEMINI_API_KEY not configured");
+        }
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
         const model = envModel || "gemini-2.0-flash";
         const genCfg = speedMode === 'Quality'
