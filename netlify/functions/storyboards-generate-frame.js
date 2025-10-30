@@ -145,7 +145,7 @@ export const handler = async (event, context) => {
       };
     }
 
-    // Validate description quality to avoid wasted $0.04 API calls
+    // Validate and sanitize description to avoid content policy issues
     const cleanDescription = description.trim();
     if (cleanDescription.length < 10) {
       console.error('❌ Description too short for quality generation');
@@ -175,13 +175,37 @@ export const handler = async (event, context) => {
       };
     }
 
+    // Sanitize description to remove potentially problematic content
+    // Remove explicit violence, gore, or unsafe content keywords
+    const sanitizedDescription = cleanDescription
+      .replace(/\b(blood|gore|violent|explicit|nude|naked)\b/gi, '')
+      .trim();
+
+    if (!sanitizedDescription) {
+      console.error('❌ Description contains only filtered content');
+      return {
+        statusCode: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({
+          error: 'Description contains restricted content. Please rephrase.'
+        })
+      };
+    }
+
     // Use single model for all frames (Imagen 3 - highest quality available)
     const model = 'imagegeneration@006';
 
-    // Simplified prompt - Imagen 3 works best with clear, concise prompts
-    const prompt = `Professional storyboard illustration: ${description}. Cinematic composition, high quality digital art.`;
+    // Enhanced prompt for vibrant, cinematic quality images
+    // CRITICAL: Avoid "storyboard illustration" which triggers grayscale sketches
+    // Instead use cinematic film terminology for full-color, high-quality renders
+    const prompt = `Cinematic movie scene: ${sanitizedDescription}. Vibrant colors, photorealistic rendering, highly detailed, dramatic lighting, professional film production quality, 8K resolution, rich color palette, sharp focus.`;
 
-    console.log(`📝 Frame ${frameIndex + 1}: ${prompt}`);
+    console.log(`📝 Frame ${frameIndex + 1}: Generating with prompt`);
+    console.log(`   Original: ${cleanDescription.substring(0, 100)}...`);
+    console.log(`   Sanitized: ${sanitizedDescription.substring(0, 100)}...`);
 
     // Check cache first (cost optimization)
     const cacheKey = hashPrompt(prompt, aspectRatio);
@@ -239,10 +263,10 @@ export const handler = async (event, context) => {
       },
     };
 
-    // Retry logic - up to 2 attempts (cost optimization: reduce from 3 to 2)
+    // Retry logic - up to 3 attempts with better handling for empty responses
     let attempts = 0;
     let lastError = null;
-    const MAX_ATTEMPTS = 2; // Reduced from 3 to save costs on failures
+    const MAX_ATTEMPTS = 3; // Increased to 3 to handle intermittent "No image" errors
 
     while (attempts < MAX_ATTEMPTS) {
       attempts++;
@@ -329,21 +353,29 @@ export const handler = async (event, context) => {
               })
             };
           } else {
-            // API returned 200 but no image - might be rate limiting or temp issue
+            // API returned 200 but no image - might be rate limiting, content policy, or temp issue
             const availableKeys = Object.keys(data || {}).join(', ');
             const fullResponse = JSON.stringify(data, null, 2);
             lastError = `No image in API response. Available keys: ${availableKeys}`;
             console.warn(`⚠️ Frame ${frameIndex + 1} attempt ${attempts}: ${lastError}`);
-            console.warn(`Full API response:`, fullResponse.substring(0, 500)); // Log first 500 chars
+            console.warn(`Full API response:`, fullResponse.substring(0, 1000)); // Log first 1000 chars for debugging
+
+            // Check if this is a content policy or safety issue
+            if (data?.predictions?.[0]?.safetyAttributes || fullResponse.includes('safety') || fullResponse.includes('blocked')) {
+              console.error(`🚫 Frame ${frameIndex + 1} likely blocked by content policy/safety filters`);
+              lastError = 'Content blocked by safety filters. Try a different description.';
+              break; // Don't retry content policy blocks
+            }
 
             if (attempts < MAX_ATTEMPTS) {
-              // Exponential backoff: 3 seconds, then 6 seconds
-              const waitTime = Math.pow(2, attempts) * 1500; // 3s, 6s
-              console.log(`Retrying in ${waitTime/1000} seconds with exponential backoff...`);
+              // Exponential backoff: 3s, 6s, 12s
+              const waitTime = Math.pow(2, attempts) * 1500; // 3s, 6s, 12s
+              console.log(`⏱️ Retrying frame ${frameIndex + 1} in ${waitTime/1000} seconds (exponential backoff)...`);
               await new Promise(resolve => setTimeout(resolve, waitTime));
               continue; // Try again
             } else {
               // Last attempt failed - break out of loop
+              console.error(`❌ Frame ${frameIndex + 1} - All ${MAX_ATTEMPTS} attempts exhausted`);
               break;
             }
           }
