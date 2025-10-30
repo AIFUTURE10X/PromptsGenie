@@ -248,20 +248,18 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
     }
   };
 
-  // Delete frame handler
+  // Delete frame handler - single click deletion
   const deleteFrame = (idx: number) => {
     if (!storyboard) return;
-    if (confirm(`Are you sure you want to delete Scene ${idx + 1}?`)) {
-      const newFrames = storyboard.frames.filter((_, i) => i !== idx);
-      setStoryboard({ ...storyboard, frames: newFrames });
-      if (selectedFrame >= newFrames.length) {
-        setSelectedFrame(Math.max(0, newFrames.length - 1));
-      }
-      // Remove from selection if selected
-      const newSelection = new Set(selectedFrames);
-      newSelection.delete(idx);
-      setSelectedFrames(newSelection);
+    const newFrames = storyboard.frames.filter((_, i) => i !== idx);
+    setStoryboard({ ...storyboard, frames: newFrames });
+    if (selectedFrame >= newFrames.length) {
+      setSelectedFrame(Math.max(0, newFrames.length - 1));
     }
+    // Remove from selection if selected
+    const newSelection = new Set(selectedFrames);
+    newSelection.delete(idx);
+    setSelectedFrames(newSelection);
   };
 
   // Edit frame title handler
@@ -587,18 +585,16 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                     {/* Bulk Actions when frames are selected */}
                     {selectedFrames.size > 0 && (
                       <>
-                        {/* Bulk Regenerate Button */}
+                        {/* Bulk Regenerate Button - Single click regeneration */}
                         <button
                           onClick={async () => {
-                            if (confirm(`Regenerate ${selectedFrames.size} selected frame${selectedFrames.size !== 1 ? 's' : ''}?`)) {
-                              const framesToRegenerate = Array.from(selectedFrames).sort((a, b) => a - b);
-                              for (const idx of framesToRegenerate) {
-                                await regenerateFrame(idx);
-                                // Small delay between regenerations
-                                await new Promise(resolve => setTimeout(resolve, 1000));
-                              }
-                              setSelectedFrames(new Set());
+                            const framesToRegenerate = Array.from(selectedFrames).sort((a, b) => a - b);
+                            for (const idx of framesToRegenerate) {
+                              await regenerateFrame(idx);
+                              // Small delay between regenerations
+                              await new Promise(resolve => setTimeout(resolve, 1000));
                             }
+                            setSelectedFrames(new Set());
                           }}
                           className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm rounded-lg transition-all flex items-center gap-2"
                         >
@@ -606,22 +602,20 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                           Regenerate {selectedFrames.size} Selected
                         </button>
 
-                        {/* Bulk Delete Button */}
+                        {/* Bulk Delete Button - Single click deletion */}
                         <button
                           onClick={() => {
-                            if (confirm(`Delete ${selectedFrames.size} selected frame${selectedFrames.size !== 1 ? 's' : ''}?`)) {
-                              // Sort indices in reverse to delete from end to start
-                              const indicesToDelete = Array.from(selectedFrames).sort((a, b) => b - a);
-                              let newFrames = [...storyboard.frames];
-                              indicesToDelete.forEach(idx => {
-                                newFrames.splice(idx, 1);
-                              });
-                              setStoryboard({ ...storyboard, frames: newFrames });
-                              setSelectedFrames(new Set());
-                              // Reset selected frame index if needed
-                              if (selectedFrame >= newFrames.length) {
-                                setSelectedFrame(Math.max(0, newFrames.length - 1));
-                              }
+                            // Sort indices in reverse to delete from end to start
+                            const indicesToDelete = Array.from(selectedFrames).sort((a, b) => b - a);
+                            let newFrames = [...storyboard.frames];
+                            indicesToDelete.forEach(idx => {
+                              newFrames.splice(idx, 1);
+                            });
+                            setStoryboard({ ...storyboard, frames: newFrames });
+                            setSelectedFrames(new Set());
+                            // Reset selected frame index if needed
+                            if (selectedFrame >= newFrames.length) {
+                              setSelectedFrame(Math.max(0, newFrames.length - 1));
                             }
                           }}
                           className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-all flex items-center gap-2"
