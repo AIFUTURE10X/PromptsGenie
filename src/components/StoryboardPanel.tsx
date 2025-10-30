@@ -866,7 +866,7 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
 
                       {/* Action Buttons */}
                       {frame?.image_url && (
-                        <div className="absolute bottom-5 right-5 flex gap-2">
+                        <div className="absolute bottom-5 left-5 flex gap-2">
                           {/* Regenerate Button */}
                           <motion.button
                             initial={{ opacity: 0, scale: 0.8 }}
@@ -877,7 +877,6 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                               regenerateFrame(idx);
                             }}
                             className="p-3 bg-orange-600 hover:bg-orange-700 rounded-xl shadow-lg transition-all"
-                            title="Regenerate this frame"
                           >
                             <RotateCw className="w-5 h-5 text-white" />
                           </motion.button>
@@ -896,7 +895,6 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                               link.click();
                             }}
                             className="p-3 bg-purple-600 hover:bg-purple-700 rounded-xl shadow-lg transition-all"
-                            title="Download this frame"
                           >
                             <Download className="w-5 h-5 text-white" />
                           </motion.button>
