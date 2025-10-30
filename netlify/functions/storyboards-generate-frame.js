@@ -121,13 +121,14 @@ export const handler = async (event, context) => {
   try {
     console.log('🔵 Received generate-frame request');
 
-    const { description, frameIndex, storyboardId, aspectRatio } = JSON.parse(event.body);
+    const { description, frameIndex, storyboardId, aspectRatio, basePrompt } = JSON.parse(event.body);
 
     console.log('📦 Parsed request:', {
       frameIndex,
       storyboardId,
       aspectRatio,
-      descriptionLength: description?.length
+      descriptionLength: description?.length,
+      hasBasePrompt: !!basePrompt
     });
 
     // Input validation to prevent wasted API calls
@@ -198,14 +199,20 @@ export const handler = async (event, context) => {
     // Use single model for all frames (Imagen 3 - highest quality available)
     const model = 'imagegeneration@006';
 
-    // Enhanced prompt for vibrant, cinematic quality images
-    // CRITICAL: Avoid "storyboard illustration" which triggers grayscale sketches
-    // Instead use cinematic film terminology for full-color, high-quality renders
-    const prompt = `Cinematic movie scene: ${sanitizedDescription}. Vibrant colors, photorealistic rendering, highly detailed, dramatic lighting, professional film production quality, 8K resolution, rich color palette, sharp focus.`;
+    // Enhanced prompt for vibrant, cinematic quality images with style consistency
+    // If basePrompt provided, use it to maintain style across all frames
+    let prompt;
+    if (basePrompt) {
+      // Use consistent style from the initial prompt for all frames
+      // This ensures visual coherence across the storyboard
+      prompt = `${basePrompt}. Scene: ${sanitizedDescription}. Maintain consistent cinematic style, vibrant colors, photorealistic rendering, dramatic lighting, 8K quality.`;
+    } else {
+      // Fallback to default cinematic style if no base prompt
+      prompt = `Cinematic movie scene: ${sanitizedDescription}. Vibrant colors, photorealistic rendering, highly detailed, dramatic lighting, professional film production quality, 8K resolution, rich color palette, sharp focus.`;
+    }
 
-    console.log(`📝 Frame ${frameIndex + 1}: Generating with prompt`);
-    console.log(`   Original: ${cleanDescription.substring(0, 100)}...`);
-    console.log(`   Sanitized: ${sanitizedDescription.substring(0, 100)}...`);
+    console.log(`📝 Frame ${frameIndex + 1}: Generating with ${basePrompt ? 'consistent style' : 'default style'}`);
+    console.log(`   Description: ${sanitizedDescription.substring(0, 80)}...`);
 
     // Check cache first (cost optimization)
     const cacheKey = hashPrompt(prompt, aspectRatio);

@@ -326,6 +326,12 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
       // Set initial storyboard with pending frames
       setStoryboard(data);
 
+      // Extract base style from the initial intent for consistency
+      // This ensures all frames maintain the same visual style
+      const basePrompt = intent ?
+        `${intent} cinematic style, consistent visual theme throughout` :
+        'Cinematic movie scene';
+
       // Generate frames sequentially (one at a time) to avoid rate limiting
       const frames = [...data.frames];
 
@@ -352,6 +358,7 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                 frameIndex: i,
                 description: frames[i].description,
                 aspectRatio: aspectRatio,
+                basePrompt: basePrompt,  // Send consistent base prompt for all frames
               }),
             });
 
@@ -432,10 +439,10 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
           setStoryboard({ ...data, frames: [...frames] });
         }
 
-        // Add delay between frames to avoid rate limiting (except after last frame)
+        // Small delay between frames to avoid rate limiting (reduced for speed)
         if (i < frames.length - 1) {
-          console.log(`⏳ Waiting 3 seconds before next frame...`);
-          await new Promise(resolve => setTimeout(resolve, 3000));
+          console.log(`⏳ Brief pause before next frame...`);
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Reduced from 3s to 1s for faster generation
         }
       }
     } catch (e: any) {
