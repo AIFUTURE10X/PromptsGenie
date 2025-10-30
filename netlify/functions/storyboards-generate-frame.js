@@ -393,9 +393,9 @@ export const handler = async (event, context) => {
             await new Promise(resolve => setTimeout(resolve, 2000));
             continue;
           } else if (response.status === 429) {
-            // Rate limit - wait longer
-            console.log(`Rate limited - waiting 5 seconds before retry...`);
-            await new Promise(resolve => setTimeout(resolve, 5000));
+            // Rate limit - wait a bit but stay under timeout
+            console.log(`Rate limited - waiting 3 seconds before retry...`);
+            await new Promise(resolve => setTimeout(resolve, 3000));
             if (attempts < MAX_ATTEMPTS) continue;
           } else {
             // 4xx client errors don't retry
