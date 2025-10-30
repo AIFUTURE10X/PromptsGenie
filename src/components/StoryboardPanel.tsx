@@ -466,7 +466,7 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
     }
   };
 
-  // Regenerate a single frame
+  // Regenerate a single frame with variation
   const regenerateFrame = async (frameIndex: number) => {
     if (!storyboard || !plan) return;
 
@@ -486,16 +486,32 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
       `${intent} cinematic style, consistent visual theme throughout` :
       'Cinematic movie scene';
 
+    // Add variation to the description for regeneration to get different results
+    // Add timestamp as a seed to ensure variation
+    const timestamp = Date.now();
+    const variationSuffixes = [
+      ", different camera angle",
+      ", alternative composition",
+      ", varied lighting",
+      ", different perspective",
+      ", alternative framing"
+    ];
+    const variationIndex = timestamp % variationSuffixes.length;
+    const variedDescription = frames[frameIndex].description + variationSuffixes[variationIndex];
+
     try {
+      console.log(`🔄 Regenerating frame ${frameIndex + 1} with variation: ${variationSuffixes[variationIndex]}`);
+
       const frameResponse = await fetch(`${API_BASE}/generate-frame`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           storyboardId: storyboard.storyboardId,
           frameIndex: frameIndex,
-          description: frames[frameIndex].description,
+          description: variedDescription,  // Use varied description for different results
           aspectRatio: aspectRatio,
           basePrompt: basePrompt,  // Maintain style consistency for regenerated frames
+          regenerationSeed: timestamp,  // Pass seed for tracking
         }),
       });
 

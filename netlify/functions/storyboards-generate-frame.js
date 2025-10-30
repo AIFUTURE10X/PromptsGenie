@@ -200,32 +200,43 @@ export const handler = async (event, context) => {
     // Use single model for all frames (Imagen 3 - highest quality available)
     const model = 'imagegeneration@006';
 
-    // Enhanced prompt for vibrant, cinematic quality images with style consistency AND character accuracy
-    // If basePrompt provided, use it to maintain style across all frames
+    // Enhanced prompt with EXPLICIT character separation to prevent confusion
+    // Process the description to make character actions more explicit
+    let processedDescription = sanitizedDescription;
+
+    // Make character distinctions VERY explicit to prevent AI confusion
+    if (sanitizedDescription.toLowerCase().includes('jimmy') || sanitizedDescription.toLowerCase().includes('olsen')) {
+      processedDescription = processedDescription.replace(/jimmy olsen/gi, 'Jimmy Olsen (the civilian photographer, NOT Superman)');
+    }
+    if (sanitizedDescription.toLowerCase().includes('superman')) {
+      processedDescription = processedDescription.replace(/superman/gi, 'Superman (the superhero in blue suit and red cape, NOT holding a camera)');
+    }
+
     let prompt;
     if (basePrompt) {
       // Use consistent style from the initial prompt for all frames
-      // This ensures visual coherence across the storyboard
-      prompt = `${basePrompt}. Scene: ${sanitizedDescription}.
+      prompt = `${basePrompt}. Scene: ${processedDescription}.
 
-IMPORTANT CHARACTER ACCURACY:
-- If Jimmy Olsen is mentioned, he should be a young photographer with red hair, NOT wearing a Superman cape or costume - he is a regular human photographer
-- If Superman is mentioned, he should be wearing the iconic blue suit with red cape and 'S' symbol on chest
-- Each character should be clearly distinguishable and match their canonical appearance
-- Ensure all characters maintain consistent appearance and proper costumes throughout the scene
+CRITICAL CHARACTER RULES - DO NOT MIX THESE CHARACTERS:
+- Jimmy Olsen = young man, red hair, civilian clothes (polo shirt/casual wear), holding camera, NO superhero costume
+- Superman = muscular hero, blue suit, red cape, 'S' symbol on chest, NO camera
+- NEVER show Superman with a camera
+- NEVER show Jimmy Olsen in a Superman costume
+- These are TWO DIFFERENT people
 
-Style: Maintain consistent cinematic style, vibrant colors, photorealistic rendering, dramatic lighting, 8K quality. NO sketches, NO grayscale, NO pencil drawings.`;
+Style: Cinematic, vibrant colors, photorealistic, dramatic lighting. NO sketches, NO grayscale.`;
     } else {
       // Fallback to default cinematic style if no base prompt
-      prompt = `Cinematic movie scene: ${sanitizedDescription}.
+      prompt = `Cinematic movie scene showing: ${processedDescription}.
 
-IMPORTANT CHARACTER ACCURACY:
-- If Jimmy Olsen is mentioned, he should be a young photographer with red hair, NOT wearing a Superman cape or costume - he is a regular human photographer
-- If Superman is mentioned, he should be wearing the iconic blue suit with red cape and 'S' symbol on chest
-- Each character should be clearly distinguishable and match their canonical appearance
-- Ensure all characters maintain consistent appearance and proper costumes throughout the scene
+CRITICAL CHARACTER RULES - DO NOT MIX THESE CHARACTERS:
+- Jimmy Olsen = young man, red hair, civilian clothes (polo shirt/casual wear), holding camera, NO superhero costume
+- Superman = muscular hero, blue suit, red cape, 'S' symbol on chest, NO camera
+- NEVER show Superman with a camera
+- NEVER show Jimmy Olsen in a Superman costume
+- These are TWO DIFFERENT people
 
-Style: Vibrant colors, photorealistic rendering, highly detailed, dramatic lighting, professional film production quality, 8K resolution, rich color palette, sharp focus. NO sketches, NO grayscale, NO pencil drawings.`;
+Style: Vibrant colors, photorealistic rendering, dramatic lighting, professional film quality. NO sketches, NO grayscale.`;
     }
 
     console.log(`📝 Frame ${frameIndex + 1}: Generating with ${basePrompt ? 'consistent style' : 'default style'}`);
