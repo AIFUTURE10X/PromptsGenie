@@ -117,15 +117,17 @@ export const handler = async (event, context) => {
     const model = modelMap[requestedModel] || modelMap['auto'];
     console.log(`🎨 Frame ${frameIndex + 1}: Using model ${requestedModel || 'auto'} (${model})`);
 
-    // Optimize prompt based on requested model type with better quality instructions
+    // Simple, clean prompts that won't trigger content filters
     let prompt = '';
     if (requestedModel === 'nano-banana') {
-      prompt = `Create a high-quality, detailed character-focused storyboard frame. Focus on: facial expressions, emotions, character details, dramatic lighting. ${description}. Cinematic, professional quality, 4K resolution.`;
+      // Character-focused: Keep it simple
+      prompt = `A cinematic storyboard frame showing: ${description}`;
     } else {
-      prompt = `Create a high-quality cinematic storyboard frame. ${description}. Professional quality, detailed, dramatic lighting, 4K resolution.`;
+      // General scenes: Keep it simple
+      prompt = `A cinematic storyboard frame: ${description}`;
     }
 
-    console.log(`📝 Frame ${frameIndex + 1} prompt (${requestedModel}): ${prompt.substring(0, 80)}...`);
+    console.log(`📝 Frame ${frameIndex + 1} prompt (${requestedModel}): ${prompt}`);
 
     const endpoint = `https://us-central1-aiplatform.googleapis.com/v1/projects/${process.env.GOOGLE_PROJECT_ID}/locations/us-central1/publishers/google/models/${model}:predict`;
 
@@ -147,10 +149,6 @@ export const handler = async (event, context) => {
       parameters: {
         sampleCount: 1,
         ...(aspectRatio && aspectRatioMap[aspectRatio] ? aspectRatioMap[aspectRatio] : {}),
-        // Add quality parameters
-        seed: Math.floor(Math.random() * 2147483647), // Random seed for variety
-        language: 'en',
-        addWatermark: false,
       },
     };
 
