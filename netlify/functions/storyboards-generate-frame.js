@@ -211,6 +211,9 @@ export const handler = async (event, context) => {
               console.log(`Retrying in 2 seconds...`);
               await new Promise(resolve => setTimeout(resolve, 2000));
               continue; // Try again
+            } else {
+              // Last attempt failed - break out of loop
+              break;
             }
           }
         } else {
@@ -246,7 +249,15 @@ export const handler = async (event, context) => {
     }
 
     // All attempts failed
-    console.error(`❌ Frame ${frameIndex + 1} failed after ${attempts} attempts. Last error: ${lastError}`);
+    const errorMsg = `Failed after ${attempts} attempts: ${lastError}`;
+    console.error(`❌ Frame ${frameIndex + 1} - ${errorMsg}`);
+    console.error(`Frame ${frameIndex + 1} details:`, {
+      storyboardId,
+      frameIndex,
+      model: requestedModel,
+      aspectRatio,
+      attempts
+    });
     return {
       statusCode: 500,
       headers: {
@@ -255,11 +266,18 @@ export const handler = async (event, context) => {
       },
       body: JSON.stringify({
         success: false,
-        error: `Failed after ${attempts} attempts: ${lastError}`
+        error: errorMsg,
+        frameIndex,
+        attempts
       })
     };
   } catch (error) {
-    console.error('Error in generate-frame:', error);
+    console.error(`💥 CRASH in generate-frame for frame ${frameIndex + 1}:`, {
+      error: error.message,
+      stack: error.stack,
+      frameIndex,
+      model: requestedModel
+    });
     return {
       statusCode: 500,
       headers: {
@@ -268,7 +286,8 @@ export const handler = async (event, context) => {
       },
       body: JSON.stringify({
         success: false,
-        error: error.message
+        error: `Function crash: ${error.message}`,
+        frameIndex
       })
     };
   }

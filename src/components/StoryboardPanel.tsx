@@ -395,12 +395,19 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                 console.log(`✅ Frame ${frameIndex + 1} generated successfully`);
                 return { frameIndex, frame: frameData.frame };
               } else {
-                const errorText = await frameResponse.text();
-                console.error(`❌ Failed to generate frame ${frameIndex + 1}:`, {
-                  status: frameResponse.status,
-                  statusText: frameResponse.statusText,
-                  error: errorText
-                });
+                // Parse error response
+                let errorDetail = 'Unknown error';
+                try {
+                  const errorData = await frameResponse.json();
+                  errorDetail = errorData.error || JSON.stringify(errorData);
+                } catch {
+                  errorDetail = await frameResponse.text();
+                }
+
+                console.error(`❌ Failed to generate frame ${frameIndex + 1}:`);
+                console.error(`  Status: ${frameResponse.status} ${frameResponse.statusText}`);
+                console.error(`  Error: ${errorDetail}`);
+
                 return {
                   frameIndex,
                   frame: {
@@ -412,10 +419,10 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
               }
             })
             .catch((frameError) => {
-              console.error(`💥 Network error generating frame ${frameIndex + 1}:`, {
-                message: frameError.message,
-                stack: frameError.stack
-              });
+              console.error(`💥 Network error generating frame ${frameIndex + 1}:`);
+              console.error(`  Message: ${frameError.message}`);
+              console.error(`  Stack: ${frameError.stack}`);
+
               return {
                 frameIndex,
                 frame: {
