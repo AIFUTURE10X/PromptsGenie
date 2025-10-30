@@ -548,16 +548,91 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
               exit={{ opacity: 0 }}
               className="h-full flex flex-col"
             >
-              {/* Header */}
+              {/* Header with Selection Controls */}
               <div className="mb-6">
-                <h3 className="text-3xl font-bold text-white flex items-center gap-3">
-                  <Sparkles className="w-8 h-8 text-purple-400" />
-                  Generated Storyboard
-                </h3>
-                <p className="text-gray-400 mt-1">
-                  {storyboard.frames.length} scene
-                  {storyboard.frames.length !== 1 ? "s" : ""} generated
-                </p>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-3xl font-bold text-white flex items-center gap-3">
+                      <Sparkles className="w-8 h-8 text-purple-400" />
+                      Generated Storyboard
+                    </h3>
+                    <p className="text-gray-400 mt-1">
+                      {storyboard.frames.length} scene
+                      {storyboard.frames.length !== 1 ? "s" : ""} generated
+                    </p>
+                  </div>
+
+                  {/* Bulk Actions */}
+                  <div className="flex items-center gap-3">
+                    {/* Select All/None Buttons */}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          const allIndices = new Set(storyboard.frames.map((_, i) => i));
+                          setSelectedFrames(allIndices);
+                        }}
+                        className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition-all flex items-center gap-2"
+                      >
+                        <Check className="w-4 h-4" />
+                        Select All
+                      </button>
+                      <button
+                        onClick={() => setSelectedFrames(new Set())}
+                        className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition-all"
+                      >
+                        Clear Selection
+                      </button>
+                    </div>
+
+                    {/* Bulk Actions when frames are selected */}
+                    {selectedFrames.size > 0 && (
+                      <>
+                        {/* Bulk Regenerate Button */}
+                        <button
+                          onClick={async () => {
+                            if (confirm(`Regenerate ${selectedFrames.size} selected frame${selectedFrames.size !== 1 ? 's' : ''}?`)) {
+                              const framesToRegenerate = Array.from(selectedFrames).sort((a, b) => a - b);
+                              for (const idx of framesToRegenerate) {
+                                await regenerateFrame(idx);
+                                // Small delay between regenerations
+                                await new Promise(resolve => setTimeout(resolve, 1000));
+                              }
+                              setSelectedFrames(new Set());
+                            }
+                          }}
+                          className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm rounded-lg transition-all flex items-center gap-2"
+                        >
+                          <RotateCw className="w-4 h-4" />
+                          Regenerate {selectedFrames.size} Selected
+                        </button>
+
+                        {/* Bulk Delete Button */}
+                        <button
+                          onClick={() => {
+                            if (confirm(`Delete ${selectedFrames.size} selected frame${selectedFrames.size !== 1 ? 's' : ''}?`)) {
+                              // Sort indices in reverse to delete from end to start
+                              const indicesToDelete = Array.from(selectedFrames).sort((a, b) => b - a);
+                              let newFrames = [...storyboard.frames];
+                              indicesToDelete.forEach(idx => {
+                                newFrames.splice(idx, 1);
+                              });
+                              setStoryboard({ ...storyboard, frames: newFrames });
+                              setSelectedFrames(new Set());
+                              // Reset selected frame index if needed
+                              if (selectedFrame >= newFrames.length) {
+                                setSelectedFrame(Math.max(0, newFrames.length - 1));
+                              }
+                            }
+                          }}
+                          className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-all flex items-center gap-2"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Delete {selectedFrames.size} Selected
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
 
               {/* Scrollable Grid */}
@@ -821,21 +896,24 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                         </div>
                       )}
 
-                      {/* Action Buttons */}
-                      {frame?.image_url && (
+                      {/* Action Buttons - Show for both successful and error frames */}
+                      {(frame?.image_url || frame?.status === "error") && (
                         <div className="absolute bottom-5 left-5 flex gap-2">
-                          {/* Regenerate Button */}
+                          {/* Regenerate Button - Always visible */}
                           <motion.button
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            whileHover={{ opacity: 1, scale: 1 }}
-                            whileTap={{ scale: 0.9 }}
+                            initial={{ opacity: 0.9, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
                             onClick={(e) => {
                               e.stopPropagation();
                               regenerateFrame(idx);
                             }}
-                            className="p-3 bg-orange-600 hover:bg-orange-700 rounded-xl shadow-lg transition-all"
+                            className="p-3 bg-orange-600 hover:bg-orange-700 rounded-xl shadow-lg transition-all flex items-center gap-2"
+                            title="Regenerate this frame"
                           >
                             <RotateCw className="w-5 h-5 text-white" />
+                            <span className="text-sm font-medium text-white">Regenerate</span>
                           </motion.button>
 
                           {/* Download Button */}
