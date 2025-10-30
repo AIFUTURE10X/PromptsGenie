@@ -172,37 +172,55 @@ function App() {
 
   // Auto-analyze images when they are added, honoring Speed Mode (existing behavior)
   useEffect(() => {
-    console.log("🔍 Auto-analyze useEffect triggered - images:", images.length, "autoAnalyze:", autoAnalyze);
+    console.log("=" .repeat(80));
+    console.log("🔍 AUTO-ANALYZE USEEFFECT TRIGGERED");
+    console.log("  - Images count:", images.length);
+    console.log("  - autoAnalyze:", autoAnalyze);
+    console.log("  - speedMode:", speedMode);
+    console.log("=" .repeat(80));
+
+    // Early return if auto-analyze is disabled
+    if (!autoAnalyze) {
+      console.log("⏸️ SKIPPED: Auto-analyze is disabled");
+      return;
+    }
+
+    // Early return if no images
+    if (images.length === 0) {
+      console.log("⏸️ SKIPPED: No images to analyze");
+      return;
+    }
+
     let cancelled = false;
+
     const run = async () => {
-      if (!autoAnalyze) {
-        console.log("⏸️ Auto-analyze is disabled");
-        return;
-      }
-      if (images.length === 0) {
-        console.log("⏸️ No images to analyze");
-        return;
-      }
-
-      console.log("🎬 Starting auto-analyze for", images.length, "image(s)");
+      console.log("🎬 STARTING AUTO-ANALYZE for", images.length, "image(s)");
       setIsAnalyzing(true);
-      try {
-        const imageDataUrls = await getImageDataUrls(images, speedMode);
-        console.log("✅ Images converted to data URLs");
 
+      try {
+        // Step 1: Convert images to data URLs
+        console.log("📷 Step 1: Converting images to data URLs...");
+        const imageDataUrls = await getImageDataUrls(images, speedMode);
+        console.log("✅ Step 1 COMPLETE: Images converted", imageDataUrls.length, "URLs");
+
+        // Step 2: Check API key
+        console.log("🔑 Step 2: Checking API key...");
         const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
         if (!apiKey) {
-          console.error("❌ No Gemini API key found!");
-          alert("Gemini API key is missing. Please check your environment variables.");
+          console.error("❌ FATAL: No Gemini API key found!");
+          alert("Gemini API key is missing. Please add VITE_GEMINI_API_KEY to your .env file");
+          setIsAnalyzing(false);
           return;
         }
+        console.log("✅ Step 2 COMPLETE: API key found");
 
+        // Step 3: Prepare API call
+        console.log("⚙️ Step 3: Preparing API call...");
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
         const model = envModel || "gemini-2.0-flash";
         const genCfg = speedMode === 'Quality'
           ? { maxOutputTokens: 500, temperature: 0.3 }
           : { maxOutputTokens: 400, temperature: 0.3 };
-        console.log("📡 Calling Gemini with model:", model, "config:", genCfg);
 
         const instructionFast =
           "You are a professional prompt engineer. Analyze the input image and produce a single, vivid, 1–2 sentence prompt suitable for image generation models. Include subject, setting, style, lighting, composition, lens, and mood. Don't invent details not visible.";
@@ -210,31 +228,62 @@ function App() {
           "Analyze these images in detail and create a comprehensive, descriptive prompt based on what you see. Expand important details (subject, context, style, lighting, composition, lens, mood, constraints). Return only the improved prompt.";
         const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
 
-        const analyzedDirect = await generateWithImagesREST({ apiKey, model, text: instruction, imageDataUrls, generationConfig: genCfg });
-        console.log("📸 Auto-analyze API call completed!");
-        console.log("📝 Result:", analyzedDirect);
+        console.log("✅ Step 3 COMPLETE");
+        console.log("  - Model:", model);
+        console.log("  - Config:", JSON.stringify(genCfg));
+        console.log("  - Instruction length:", instruction.length);
 
+        // Step 4: Call API
+        console.log("📡 Step 4: Calling Gemini API...");
+        const analyzedDirect = await generateWithImagesREST({
+          apiKey,
+          model,
+          text: instruction,
+          imageDataUrls,
+          generationConfig: genCfg
+        });
+        console.log("✅ Step 4 COMPLETE: API call successful");
+        console.log("📝 Result length:", analyzedDirect?.length || 0);
+        console.log("📝 Result preview:", analyzedDirect?.substring(0, 100));
+
+        // Step 5: Update state
         if (!cancelled) {
+          console.log("💾 Step 5: Updating state...");
           if (analyzedDirect && analyzedDirect.trim()) {
-            console.log("✅ Setting rawPrompt with analyzed result");
+            console.log("✅ Setting rawPrompt with result");
             setRawPrompt(analyzedDirect);
             setLastSource("gemini-mm");
+            console.log("✅ Step 5 COMPLETE: State updated");
           } else {
-            console.error("❌ Analysis result is empty!");
+            console.error("❌ Step 5 FAILED: Analysis result is empty!");
+            alert("Image analysis returned an empty result. Please try again.");
           }
+        } else {
+          console.log("⏸️ Step 5 CANCELLED: Component unmounted");
         }
-      } catch (e2) {
-        console.error("❌ Auto-analyze failed with error:", e2);
-        alert(`Image analysis failed: ${e2.message || 'Unknown error'}`);
+      } catch (error) {
+        console.error("=" .repeat(80));
+        console.error("❌❌❌ AUTO-ANALYZE FAILED ❌❌❌");
+        console.error("Error:", error);
+        console.error("Error message:", error?.message);
+        console.error("Error stack:", error?.stack);
+        console.error("=" .repeat(80));
+        alert(`Image analysis failed: ${error?.message || 'Unknown error'}.\n\nCheck the console for details.`);
       } finally {
         if (!cancelled) {
-          console.log("🏁 Auto-analyze finished, setting isAnalyzing to false");
+          console.log("🏁 FINISHED: Setting isAnalyzing to false");
           setIsAnalyzing(false);
         }
       }
     };
-    run();
+
+    // Run the async function
+    run().catch(error => {
+      console.error("❌ CRITICAL: run() caught error:", error);
+    });
+
     return () => {
+      console.log("🧹 CLEANUP: Auto-analyze useEffect cleanup");
       cancelled = true;
     };
   }, [images, autoAnalyze, speedMode]);
