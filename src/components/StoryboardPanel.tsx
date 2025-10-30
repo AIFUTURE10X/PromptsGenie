@@ -326,96 +326,78 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
       // Set initial storyboard with pending frames
       setStoryboard(data);
 
-      // Generate frames in parallel (2 at a time to avoid rate limits)
+      // Generate frames sequentially (one at a time) to avoid rate limiting
       const frames = [...data.frames];
-      const PARALLEL_COUNT = 2; // Reduced from 3 to avoid API rate limiting
 
-      for (let i = 0; i < frames.length; i += PARALLEL_COUNT) {
-        const batch = frames.slice(i, i + PARALLEL_COUNT);
-        const batchPromises = batch.map((frame, batchIndex) => {
-          const frameIndex = i + batchIndex;
-          console.log(`🎬 Starting frame ${frameIndex + 1}/${frames.length}`);
+      for (let i = 0; i < frames.length; i++) {
+        try {
+          console.log(`🎬 Starting frame ${i + 1}/${frames.length}...`);
 
-          return fetch(`${API_BASE}/generate-frame`, {
+          const frameResponse = await fetch(`${API_BASE}/generate-frame`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               storyboardId: data.storyboardId,
-              frameIndex: frameIndex,
-              description: frames[frameIndex].description,
+              frameIndex: i,
+              description: frames[i].description,
               aspectRatio: aspectRatio,
             }),
-          })
-            .then(async (frameResponse) => {
-              if (frameResponse.ok) {
-                const frameData = await frameResponse.json();
-                // Track cache hits for cost monitoring
-                const cacheStatus = frameResponse.headers.get('X-Cache');
-                if (cacheStatus === 'HIT') {
-                  setCacheHits(prev => prev + 1);
-                  console.log(`💰 Frame ${frameIndex + 1} loaded from cache - saved API cost!`);
-                } else {
-                  setTotalFramesGenerated(prev => prev + 1);
-                  console.log(`✅ Frame ${frameIndex + 1} generated successfully`);
-                }
-                return { frameIndex, frame: frameData.frame };
-              } else {
-                // Parse error response
-                let errorDetail = 'Unknown error';
-                try {
-                  const errorData = await frameResponse.json();
-                  errorDetail = errorData.error || JSON.stringify(errorData);
-                } catch {
-                  errorDetail = await frameResponse.text();
-                }
+          });
 
-                console.error(`❌ Failed to generate frame ${frameIndex + 1}:`);
-                console.error(`  Status: ${frameResponse.status} ${frameResponse.statusText}`);
-                console.error(`  Error: ${errorDetail}`);
+          if (frameResponse.ok) {
+            const frameData = await frameResponse.json();
+            frames[i] = frameData.frame;
 
-                return {
-                  frameIndex,
-                  frame: {
-                    ...frames[frameIndex],
-                    status: "error",
-                    image_url: ""
-                  }
-                };
-              }
-            })
-            .catch((frameError) => {
-              console.error(`💥 Network error generating frame ${frameIndex + 1}:`);
-              console.error(`  Message: ${frameError.message}`);
-              console.error(`  Stack: ${frameError.stack}`);
+            // Track cache hits for cost monitoring
+            const cacheStatus = frameResponse.headers.get('X-Cache');
+            if (cacheStatus === 'HIT') {
+              setCacheHits(prev => prev + 1);
+              console.log(`💰 Frame ${i + 1} loaded from cache - saved API cost!`);
+            } else {
+              setTotalFramesGenerated(prev => prev + 1);
+              console.log(`✅ Frame ${i + 1} generated successfully`);
+            }
+          } else {
+            // Parse error response
+            let errorDetail = 'Unknown error';
+            try {
+              const errorData = await frameResponse.json();
+              errorDetail = errorData.error || JSON.stringify(errorData);
+            } catch {
+              errorDetail = await frameResponse.text();
+            }
 
-              return {
-                frameIndex,
-                frame: {
-                  ...frames[frameIndex],
-                  status: "error",
-                  image_url: ""
-                }
-              };
-            });
-        });
+            console.error(`❌ Failed to generate frame ${i + 1}:`);
+            console.error(`  Status: ${frameResponse.status} ${frameResponse.statusText}`);
+            console.error(`  Error: ${errorDetail}`);
 
-        // Wait for current batch to complete
-        const results = await Promise.all(batchPromises);
-
-        // Update frames with results
-        results.forEach((result) => {
-          if (result) {
-            frames[result.frameIndex] = result.frame;
+            frames[i] = {
+              ...frames[i],
+              status: "error",
+              image_url: ""
+            };
           }
-        });
 
-        // Update storyboard with latest frames
-        setStoryboard({ ...data, frames: [...frames] });
+          // Update storyboard with latest frames after each frame
+          setStoryboard({ ...data, frames: [...frames] });
 
-        // Add 3-second delay between batches to avoid rate limiting
-        if (i + PARALLEL_COUNT < frames.length) {
-          console.log(`⏱️ Waiting 3 seconds before next batch to avoid rate limiting...`);
-          await new Promise(resolve => setTimeout(resolve, 3000));
+          // Add delay between frames to avoid rate limiting (except after last frame)
+          if (i < frames.length - 1) {
+            console.log(`⏳ Waiting 3 seconds before next frame...`);
+            await new Promise(resolve => setTimeout(resolve, 3000));
+          }
+        } catch (frameError: any) {
+          console.error(`💥 Network error generating frame ${i + 1}:`);
+          console.error(`  Message: ${frameError.message}`);
+
+          frames[i] = {
+            ...frames[i],
+            status: "error",
+            image_url: ""
+          };
+
+          // Update storyboard even on error
+          setStoryboard({ ...data, frames: [...frames] });
         }
       }
     } catch (e: any) {
