@@ -5,7 +5,6 @@ import {
   Wand2,
   Eye,
   Download,
-  Sparkles,
   X,
   Maximize2,
   Edit,
@@ -17,16 +16,12 @@ import {
 } from "lucide-react";
 
 // Type definitions for storyboard and plan
-type ImageModel = "imagen3" | "nano-banana" | "auto";
-
 interface StoryboardFrame {
   id: string;
   image_url: string;
   title: string;
   description: string;
   status?: string;
-  model?: ImageModel;
-  isCharacterFocused?: boolean;
 }
 
 interface Storyboard {
@@ -36,7 +31,7 @@ interface Storyboard {
 
 interface StoryboardPlan {
   storyboardId: string;
-  frames: { description: string; isCharacterFocused?: boolean }[];
+  frames: { description: string }[];
 }
 
 interface StoryboardPanelProps {
@@ -63,8 +58,6 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
   const [selectedFrames, setSelectedFrames] = React.useState<Set<number>>(new Set());
   const [editingFrameTitle, setEditingFrameTitle] = React.useState<number | null>(null);
   const [menuOpenForFrame, setMenuOpenForFrame] = React.useState<number | null>(null);
-  const [defaultModel, setDefaultModel] = React.useState<ImageModel>("auto");
-  const [frameModels, setFrameModels] = React.useState<Map<number, ImageModel>>(new Map());
   const API_BASE = "/api/storyboards";
 
   // IndexedDB helper for large image storage
@@ -278,42 +271,6 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
   };
 
   // Determine which model to use for a frame
-  const getModelForFrame = (frameIndex: number, frame?: StoryboardFrame): ImageModel => {
-    // Check if frame has explicit model selection
-    if (frameModels.has(frameIndex)) {
-      return frameModels.get(frameIndex)!;
-    }
-
-    // Check if frame is marked as character-focused
-    if (frame?.isCharacterFocused) {
-      return "nano-banana";
-    }
-
-    // Use default model setting
-    if (defaultModel === "auto") {
-      // Auto mode: analyze frame description for character focus
-      const description = frame?.description || "";
-      const characterKeywords = ["character", "person", "face", "portrait", "close-up", "expression", "emotion"];
-      const hasCharacterFocus = characterKeywords.some(keyword =>
-        description.toLowerCase().includes(keyword)
-      );
-      return hasCharacterFocus ? "nano-banana" : "imagen3";
-    }
-
-    return defaultModel;
-  };
-
-  // Toggle frame model
-  const toggleFrameModel = (idx: number) => {
-    const newModels = new Map(frameModels);
-    // Get the ACTUAL current model using getModelForFrame, not just the stored value
-    const currentModel = getModelForFrame(idx, storyboard?.frames[idx]);
-    const nextModel: ImageModel = currentModel === "imagen3" ? "nano-banana" :
-                                   currentModel === "nano-banana" ? "auto" : "imagen3";
-    newModels.set(idx, nextModel);
-    setFrameModels(newModels);
-  };
-
   // Fetch storyboard plan
   const fetchStoryboardPlan = async () => {
     setLoading(true);
@@ -374,9 +331,7 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
         const batch = frames.slice(i, i + PARALLEL_COUNT);
         const batchPromises = batch.map((frame, batchIndex) => {
           const frameIndex = i + batchIndex;
-          const selectedModel = getModelForFrame(frameIndex, frames[frameIndex]);
-
-          console.log(`🎬 Starting frame ${frameIndex + 1}/${frames.length} with model: ${selectedModel}`);
+          console.log(`🎬 Starting frame ${frameIndex + 1}/${frames.length}`);
 
           return fetch(`${API_BASE}/generate-frame`, {
             method: "POST",
@@ -386,7 +341,6 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
               frameIndex: frameIndex,
               description: frames[frameIndex].description,
               aspectRatio: aspectRatio,
-              model: selectedModel,
             }),
           })
             .then(async (frameResponse) => {
@@ -492,7 +446,6 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
     setStoryboard({ ...storyboard, frames: [...frames] });
 
     try {
-      const selectedModel = getModelForFrame(frameIndex, frames[frameIndex]);
       const frameResponse = await fetch(`${API_BASE}/generate-frame`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -501,7 +454,6 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
           frameIndex: frameIndex,
           description: frames[frameIndex].description,
           aspectRatio: aspectRatio,
-          model: selectedModel,
         }),
       });
 
@@ -648,32 +600,6 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                           }
                         }}
                       >
-                        {/* Model Badge - Bottom Left of Image */}
-                        {frame?.image_url && (
-                          <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ delay: 0.2, type: "spring" }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleFrameModel(idx);
-                            }}
-                            className={`absolute bottom-4 left-4 z-30 px-3 py-1.5 rounded-full text-xs font-bold cursor-pointer transition-all hover:scale-110 shadow-xl ring-2 ring-black/50 ${
-                              getModelForFrame(idx, frame) === "imagen3"
-                                ? "bg-green-600 text-white"
-                                : getModelForFrame(idx, frame) === "nano-banana"
-                                ? "bg-orange-600 text-white"
-                                : "bg-blue-600 text-white"
-                            }`}
-                            title="Click to toggle model"
-                          >
-                            {getModelForFrame(idx, frame) === "imagen3"
-                              ? "Imagen 3"
-                              : getModelForFrame(idx, frame) === "nano-banana"
-                              ? "Nano 🍌"
-                              : "Auto"}
-                          </motion.div>
-                        )}
                         {frame?.status === "error" ? (
                           <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-red-950/20">
                             <div className="text-red-400 text-center px-4">
@@ -824,19 +750,6 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                           >
                             <Edit className="w-4 h-4" />
                             Edit Title
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleFrameModel(idx);
-                              setMenuOpenForFrame(null);
-                            }}
-                            className="w-full px-4 py-2 text-left text-white hover:bg-gray-700 flex items-center gap-2 text-sm"
-                          >
-                            <Sparkles className="w-4 h-4" />
-                            <span>
-                              Model: <strong>{getModelForFrame(idx, frame) === "imagen3" ? "Imagen 3" : getModelForFrame(idx, frame) === "nano-banana" ? "Nano 🍌" : "Auto"}</strong>
-                            </span>
                           </button>
                           <button
                             onClick={(e) => {
@@ -1031,28 +944,6 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
               <option value="4:3">4:3 (Classic)</option>
               <option value="21:9">21:9 (Ultrawide)</option>
             </select>
-          </div>
-
-          {/* Image Model Selector */}
-          <div className="flex items-center gap-4 px-4 py-3 bg-gray-800/30 border border-gray-700 rounded-lg">
-            <label className="text-gray-300 font-medium flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-purple-400" />
-              Image Model:
-            </label>
-            <select
-              value={defaultModel}
-              onChange={(e) => setDefaultModel(e.target.value as ImageModel)}
-              className="flex-1 px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all cursor-pointer"
-            >
-              <option value="auto">Auto (Smart Selection)</option>
-              <option value="imagen3">Imagen 3 (General Scenes)</option>
-              <option value="nano-banana">Nano Banana (Characters)</option>
-            </select>
-          </div>
-          <div className="px-4 py-2 bg-blue-900/20 border border-blue-700/30 rounded-lg">
-            <p className="text-xs text-blue-300">
-              <strong>Auto mode:</strong> Uses Imagen 3 for most frames and Nano Banana for character-focused sequences automatically.
-            </p>
           </div>
 
           <div className="flex gap-3">

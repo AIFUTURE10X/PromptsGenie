@@ -78,18 +78,14 @@ export const handler = async (event, context) => {
   }
 
   try {
-    console.log('🔵 Received generate-frame request:', {
-      body: event.body?.substring(0, 200) + '...',
-      headers: event.headers
-    });
+    console.log('🔵 Received generate-frame request');
 
-    const { description, frameIndex, storyboardId, aspectRatio, model: requestedModel } = JSON.parse(event.body);
+    const { description, frameIndex, storyboardId, aspectRatio } = JSON.parse(event.body);
 
     console.log('📦 Parsed request:', {
       frameIndex,
       storyboardId,
       aspectRatio,
-      model: requestedModel,
       descriptionLength: description?.length
     });
 
@@ -107,28 +103,13 @@ export const handler = async (event, context) => {
       };
     }
 
-    // Map frontend model names to Google API model identifiers
-    const modelMap = {
-      'imagen3': 'imagegeneration@006',      // Imagen 3 (general scenes)
-      'nano-banana': 'imagegeneration@006',  // Imagen 3 (character-optimized prompt)
-      'auto': 'imagegeneration@006'          // Default to Imagen 3
-    };
+    // Use single model for all frames
+    const model = 'imagegeneration@006';
 
-    const model = modelMap[requestedModel] || modelMap['auto'];
-    console.log(`🎨 Frame ${frameIndex + 1}: Using model ${requestedModel || 'auto'} (${model})`);
+    // Simple universal prompt that works for all frame types
+    const prompt = `A cinematic storyboard frame: ${description}`;
 
-    // Optimize prompts for different use cases
-    let prompt = '';
-    if (requestedModel === 'nano-banana') {
-      // Character-focused: Emphasize portrait and character details
-      // Using clean keywords that won't trigger content filters
-      prompt = `Character portrait, close-up shot, detailed facial features. ${description}. Storyboard illustration style, clear and expressive.`;
-    } else {
-      // General scenes: Standard cinematic framing
-      prompt = `Cinematic storyboard illustration. ${description}. Wide shot, detailed scene.`;
-    }
-
-    console.log(`📝 Frame ${frameIndex + 1} prompt (${requestedModel}): ${prompt}`);
+    console.log(`📝 Frame ${frameIndex + 1}: ${prompt}`);
 
     const endpoint = `https://us-central1-aiplatform.googleapis.com/v1/projects/${process.env.GOOGLE_PROJECT_ID}/locations/us-central1/publishers/google/models/${model}:predict`;
 
@@ -141,25 +122,17 @@ export const handler = async (event, context) => {
       '21:9': { aspectRatio: '16:9' } // 21:9 not supported, use 16:9
     };
 
-    // Build parameters with character-specific optimizations
-    const baseParameters = {
-      sampleCount: 1,
-      ...(aspectRatio && aspectRatioMap[aspectRatio] ? aspectRatioMap[aspectRatio] : {}),
-    };
-
-    // Add negative prompt for better quality (especially for characters)
-    const instanceParams = {
-      prompt: prompt,
-    };
-
-    // For character-focused frames, add negative prompt to avoid common issues
-    if (requestedModel === 'nano-banana') {
-      instanceParams.negativePrompt = 'blurry, distorted, low quality, disfigured, poorly drawn';
-    }
-
+    // Simple request body
     const body = {
-      instances: [instanceParams],
-      parameters: baseParameters,
+      instances: [
+        {
+          prompt: prompt,
+        },
+      ],
+      parameters: {
+        sampleCount: 1,
+        ...(aspectRatio && aspectRatioMap[aspectRatio] ? aspectRatioMap[aspectRatio] : {}),
+      },
     };
 
     // Retry logic - up to 3 attempts
@@ -262,7 +235,7 @@ export const handler = async (event, context) => {
     console.error(`Frame ${frameIndex + 1} details:`, {
       storyboardId,
       frameIndex,
-      model: requestedModel,
+      model,
       aspectRatio,
       attempts
     });
@@ -283,8 +256,7 @@ export const handler = async (event, context) => {
     console.error(`💥 CRASH in generate-frame for frame ${frameIndex + 1}:`, {
       error: error.message,
       stack: error.stack,
-      frameIndex,
-      model: requestedModel
+      frameIndex
     });
     return {
       statusCode: 500,
