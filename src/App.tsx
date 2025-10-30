@@ -54,12 +54,19 @@ function App() {
   const [styleAnalysis, setStyleAnalysis] = useState<string>('');
 
   useEffect(() => {
+    console.log("🔄 rawPrompt changed:", rawPrompt ? `"${rawPrompt.substring(0, 50)}..."` : "EMPTY");
     if (rawPrompt) {
       const transformedPrompt = rewriteStyle && rewriteStyle !== 'Descriptive'
         ? applyRewriteStyle(rawPrompt, rewriteStyle)
         : rawPrompt;
+      console.log("✅ Setting prompt from rawPrompt:", transformedPrompt.substring(0, 50) + "...");
       setPrompt(transformedPrompt);
       setEditorSeed(transformedPrompt);
+    } else {
+      // Clear prompt when rawPrompt is cleared
+      console.log("🧹 Clearing prompt because rawPrompt is empty");
+      setPrompt("");
+      setEditorSeed("");
     }
   }, [rawPrompt, rewriteStyle]);
   
@@ -186,9 +193,9 @@ function App() {
         const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
 
         const analyzedDirect = await generateWithImagesREST({ apiKey, model, text: instruction, imageDataUrls, generationConfig: genCfg });
+        console.log("📸 Auto-analyze completed, result:", analyzedDirect.substring(0, 100) + "...");
         if (!cancelled) {
-          setRawPrompt(analyzedDirect);
-          setEditorSeed(analyzedDirect);
+          setRawPrompt(analyzedDirect); // This will trigger useEffect to update prompt and editorSeed
           setLastSource("gemini-mm");
         }
       } catch (e2) {
@@ -337,10 +344,10 @@ function App() {
         useScene: !!sceneAnalysis,
         useStyle: !!styleAnalysis
       });
-      
+
+      console.log("🎨 Combined analysis prompt:", combinedPrompt.substring(0, 100) + "...");
       if (combinedPrompt !== rawPrompt) {
-        setRawPrompt(combinedPrompt);
-        setEditorSeed(combinedPrompt);
+        setRawPrompt(combinedPrompt); // This will trigger useEffect to update prompt and editorSeed
         
         // Determine the appropriate source label based on what's combined
         const hasSubject = !!subjectAnalysis;
