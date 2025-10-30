@@ -276,6 +276,8 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
   const fetchStoryboardPlan = async () => {
     setLoading(true);
     setError(null);
+    // Reset storyboard to allow generating a fresh story
+    setStoryboard(null);
     console.log("Fetching storyboard plan for intent:", intent);
     try {
       const storyboardId = generateStoryboardId(intent);

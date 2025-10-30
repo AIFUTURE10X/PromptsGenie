@@ -67,8 +67,18 @@ exports.handler = async (event, context) => {
     // Validate frameCount
     const validFrameCount = Math.min(Math.max(frameCount, 3), 10); // Between 3 and 10
 
-    // Generate a real plan using Gemini
-    const prompt = `Create a ${validFrameCount}-frame storyboard plan for the intent: '${intent}'. Return ONLY a JSON object with a 'frames' array containing exactly ${validFrameCount} frames. Each object in the array should have a 'description' field with a detailed scene description. Do not include any other text, comments, or markdown formatting in your response.`;
+    // Generate a real plan using Gemini with enhanced character accuracy
+    const prompt = `Create a ${validFrameCount}-frame storyboard plan for the intent: '${intent}'.
+
+IMPORTANT GUIDELINES:
+- Be very specific about character appearances and costumes in each scene description
+- If the story involves Superman, describe him with: blue suit, red cape, 'S' symbol on chest
+- If the story involves Jimmy Olsen, describe him as: young photographer with red hair, civilian clothes (NOT a Superman costume), carrying a camera
+- Ensure character descriptions are consistent across all frames
+- Include vivid details about setting, lighting, camera angles, and actions
+- Each scene should be cinematic and visually compelling
+
+Return ONLY a JSON object with a 'frames' array containing exactly ${validFrameCount} frames. Each object in the array should have a 'description' field with a detailed, specific scene description that includes character appearances, actions, setting details, and camera composition. Do not include any other text, comments, or markdown formatting in your response.`;
 
     const geminiResponse = await callGeminiClassic(prompt);
 

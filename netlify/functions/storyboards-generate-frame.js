@@ -199,16 +199,32 @@ export const handler = async (event, context) => {
     // Use single model for all frames (Imagen 3 - highest quality available)
     const model = 'imagegeneration@006';
 
-    // Enhanced prompt for vibrant, cinematic quality images with style consistency
+    // Enhanced prompt for vibrant, cinematic quality images with style consistency AND character accuracy
     // If basePrompt provided, use it to maintain style across all frames
     let prompt;
     if (basePrompt) {
       // Use consistent style from the initial prompt for all frames
       // This ensures visual coherence across the storyboard
-      prompt = `${basePrompt}. Scene: ${sanitizedDescription}. Maintain consistent cinematic style, vibrant colors, photorealistic rendering, dramatic lighting, 8K quality.`;
+      prompt = `${basePrompt}. Scene: ${sanitizedDescription}.
+
+IMPORTANT CHARACTER ACCURACY:
+- If Jimmy Olsen is mentioned, he should be a young photographer with red hair, NOT wearing a Superman cape or costume - he is a regular human photographer
+- If Superman is mentioned, he should be wearing the iconic blue suit with red cape and 'S' symbol on chest
+- Each character should be clearly distinguishable and match their canonical appearance
+- Ensure all characters maintain consistent appearance and proper costumes throughout the scene
+
+Style: Maintain consistent cinematic style, vibrant colors, photorealistic rendering, dramatic lighting, 8K quality. NO sketches, NO grayscale, NO pencil drawings.`;
     } else {
       // Fallback to default cinematic style if no base prompt
-      prompt = `Cinematic movie scene: ${sanitizedDescription}. Vibrant colors, photorealistic rendering, highly detailed, dramatic lighting, professional film production quality, 8K resolution, rich color palette, sharp focus.`;
+      prompt = `Cinematic movie scene: ${sanitizedDescription}.
+
+IMPORTANT CHARACTER ACCURACY:
+- If Jimmy Olsen is mentioned, he should be a young photographer with red hair, NOT wearing a Superman cape or costume - he is a regular human photographer
+- If Superman is mentioned, he should be wearing the iconic blue suit with red cape and 'S' symbol on chest
+- Each character should be clearly distinguishable and match their canonical appearance
+- Ensure all characters maintain consistent appearance and proper costumes throughout the scene
+
+Style: Vibrant colors, photorealistic rendering, highly detailed, dramatic lighting, professional film production quality, 8K resolution, rich color palette, sharp focus. NO sketches, NO grayscale, NO pencil drawings.`;
     }
 
     console.log(`📝 Frame ${frameIndex + 1}: Generating with ${basePrompt ? 'consistent style' : 'default style'}`);
