@@ -1,0 +1,89 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "18"
+  # Disable secrets scanning for client-side API keys
+  SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
+
+# Function configuration - applies to all functions
+[functions]
+  # Use esbuild for faster builds
+  node_bundler = "esbuild"
+  # Note: Free tier has 10s timeout, Pro has 26s
+  # Configured per-function in Netlify UI if needed
+
+# Production branch configuration
+[context.production]
+  command = "npm run build"
+
+# Branch deploy configuration - auto-deploy all branches
+[context.branch-deploy]
+  command = "npm run build"
+
+# Specific configuration for Main-Prompt-Gen-V2 branch
+[context.Main-Prompt-Gen-V2]
+  command = "npm run build"
+
+# API redirects to Netlify Functions
+[[redirects]]
+  from = "/api/gemini/text"
+  to = "/.netlify/functions/gemini-text"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/gemini/images"
+  to = "/.netlify/functions/gemini-images"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/storyboards/plan"
+  to = "/.netlify/functions/storyboards-plan"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/storyboards/generate"
+  to = "/.netlify/functions/storyboards-generate"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/storyboards/generate-frame"
+  to = "/.netlify/functions/storyboards-generate-frame"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/storyboards/edit"
+  to = "/.netlify/functions/storyboards-edit"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/storyboards/extend"
+  to = "/.netlify/functions/storyboards-extend"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/health"
+  to = "/.netlify/functions/health"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/ping"
+  to = "/.netlify/functions/ping"
+  status = 200
+  force = true
+
+# Single-page app fallback for Vite (must be last)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

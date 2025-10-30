@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "gen-lang-client-0478811083",
+  "private_key_id": "eaff1cc670901d34835ed88df49502432fd3d382",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCgFd3CqSiRZ/c0\nGfuowF4XkAyOZRhGPdV982YFLHCKTnJ/nf1Dl7E5HKfrUb8WW08XpiZ+kX63PiKX\nWGT6D4naiduZkfRyhCfhbCNC6hN1Q0wzfjNIBans1fW6RkeGi1Q045tgDH+ew4HJ\n94i9dHL86QGO/J6w7vX+3aZBR94LKbKpnbJSnka9Mgx2kpeJjN7/uPD3sF1ODbki\nWPcYRHMIKA6lElHtz58K+XGqgwuOX/VLJFy9gl6DbdsxlvCso99kcOzZurT/XAb3\n2yeR6Re4Oq87IsSfGLAA5VOMMsnt7c0KTv2fZAG3mpmPgKwj2qPGAetpuu2KGh0N\noqPflBebAgMBAAECggEADe/JZhyG8R29ejY24AqbRm7egPkRI3BXqUbq31FunMPW\nmQCen2dR4Ph7L/PmcGJToOnwmP0+rGJG7ake5Vw78qAk05pOzzdtJ2VcLoOlXQSW\nWjdG7KK9l+ZKpcRfjrmLg607BiIgbCh2IKihqWi9aAI7BgE9KYcsOFuAkVdZ39vG\njEZbEtn09jqfkLpCEIhsjl4yWveWO8UlBYEZnlyBE2mOFLsdvDQ/xcoqUBvGzkJs\nwe1Utj3LbdSHtqkK4WGhlJ1JCEmog0djJzqxnWGsSyAJnnthkFGA61zk81moikBf\nb0ujy4e8oHxogNHQtgi7mYkRLLGL7RHjXYFpy6SrbQKBgQDfX85fs6ujkjDcBFFp\nlpFy7Gy5ONkRde+dkfKDJjWyX1bjdAHAWUZuvesrtsDvMvqzgxt3IZVAQopdWi9c\nlao9sVCXVXBsOuI6JfKvL+oJLIsUmhluxUg2mAV6bcG+VIUhfI3V7lxOmGKmMvpw\n6WeypUKn6xjy7mrx7sqgffOSBwKBgQC3d6Aa3KQrfnrFX4ecVhNmkNosV2Xs/2Ip\nLNSZy1SG07p3Hp1ee4Wq4Z6oM/Y1H4HtbzCwgN61JGvNNMP2PntTwFLlEmG2/bAv\nMKIlJb8tjyYAl8sfWTeBVcTBcIZF9JYor49Yrkqo3ADUXoG4fKIdmn3bkP8k3ped\neU9C74yYzQKBgQCEy/5zIuvduOHXS7Hi5iLegfQ5QbS7DrQ/py7YDXVK8CdF3gfU\nhL68w6f2OxYEnvgwlLdVYd/LbkO4MA+MKWYmey4AakkF7xPjof/fasrmXVbqDpsk\nIaFG46YOHQZb0v+64sOn9adnCm1LhW8ihYCi0mEIV1pjwp5N6rsIIxkVLQKBgBce\nKbx4xO7+FvY73Vijt/oakoM32A4O+A18KqXeax46G6ra3rWDFwq7N0S2l3WGLNcA\nRcBX3LgyiKro1TB4Gw4ok8ltkYZ/XO31UNkhcn+JJB67ActHcKkJZ6uAREsYULt7\ns7JW8+1nG2unJO1cNwlH6Ef8c0nwCma7XHNwv+SZAoGAanoN0YdScHXQ3v8Wehh0\nMnODzMZqJb3RRzbeKcydlhyPMEeboV/5PK9bK1xrIrdTp7ElWObdgAwsfgKnr1zw\nHdLNI7Smw+jXr90IQeon8n78AhUfm08fX6YdAEgb/wx31tM6prpbxaUwAtDMwDE/\nUflYbel4PjA5JCBQArj2ELM=\n-----END PRIVATE KEY-----\n",
+  "client_email": "promptsgenie-service-account@gen-lang-client-0478811083.iam.gserviceaccount.com",
+  "client_id": "100663076819583761218",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/promptsgenie-service-account%40gen-lang-client-0478811083.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

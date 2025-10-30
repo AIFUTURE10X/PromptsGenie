@@ -1,0 +1,10 @@
+# Exclude documentation files from Netlify secret scanning
+# These files contain example patterns that trigger false positives
+*.md
+docs/
+
+# These are documentation/template files, not actual secrets
+**/*.example
+**/*.template
+**/*.sample
+

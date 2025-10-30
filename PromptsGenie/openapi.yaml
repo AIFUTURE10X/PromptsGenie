@@ -1,0 +1,517 @@
+openapi: 3.1.0
+info:
+  title: Gemini Image Analysis Service
+  version: 1.0.0
+  description: Robust Gemini image analysis service with routing, fallbacks, A/B testing, and shadow mode
+
+servers:
+  - url: http://localhost:8085
+    description: Local development server
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: getHealth
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  timestamp:
+                    type: string
+                    format: date-time
+                  uptime:
+                    type: number
+
+  /metrics:
+    get:
+      summary: Get service metrics
+      operationId: getMetrics
+      responses:
+        '200':
+          description: Metrics data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsData'
+
+  /analyze-image:
+    post:
+      summary: Analyze an image
+      operationId: analyzeImage
+      parameters:
+        - name: X-Analyze-Mode
+          in: header
+          schema:
+            type: string
+            enum: [fast, quality]
+        - name: X-OCR-Hint
+          in: header
+          schema:
+            type: boolean
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyzeImageRequest'
+      responses:
+        '200':
+          description: Analysis result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyzeImageResponse'
+        '400':
+          description: Validation error
+        '500':
+          description: Server error
+
+  /text-to-prompt:
+    post:
+      summary: Convert text intent to image generation prompt
+      operationId: textToPrompt
+      parameters:
+        - name: X-Analyze-Mode
+          in: header
+          schema:
+            type: string
+            enum: [fast, quality]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TextToPromptRequest'
+      responses:
+        '200':
+          description: Generated prompt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TextToPromptResponse'
+        '400':
+          description: Validation error
+        '500':
+          description: Server error
+
+  /prompt-to-text:
+    post:
+      summary: Refine, evaluate, or simplify a prompt
+      operationId: promptToText
+      parameters:
+        - name: X-Analyze-Mode
+          in: header
+          schema:
+            type: string
+            enum: [fast, quality]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PromptToTextRequest'
+      responses:
+        '200':
+          description: Processed result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PromptToTextResponse'
+        '400':
+          description: Validation error
+        '500':
+          description: Server error
+
+  /storyboards/generate:
+    post:
+      summary: Generate a new 7-frame storyboard
+      operationId: generateStoryboard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoryboardGenerateRequest'
+      responses:
+        '200':
+          description: Generated storyboard
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoryboardResponse'
+        '400':
+          description: Validation error
+        '429':
+          description: Rate limit exceeded
+        '500':
+          description: Server error
+
+  /storyboards/extend:
+    post:
+      summary: Extend an existing storyboard with extra frames
+      operationId: extendStoryboard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoryboardExtendRequest'
+      responses:
+        '200':
+          description: Extended storyboard
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoryboardResponse'
+        '400':
+          description: Validation error
+        '404':
+          description: Storyboard not found
+        '429':
+          description: Rate limit exceeded
+        '500':
+          description: Server error
+
+  /storyboards/plan:
+    post:
+      summary: Plan a storyboard with 7 frames
+      operationId: planStoryboard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoryboardPlanRequest'
+      responses:
+        '200':
+          description: Storyboard plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoryboardPlanResponse'
+        '400':
+          description: Validation error
+        '429':
+          description: Rate limit exceeded
+        '500':
+          description: Server error
+
+  /storyboards/edit:
+    post:
+      summary: Edit a storyboard frame
+      operationId: editStoryboardFrame
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoryboardEditRequest'
+      responses:
+        '200':
+          description: Edited storyboard
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoryboardResponse'
+        '400':
+          description: Validation error
+        '404':
+          description: Storyboard not found
+        '429':
+          description: Rate limit exceeded
+        '500':
+          description: Server error
+
+components:
+  schemas:
+    StoryboardGenerateRequest:
+      type: object
+      required:
+        - storyboardId
+        - plan
+      properties:
+        storyboardId:
+          type: string
+        plan:
+          type: object
+          required:
+            - frames
+          properties:
+            frames:
+              type: array
+              minItems: 7
+              maxItems: 7
+              items:
+                $ref: '#/components/schemas/StoryboardFramePlan'
+    StoryboardExtendRequest:
+      type: object
+      required:
+        - storyboardId
+        - extraFrames
+      properties:
+        storyboardId:
+          type: string
+        extraFrames:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoryboardFramePlan'
+    StoryboardPlanRequest:
+      type: object
+      required:
+        - storyboardId
+        - intent
+      properties:
+        storyboardId:
+          type: string
+        intent:
+          type: string
+    StoryboardEditRequest:
+      type: object
+      required:
+        - storyboardId
+        - frameIndex
+        - newDescription
+      properties:
+        storyboardId:
+          type: string
+        frameIndex:
+          type: integer
+        newDescription:
+          type: string
+    StoryboardFramePlan:
+      type: object
+      required:
+        - description
+      properties:
+        description:
+          type: string
+        aspectRatio:
+          type: string
+          enum: ["16:9", "1:1"]
+        palette:
+          type: string
+        references:
+          type: array
+          items:
+            type: object
+            properties:
+              role:
+                type: string
+                enum: [subject, scene, style]
+              url:
+                type: string
+    StoryboardResponse:
+      type: object
+      required:
+        - storyboardId
+        - frames
+        - plan
+      properties:
+        storyboardId:
+          type: string
+        frames:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoryboardFrame'
+        plan:
+          type: object
+          properties:
+            frames:
+              type: array
+              items:
+                $ref: '#/components/schemas/StoryboardFramePlan'
+        seed:
+          type: integer
+    StoryboardFrame:
+      type: object
+      required:
+        - frame
+        - description
+        - seed
+        - image_url
+      properties:
+        frame:
+          type: integer
+        description:
+          type: string
+        seed:
+          type: integer
+        image_url:
+          type: string
+    StoryboardPlanResponse:
+      type: object
+      required:
+        - storyboardId
+        - frames
+      properties:
+        storyboardId:
+          type: string
+        frames:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoryboardFramePlan'
+
+    AnalyzeImageRequest:
+      type: object
+      properties:
+        imageUrl:
+          type: string
+          format: uri
+          pattern: '^https://'
+        base64:
+          type: string
+        mimeType:
+          type: string
+          enum: [image/png, image/jpeg, image/jpg, image/webp]
+          default: image/jpeg
+        options:
+          type: object
+          properties:
+            detail:
+              type: string
+              enum: [short, medium, long]
+              default: medium
+            tags:
+              type: boolean
+              default: false
+        mode:
+          type: string
+          enum: [fast, quality]
+          default: fast
+
+    AnalyzeImageResponse:
+      type: object
+      properties:
+        caption:
+          type: string
+        objects:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              count:
+                type: integer
+              approx_area:
+                type: string
+              position:
+                type: string
+        tags:
+          type: array
+          items:
+            type: string
+        setting:
+          type: string
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        model:
+          type: string
+        raw:
+          type: string
+
+    TextToPromptRequest:
+      type: object
+      required:
+        - intent
+      properties:
+        intent:
+          type: string
+        style:
+          type: string
+        constraints:
+          type: string
+        length:
+          type: string
+          enum: [minimal, medium, comprehensive]
+          default: medium
+        mode:
+          type: string
+          enum: [fast, quality]
+          default: fast
+
+    TextToPromptResponse:
+      type: object
+      properties:
+        prompt:
+          type: string
+        variants:
+          type: array
+          items:
+            type: string
+          minItems: 3
+          maxItems: 3
+        safety_notes:
+          type: array
+          items:
+            type: string
+
+    PromptToTextRequest:
+      type: object
+      required:
+        - prompt
+        - task
+      properties:
+        prompt:
+          type: string
+        task:
+          type: string
+          enum: [refine, evaluate, simplify]
+        target_length:
+          type: integer
+          minimum: 1
+        mode:
+          type: string
+          enum: [fast, quality]
+          default: fast
+
+    PromptToTextResponse:
+      type: object
+      properties:
+        result:
+          type: string
+        score:
+          type: number
+          minimum: 0
+          maximum: 1
+        suggestions:
+          type: array
+          items:
+            type: string
+
+    MetricsData:
+      type: object
+      properties:
+        total_requests:
+          type: integer
+        success_count:
+          type: integer
+        error_count:
+          type: integer
+        success_rate:
+          type: number
+        fallback_rate:
+          type: number
+        avg_latency_ms:
+          type: integer
+        avg_confidence:
+          type: number
+        ab_outcomes:
+          type: object
+          properties:
+            flash_count:
+              type: integer
+            pro_count:
+              type: integer
+        shadow_comparisons:
+          type: integer
