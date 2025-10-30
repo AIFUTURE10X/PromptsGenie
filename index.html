@@ -13,6 +13,50 @@
     <link href="https://fonts.googleapis.com/css2?family=Alumni+Sans+Pinstripe:ital@0;1&display=swap" rel="stylesheet" />
     
     <script type="text/javascript">
+      // Aggressive error suppression - runs before extensions load
+      (function() {
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        const shouldFilter = function(msg) {
+          if (typeof msg !== 'string') msg = String(msg);
+          return msg.toLowerCase().includes('maxmind') ||
+                 msg.toLowerCase().includes('geoip') ||
+                 msg.toLowerCase().includes('gfadunit') ||
+                 msg.toLowerCase().includes('err_tunnel') ||
+                 msg.toLowerCase().includes('chrome-extension');
+        };
+        
+        console.error = function() {
+          const msg = Array.prototype.slice.call(arguments).join(' ');
+          if (shouldFilter(msg)) return;
+          originalError.apply(console, arguments);
+        };
+        
+        console.warn = function() {
+          const msg = Array.prototype.slice.call(arguments).join(' ');
+          if (shouldFilter(msg)) return;
+          originalWarn.apply(console, arguments);
+        };
+        
+        // Suppress unhandled rejections
+        window.addEventListener('unhandledrejection', function(e) {
+          const msg = String(e.reason || '');
+          if (shouldFilter(msg)) {
+            e.preventDefault();
+          }
+        });
+        
+        // Suppress global errors
+        window.addEventListener('error', function(e) {
+          const msg = String(e.message || '');
+          if (shouldFilter(msg)) {
+            e.preventDefault();
+            return true;
+          }
+        });
+      })();
+      
       // SPA GitHub Pages redirect: restore deep links on fresh loads
       // Source: https://github.com/rafgraph/spa-github-pages
       (function(l) {
