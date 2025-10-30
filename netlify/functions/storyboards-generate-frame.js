@@ -117,14 +117,15 @@ export const handler = async (event, context) => {
     const model = modelMap[requestedModel] || modelMap['auto'];
     console.log(`🎨 Frame ${frameIndex + 1}: Using model ${requestedModel || 'auto'} (${model})`);
 
-    // Simple, clean prompts that won't trigger content filters
+    // Optimize prompts for different use cases
     let prompt = '';
     if (requestedModel === 'nano-banana') {
-      // Character-focused: Keep it simple
-      prompt = `A cinematic storyboard frame showing: ${description}`;
+      // Character-focused: Emphasize portrait and character details
+      // Using clean keywords that won't trigger content filters
+      prompt = `Character portrait, close-up shot, detailed facial features. ${description}. Storyboard illustration style, clear and expressive.`;
     } else {
-      // General scenes: Keep it simple
-      prompt = `A cinematic storyboard frame: ${description}`;
+      // General scenes: Standard cinematic framing
+      prompt = `Cinematic storyboard illustration. ${description}. Wide shot, detailed scene.`;
     }
 
     console.log(`📝 Frame ${frameIndex + 1} prompt (${requestedModel}): ${prompt}`);
@@ -140,16 +141,25 @@ export const handler = async (event, context) => {
       '21:9': { aspectRatio: '16:9' } // 21:9 not supported, use 16:9
     };
 
+    // Build parameters with character-specific optimizations
+    const baseParameters = {
+      sampleCount: 1,
+      ...(aspectRatio && aspectRatioMap[aspectRatio] ? aspectRatioMap[aspectRatio] : {}),
+    };
+
+    // Add negative prompt for better quality (especially for characters)
+    const instanceParams = {
+      prompt: prompt,
+    };
+
+    // For character-focused frames, add negative prompt to avoid common issues
+    if (requestedModel === 'nano-banana') {
+      instanceParams.negativePrompt = 'blurry, distorted, low quality, disfigured, poorly drawn';
+    }
+
     const body = {
-      instances: [
-        {
-          prompt: prompt,
-        },
-      ],
-      parameters: {
-        sampleCount: 1,
-        ...(aspectRatio && aspectRatioMap[aspectRatio] ? aspectRatioMap[aspectRatio] : {}),
-      },
+      instances: [instanceParams],
+      parameters: baseParameters,
     };
 
     // Retry logic - up to 3 attempts
