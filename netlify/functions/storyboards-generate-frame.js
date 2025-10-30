@@ -162,8 +162,9 @@ export const handler = async (event, context) => {
       };
     }
 
-    if (cleanDescription.length > 1000) {
-      console.error('❌ Description too long');
+    // Increased limit to 5000 to accommodate detailed scene descriptions with character details
+    if (cleanDescription.length > 5000) {
+      console.error('❌ Description too long:', cleanDescription.length, 'characters');
       return {
         statusCode: 400,
         headers: {
@@ -171,7 +172,7 @@ export const handler = async (event, context) => {
           'Access-Control-Allow-Origin': '*'
         },
         body: JSON.stringify({
-          error: 'Description too long. Please keep it under 1000 characters for optimal results.'
+          error: 'Description too long. Please keep it under 5000 characters.'
         })
       };
     }
