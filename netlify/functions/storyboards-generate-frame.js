@@ -266,6 +266,24 @@ export const handler = async (event, context) => {
         if (response.ok) {
           const data = await response.json();
 
+          // Enhanced logging to diagnose empty responses
+          console.log(`📦 API Response structure for frame ${frameIndex + 1}:`, {
+            hasPredictions: !!data?.predictions,
+            predictionsLength: data?.predictions?.length,
+            predictionKeys: data?.predictions?.[0] ? Object.keys(data.predictions[0]) : [],
+            allDataKeys: Object.keys(data || {}),
+            hasError: !!data?.error
+          });
+
+          // Check for content policy errors
+          if (data?.error || data?.predictions?.[0]?.error) {
+            const errorMsg = data.error || data.predictions[0].error;
+            lastError = `Content policy or API error: ${JSON.stringify(errorMsg)}`;
+            console.error(`❌ Frame ${frameIndex + 1} blocked by content policy or API error:`, errorMsg);
+            // Don't retry content policy errors
+            break;
+          }
+
           const imageBase64 = data?.predictions?.[0]?.bytesBase64Encoded;
 
           if (imageBase64) {
@@ -313,11 +331,16 @@ export const handler = async (event, context) => {
           } else {
             // API returned 200 but no image - might be rate limiting or temp issue
             const availableKeys = Object.keys(data || {}).join(', ');
+            const fullResponse = JSON.stringify(data, null, 2);
             lastError = `No image in API response. Available keys: ${availableKeys}`;
             console.warn(`⚠️ Frame ${frameIndex + 1} attempt ${attempts}: ${lastError}`);
+            console.warn(`Full API response:`, fullResponse.substring(0, 500)); // Log first 500 chars
+
             if (attempts < MAX_ATTEMPTS) {
-              console.log(`Retrying in 2 seconds...`);
-              await new Promise(resolve => setTimeout(resolve, 2000));
+              // Exponential backoff: 3 seconds, then 6 seconds
+              const waitTime = Math.pow(2, attempts) * 1500; // 3s, 6s
+              console.log(`Retrying in ${waitTime/1000} seconds with exponential backoff...`);
+              await new Promise(resolve => setTimeout(resolve, waitTime));
               continue; // Try again
             } else {
               // Last attempt failed - break out of loop

@@ -412,10 +412,10 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
         // Update storyboard with latest frames
         setStoryboard({ ...data, frames: [...frames] });
 
-        // Add 1-second delay between batches to avoid rate limiting
+        // Add 3-second delay between batches to avoid rate limiting
         if (i + PARALLEL_COUNT < frames.length) {
-          console.log(`⏱️ Waiting 1 second before next batch...`);
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          console.log(`⏱️ Waiting 3 seconds before next batch to avoid rate limiting...`);
+          await new Promise(resolve => setTimeout(resolve, 3000));
         }
       }
     } catch (e: any) {
