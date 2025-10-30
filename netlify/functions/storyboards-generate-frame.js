@@ -78,9 +78,23 @@ export const handler = async (event, context) => {
   }
 
   try {
+    console.log('🔵 Received generate-frame request:', {
+      body: event.body?.substring(0, 200) + '...',
+      headers: event.headers
+    });
+
     const { description, frameIndex, storyboardId, aspectRatio, model: requestedModel } = JSON.parse(event.body);
 
+    console.log('📦 Parsed request:', {
+      frameIndex,
+      storyboardId,
+      aspectRatio,
+      model: requestedModel,
+      descriptionLength: description?.length
+    });
+
     if (!description || typeof frameIndex !== 'number') {
+      console.error('❌ Invalid request parameters');
       return {
         statusCode: 400,
         headers: {
@@ -103,15 +117,15 @@ export const handler = async (event, context) => {
     const model = modelMap[requestedModel] || modelMap['auto'];
     console.log(`🎨 Frame ${frameIndex + 1}: Using model ${requestedModel || 'auto'} (${model})`);
 
-    // Optimize prompt based on requested model type
+    // Optimize prompt based on requested model type with better quality instructions
     let prompt = '';
     if (requestedModel === 'nano-banana') {
-      prompt = `Generate a highly detailed character-focused cinematic storyboard frame with emphasis on facial expressions and character emotions: ${description}`;
+      prompt = `Create a high-quality, detailed character-focused storyboard frame. Focus on: facial expressions, emotions, character details, dramatic lighting. ${description}. Cinematic, professional quality, 4K resolution.`;
     } else {
-      prompt = `Generate a cinematic storyboard frame: ${description}`;
+      prompt = `Create a high-quality cinematic storyboard frame. ${description}. Professional quality, detailed, dramatic lighting, 4K resolution.`;
     }
 
-    console.log(`📝 Frame ${frameIndex + 1} prompt: ${prompt.substring(0, 100)}...`);
+    console.log(`📝 Frame ${frameIndex + 1} prompt (${requestedModel}): ${prompt.substring(0, 80)}...`);
 
     const endpoint = `https://us-central1-aiplatform.googleapis.com/v1/projects/${process.env.GOOGLE_PROJECT_ID}/locations/us-central1/publishers/google/models/${model}:predict`;
 
@@ -133,6 +147,10 @@ export const handler = async (event, context) => {
       parameters: {
         sampleCount: 1,
         ...(aspectRatio && aspectRatioMap[aspectRatio] ? aspectRatioMap[aspectRatio] : {}),
+        // Add quality parameters
+        seed: Math.floor(Math.random() * 2147483647), // Random seed for variety
+        language: 'en',
+        addWatermark: false,
       },
     };
 
