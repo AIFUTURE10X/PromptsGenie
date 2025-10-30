@@ -483,6 +483,11 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
     };
     setStoryboard({ ...storyboard, frames: [...frames] });
 
+    // Use consistent base prompt for regenerated frames too
+    const basePrompt = intent ?
+      `${intent} cinematic style, consistent visual theme throughout` :
+      'Cinematic movie scene';
+
     try {
       const frameResponse = await fetch(`${API_BASE}/generate-frame`, {
         method: "POST",
@@ -492,6 +497,7 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
           frameIndex: frameIndex,
           description: frames[frameIndex].description,
           aspectRatio: aspectRatio,
+          basePrompt: basePrompt,  // Maintain style consistency for regenerated frames
         }),
       });
 
