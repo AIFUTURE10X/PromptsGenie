@@ -1,0 +1,89 @@
+## Auto-Run & Execution
+- Always run code immediately after making changes when requested
+- Use the integrated terminal to execute scripts automatically
+- For Python: run with `python filename.py` or `python3 filename.py`
+- For JavaScript/Node: run with `node filename.js`
+- For web projects: auto-start dev server with `npm run dev` or appropriate command
+- Show output and errors inline
+
+## Git & Version Control
+- Auto-commit changes after significant edits with descriptive commit messages
+- Use conventional commit format: `type(scope): description`
+  - Examples: `feat: add pay-as-you-go pricing`, `fix: resolve payment bug`, `refactor: improve code structure`
+- Auto-push commits to remote after committing (ask for confirmation first)
+- Always pull latest changes before pushing
+- Create feature branches for new features: `git checkout -b feature/feature-name`
+
+## Code Quality & Best Practices
+- Always add error handling and try-catch blocks
+- Include input validation for all user inputs
+- Add comments for complex logic
+- Follow language-specific style guides (PEP 8 for Python, Airbnb for JavaScript, etc.)
+- Suggest and implement unit tests when appropriate
+- Optimize for readability and maintainability
+
+## Development Workflow
+- Auto-install dependencies when package.json or requirements.txt changes
+- Auto-format code on save using prettier/black/appropriate formatter
+- Run linters automatically and fix issues
+- Suggest performance improvements proactively
+- Check for security vulnerabilities in dependencies
+
+## Documentation
+- Auto-generate/update README.md when project structure changes
+- Add JSDoc/docstrings for functions and classes
+- Update CHANGELOG.md with significant changes
+- Create inline documentation for complex algorithms
+
+## Testing
+- Suggest and create test files alongside new features
+- Run tests automatically after code changes
+- Show test coverage reports
+- Create both unit and integration tests when appropriate
+
+## Debugging
+- Add console.log/print statements strategically for debugging
+- Suggest breakpoint locations for complex issues
+- Provide step-by-step debugging guidance
+- Auto-remove debug statements before committing
+
+## Project-Specific (Customize as needed)
+- Framework: [Your framework - React, Django, etc.]
+- Package manager: [npm, yarn, pip, etc.]
+- Deployment: [Your deployment platform]
+- Environment: [Development/Production settings]
+
+## Communication Style
+- Be concise but thorough
+- Explain "why" behind suggestions
+- Provide alternatives when multiple solutions exist
+- Ask for clarification when requirements are ambiguous
+```
+
+To use this in Cursor:
+
+1. **Create `.cursorrules` file** in your project root
+2. **Paste the above content** and customize the "Project-Specific" section
+3. **Enable Cursor Rules** in Cursor settings (Settings → Features → Cursor Rules)
+
+**Additional Cursor Settings to Enable:**
+
+```json
+{
+  "cursor.autoCommit": true,
+  "cursor.autoRun": true,
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true,
+    "source.organizeImports": true
+  },
+  "git.enableSmartCommit": true,
+  "git.confirmSync": false
+}
+```
+
+**Useful Cursor Shortcuts:**
+- `Cmd/Ctrl + K` - Open Cursor AI chat
+- `Cmd/Ctrl + L` - Add current file to context
+- `Cmd/Ctrl + Shift + L` - Add multiple files to context
+- `Cmd/Ctrl + I` - Inline edit with AI
