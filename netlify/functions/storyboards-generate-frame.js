@@ -175,11 +175,11 @@ export const handler = async (event, context) => {
       };
     }
 
-    // Use single model for all frames
+    // Use single model for all frames (Imagen 3 - highest quality available)
     const model = 'imagegeneration@006';
 
-    // Enhanced prompt for better quality and consistency
-    const prompt = `Cinematic storyboard frame, professional composition, clear visual storytelling: ${description}. High-quality digital art style, dramatic lighting.`;
+    // Simplified prompt - Imagen 3 works best with clear, concise prompts
+    const prompt = `Professional storyboard illustration: ${description}. Cinematic composition, high quality digital art.`;
 
     console.log(`📝 Frame ${frameIndex + 1}: ${prompt}`);
 
@@ -224,7 +224,7 @@ export const handler = async (event, context) => {
       '21:9': { aspectRatio: '16:9' } // 21:9 not supported, use 16:9
     };
 
-    // Enhanced request body with quality parameters
+    // Request body with Imagen 3 supported parameters only
     const body = {
       instances: [
         {
@@ -233,8 +233,8 @@ export const handler = async (event, context) => {
       ],
       parameters: {
         sampleCount: 1,
-        guidanceScale: 18, // Higher = more prompt adherence (range: 1-20, default: 15)
-        negativePrompt: 'blurry, low quality, distorted, deformed, text, watermark, signature', // Avoid these
+        // Note: Imagen 3 does NOT support guidanceScale or negativePrompt
+        // Using only officially supported parameters for best quality
         ...(aspectRatio && aspectRatioMap[aspectRatio] ? aspectRatioMap[aspectRatio] : {}),
       },
     };
