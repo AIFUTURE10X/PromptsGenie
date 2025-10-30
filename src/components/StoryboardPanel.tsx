@@ -330,85 +330,112 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
       const frames = [...data.frames];
 
       for (let i = 0; i < frames.length; i++) {
-        try {
-          console.log(`🎬 Starting frame ${i + 1}/${frames.length}...`);
+        let frameAttempts = 0;
+        const MAX_FRAME_ATTEMPTS = 3; // Retry up to 3 times for each frame
+        let frameSuccess = false;
 
-          const frameResponse = await fetch(`${API_BASE}/generate-frame`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              storyboardId: data.storyboardId,
-              frameIndex: i,
-              description: frames[i].description,
-              aspectRatio: aspectRatio,
-            }),
-          });
+        while (frameAttempts < MAX_FRAME_ATTEMPTS && !frameSuccess) {
+          frameAttempts++;
 
-          if (frameResponse.ok) {
-            const frameData = await frameResponse.json();
-            frames[i] = frameData.frame;
-
-            // Track cache hits for cost monitoring
-            const cacheStatus = frameResponse.headers.get('X-Cache');
-            if (cacheStatus === 'HIT') {
-              setCacheHits(prev => prev + 1);
-              console.log(`💰 Frame ${i + 1} loaded from cache - saved API cost!`);
+          try {
+            if (frameAttempts > 1) {
+              console.log(`🔄 Retrying frame ${i + 1}/${frames.length} (attempt ${frameAttempts}/${MAX_FRAME_ATTEMPTS})...`);
             } else {
-              setTotalFramesGenerated(prev => prev + 1);
-              console.log(`✅ Frame ${i + 1} generated successfully`);
+              console.log(`🎬 Starting frame ${i + 1}/${frames.length}...`);
             }
-          } else {
-            // Parse error response (read body only once to avoid "body stream already read" error)
-            let errorDetail = 'Unknown error';
-            try {
-              // Clone the response so we can read it multiple ways if needed
-              const responseText = await frameResponse.text();
-              try {
-                const errorData = JSON.parse(responseText);
-                errorDetail = errorData.error || JSON.stringify(errorData);
-              } catch {
-                errorDetail = responseText || frameResponse.statusText;
+
+            const frameResponse = await fetch(`${API_BASE}/generate-frame`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                storyboardId: data.storyboardId,
+                frameIndex: i,
+                description: frames[i].description,
+                aspectRatio: aspectRatio,
+              }),
+            });
+
+            if (frameResponse.ok) {
+              const frameData = await frameResponse.json();
+              frames[i] = frameData.frame;
+              frameSuccess = true;
+
+              // Track cache hits for cost monitoring
+              const cacheStatus = frameResponse.headers.get('X-Cache');
+              if (cacheStatus === 'HIT') {
+                setCacheHits(prev => prev + 1);
+                console.log(`💰 Frame ${i + 1} loaded from cache - saved API cost!`);
+              } else {
+                setTotalFramesGenerated(prev => prev + 1);
+                console.log(`✅ Frame ${i + 1} generated successfully${frameAttempts > 1 ? ` (after ${frameAttempts} attempts)` : ''}`);
               }
-            } catch (readError: any) {
-              errorDetail = `Failed to read error response: ${readError.message}`;
+            } else {
+              // Parse error response (read body only once to avoid "body stream already read" error)
+              let errorDetail = 'Unknown error';
+              try {
+                const responseText = await frameResponse.text();
+                try {
+                  const errorData = JSON.parse(responseText);
+                  errorDetail = errorData.error || JSON.stringify(errorData);
+                } catch {
+                  errorDetail = responseText || frameResponse.statusText;
+                }
+              } catch (readError: any) {
+                errorDetail = `Failed to read error response: ${readError.message}`;
+              }
+
+              // Special handling for timeout errors - these are retryable
+              const isRetryable = frameResponse.status === 504 || frameResponse.status >= 500;
+
+              if (frameResponse.status === 504) {
+                errorDetail = 'Server timeout - retrying...';
+              }
+
+              console.error(`❌ Failed to generate frame ${i + 1} (attempt ${frameAttempts}/${MAX_FRAME_ATTEMPTS}):`);
+              console.error(`  Status: ${frameResponse.status} ${frameResponse.statusText}`);
+              console.error(`  Error: ${errorDetail}`);
+
+              // If we can retry, wait before next attempt
+              if (isRetryable && frameAttempts < MAX_FRAME_ATTEMPTS) {
+                const waitTime = frameAttempts * 5000; // 5s, 10s
+                console.log(`⏱️ Waiting ${waitTime/1000}s before retry...`);
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+              } else {
+                // Non-retryable error or last attempt failed
+                frames[i] = {
+                  ...frames[i],
+                  status: "error",
+                  image_url: ""
+                };
+                break; // Exit retry loop
+              }
             }
+          } catch (frameError: any) {
+            console.error(`💥 Network error generating frame ${i + 1} (attempt ${frameAttempts}/${MAX_FRAME_ATTEMPTS}):`);
+            console.error(`  Message: ${frameError.message}`);
 
-            // Special handling for timeout errors
-            if (frameResponse.status === 504) {
-              errorDetail = 'Server timeout - The frame generation took too long. Try again or use a simpler description.';
+            // Network errors are retryable
+            if (frameAttempts < MAX_FRAME_ATTEMPTS) {
+              const waitTime = frameAttempts * 5000;
+              console.log(`⏱️ Waiting ${waitTime/1000}s before retry...`);
+              await new Promise(resolve => setTimeout(resolve, waitTime));
+            } else {
+              frames[i] = {
+                ...frames[i],
+                status: "error",
+                image_url: ""
+              };
             }
-
-            console.error(`❌ Failed to generate frame ${i + 1}:`);
-            console.error(`  Status: ${frameResponse.status} ${frameResponse.statusText}`);
-            console.error(`  Error: ${errorDetail}`);
-
-            frames[i] = {
-              ...frames[i],
-              status: "error",
-              image_url: ""
-            };
           }
 
-          // Update storyboard with latest frames after each frame
+          // Update storyboard with latest frames after each attempt
           setStoryboard({ ...data, frames: [...frames] });
+        }
 
-          // Add delay between frames to avoid rate limiting (except after last frame)
-          if (i < frames.length - 1) {
-            console.log(`⏳ Waiting 3 seconds before next frame...`);
-            await new Promise(resolve => setTimeout(resolve, 3000));
-          }
-        } catch (frameError: any) {
-          console.error(`💥 Network error generating frame ${i + 1}:`);
-          console.error(`  Message: ${frameError.message}`);
-
-          frames[i] = {
-            ...frames[i],
-            status: "error",
-            image_url: ""
-          };
-
-          // Update storyboard even on error
-          setStoryboard({ ...data, frames: [...frames] });
+        // Add delay between frames to avoid rate limiting (except after last frame)
+        if (i < frames.length - 1) {
+          console.log(`⏳ Waiting 3 seconds before next frame...`);
+          await new Promise(resolve => setTimeout(resolve, 3000));
         }
       }
     } catch (e: any) {

@@ -263,10 +263,11 @@ export const handler = async (event, context) => {
       },
     };
 
-    // Retry logic - up to 3 attempts with better handling for empty responses
+    // Retry logic - reduced to 1 attempt to avoid 504 timeouts on Netlify free tier
+    // Frontend will handle retries if this fails (frontend has no timeout limit)
     let attempts = 0;
     let lastError = null;
-    const MAX_ATTEMPTS = 3; // Increased to 3 to handle intermittent "No image" errors
+    const MAX_ATTEMPTS = 1; // Reduced from 3 to stay under 10s timeout limit
 
     while (attempts < MAX_ATTEMPTS) {
       attempts++;
