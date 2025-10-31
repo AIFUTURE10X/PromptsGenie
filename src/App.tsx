@@ -47,6 +47,12 @@ function App() {
     console.log("🔄 LastSource state changed:", lastSource);
   }, [lastSource]);
   const [speedMode, setSpeedMode] = useState<SpeedMode>('Fast');
+
+  // Debug speedMode changes
+  useEffect(() => {
+    console.log("⚡ SPEED MODE CHANGED:", speedMode);
+    console.log("   This will trigger re-analysis of all images with new prompts");
+  }, [speedMode]);
   const [rewriteStyle, setRewriteStyle] = useState<RewriteStyle>('Descriptive');
   
   // State for independent image analysis
@@ -318,22 +324,26 @@ function App() {
         const imageDataUrls = await getImageDataUrls(subjectImages, speedMode);
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
         const model = envModel || "gemini-2.5-flash";  // Use 2.5-flash as default
-        // Use low temperature like the working Style analyzer
+        // Quality mode needs MORE tokens for comprehensive output
         const genCfg = speedMode === 'Quality'
-          ? { maxOutputTokens: 500, temperature: 0.3 }
+          ? { maxOutputTokens: 800, temperature: 0.3 }  // Increased for Quality mode comprehensive output
           : { maxOutputTokens: 400, temperature: 0.3 };
 
         // Fast mode: Short and concise (20-40 words)
         const instructionFast =
           "Describe the main subject/character in 20-40 words. Include: appearance, clothing, pose, expression. Be specific.";
 
-        // Quality mode: Detailed description (50-80 words) - Shortened to avoid MAX_TOKENS
+        // Quality mode: COMPREHENSIVE detailed description (100-150 words)
         const instructionQuality =
-          "Describe the main subject/character in detail (50-80 words). Include: physical traits (hair, eyes, face, body, age), clothing style and colors, pose and expression, distinctive features, and visible surroundings. Be specific and comprehensive.";
+          "Create a COMPREHENSIVE, highly detailed description of the main subject/character in 100-150 words. Be thorough and specific. Include: 1) Physical characteristics: detailed hair color/style/length, eye color and shape, facial features (nose, lips, cheeks, jawline, eyebrows), skin tone and texture, body type/build, height estimation, approximate age range. 2) Clothing: complete outfit description with specific garment types, colors (be specific like 'navy blue' not just 'blue'), materials/fabrics, fit and style, patterns or prints, condition (new/worn/damaged). 3) Accessories: jewelry, hats, bags, belts, watches, any worn items. 4) Pose and body language: exact positioning, gesture, stance, what they're doing. 5) Facial expression: emotion, mood, gaze direction. 6) Distinctive features: tattoos, scars, unique characteristics. 7) Context: immediate surroundings, what they're interacting with. Write as a flowing paragraph with rich, vivid details.";
 
         const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
 
-        console.log("🔍 Analyzing subject with simple, focused approach");
+        console.log("🔍 SUBJECT ANALYZER:");
+        console.log("   Speed mode:", speedMode);
+        console.log("   Using instruction:", speedMode === 'Quality' ? 'QUALITY (detailed)' : 'FAST (concise)');
+        console.log("   Instruction length:", instruction.length, "chars");
+        console.log("   Instruction preview:", instruction.substring(0, 80) + "...");
         const analyzedSubject = await generateWithImagesREST({ apiKey, model, text: instruction, imageDataUrls, generationConfig: genCfg });
 
         // Validate the response
@@ -376,23 +386,26 @@ function App() {
         const imageDataUrls = await getImageDataUrls(sceneImages, speedMode);
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
         const model = envModel || "gemini-2.5-flash";  // Use 2.5-flash as default
-        // Use same config as working Subject analyzer
+        // Quality mode needs MORE tokens for comprehensive output
         const genCfg = speedMode === 'Quality'
-          ? { maxOutputTokens: 500, temperature: 0.3 }
+          ? { maxOutputTokens: 700, temperature: 0.3 }  // Increased for Quality mode comprehensive output
           : { maxOutputTokens: 400, temperature: 0.3 };
 
         // Fast mode: Short and concise (15-30 words)
         const instructionFast =
           "Describe the scene/environment in 15-30 words. Include: location, lighting, atmosphere. Be specific.";
 
-        // Quality mode: Detailed description (40-60 words) - Shortened to avoid MAX_TOKENS
+        // Quality mode: COMPREHENSIVE detailed description (80-120 words)
         const instructionQuality =
-          "Describe the scene/environment in detail (40-60 words). Include: location/setting, architecture or landscape, lighting direction and quality, atmospheric conditions, background elements, and color mood. Be comprehensive.";
+          "Create a COMPREHENSIVE, highly detailed description of the scene/environment in 80-120 words. Be thorough and specific. Include: 1) Location and setting: exact type of place (indoor/outdoor, urban/rural, natural/built), specific location characteristics, scale and dimensions. 2) Architecture or landscape: building styles, structures, natural formations, vegetation types, terrain features, construction materials. 3) Lighting: direction and source (sunlight/artificial/mixed), quality (harsh/soft/diffused), color temperature (warm/cool), intensity, shadows cast, time of day indicators. 4) Atmosphere: weather conditions, air quality (clear/foggy/hazy), mood/feeling of the space, temperature suggestions. 5) Background elements: objects present, decorative details, textures visible, patterns. 6) Color palette: dominant colors, color relationships, saturation levels, overall color mood. 7) Depth and perspective: foreground/middleground/background elements. Write as a vivid, flowing paragraph.";
 
         const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
 
-        console.log("🏞️ Analyzing scene with simple prompt and examples");
-        console.log("📝 Scene instruction:", instruction.substring(0, 150) + "...");
+        console.log("🏞️ SCENE ANALYZER:");
+        console.log("   Speed mode:", speedMode);
+        console.log("   Using instruction:", speedMode === 'Quality' ? 'QUALITY (detailed)' : 'FAST (concise)');
+        console.log("   Instruction length:", instruction.length, "chars");
+        console.log("   Instruction preview:", instruction.substring(0, 80) + "...");
         const analyzedScene = await generateWithImagesREST({ apiKey, model, text: instruction, imageDataUrls, generationConfig: genCfg });
 
         // Validate the response
@@ -435,18 +448,25 @@ function App() {
         const imageDataUrls = await getImageDataUrls(styleImages, speedMode);
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
         const model = envModel || "gemini-2.5-flash";  // Use 2.5-flash as default
+        // Quality mode needs MORE tokens for comprehensive output
         const genCfg = speedMode === 'Quality'
-          ? { maxOutputTokens: 500, temperature: 0.3 }
+          ? { maxOutputTokens: 600, temperature: 0.3 }  // Increased for Quality mode comprehensive output
           : { maxOutputTokens: 400, temperature: 0.3 };
 
         // Fast mode: Very short style identification (3-8 words)
         const instructionFast =
           "Identify the artistic style in 3-8 words. Examples: 'anime style', 'photorealistic', 'watercolor'. Be concise.";
 
-        // Quality mode: Detailed style analysis (20-40 words) - Shortened to avoid MAX_TOKENS
+        // Quality mode: COMPREHENSIVE style analysis (60-90 words)
         const instructionQuality =
-          "Describe the artistic style in detail (20-40 words). Include: artistic approach, medium/technique, visual characteristics (colors, lines, shading), and any art movement influence. Be specific.";
+          "Create a COMPREHENSIVE, highly detailed analysis of the artistic style in 60-90 words. Be thorough and specific. Include: 1) Core artistic approach and genre: realistic, stylized, abstract, anime, cartoon, fine art, digital art, traditional media. 2) Medium and technique: specific materials used or simulated (oil paint, watercolor, digital 3D, pencil, ink, mixed media), application methods, brush work style, blending techniques. 3) Visual characteristics: detailed color palette (saturation, temperature, harmony), line quality and weight (thick/thin, clean/sketchy, hard/soft edges), shading and lighting approach (cel-shaded, soft gradients, dramatic contrast), texture rendering, level of detail. 4) Art movement or style influence: impressionism, surrealism, pop art, cyberpunk, art nouveau, minimalism, baroque, contemporary trends. 5) Technical execution: skill level visible, polish and finish, intentional stylistic choices. Write as an analytical paragraph.";
         const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
+
+        console.log("🎨 STYLE ANALYZER:");
+        console.log("   Speed mode:", speedMode);
+        console.log("   Using instruction:", speedMode === 'Quality' ? 'QUALITY (detailed)' : 'FAST (concise)');
+        console.log("   Instruction length:", instruction.length, "chars");
+        console.log("   Instruction preview:", instruction.substring(0, 80) + "...");
 
         const analyzedStyle = await generateWithImagesREST({ apiKey, model, text: instruction, imageDataUrls, generationConfig: genCfg });
 
