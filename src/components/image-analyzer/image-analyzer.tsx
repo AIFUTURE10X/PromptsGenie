@@ -246,7 +246,7 @@ export function ImageAnalyzer() {
                       <textarea
                         readOnly
                         value={combinedPrompt}
-                        className="w-full h-32 p-4 rounded-lg bg-black/20 border border-black/30 text-white resize-none focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
+                        className="w-full min-h-32 p-4 rounded-lg bg-black/20 border border-black/30 text-white resize-y focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
                         rows={4}
                       />
                     </CardContent>
