@@ -83,7 +83,7 @@ export function ImageAnalyzer({
         {/* LEFT COLUMN: Image Uploads */}
         <div className="px-4 sm:px-6 lg:pl-0 lg:pr-0">
           <Card className="bg-[#F77000] backdrop-blur-sm border-[#F77000]">
-            <CardContent className="p-3 sm:p-4 space-y-3 sm:space-y-4">
+            <CardContent className="p-2 sm:p-3 space-y-2 sm:space-y-3">
               {/* Master Toggle Button */}
               <div className="flex items-center justify-between pb-2 border-b border-white/20">
                 <h3 className="text-sm font-semibold text-white">Upload Images</h3>
