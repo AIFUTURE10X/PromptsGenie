@@ -167,37 +167,39 @@ export function ImageAnalyzer() {
 
         {/* RIGHT COLUMN: Results */}
         <div className="space-y-4 px-4 lg:pl-0 lg:pr-0">
-          {/* Analyzer Cards */}
-          <AnalyzerCard
-            type="subject"
-            title="Subject Analysis"
-            description="Analyzes the main subject, appearance, and pose"
-            imageData={subjectImage}
-            speedMode={speedMode}
-            autoAnalyze={autoAnalyze}
-            icon={<User className="w-5 h-5 text-primary" />}
-            onPromptChange={setSubjectPrompt}
-          />
-          <AnalyzerCard
-            type="scene"
-            title="Scene Analysis"
-            description="Analyzes the environment, lighting, and atmosphere"
-            imageData={sceneImage}
-            speedMode={speedMode}
-            autoAnalyze={autoAnalyze}
-            icon={<ImageIcon className="w-5 h-5 text-primary" />}
-            onPromptChange={setScenePrompt}
-          />
-          <AnalyzerCard
-            type="style"
-            title="Style Analysis"
-            description="Identifies artistic style and visual characteristics"
-            imageData={styleImage}
-            speedMode={speedMode}
-            autoAnalyze={autoAnalyze}
-            icon={<Palette className="w-5 h-5 text-primary" />}
-            onPromptChange={setStylePrompt}
-          />
+          {/* Analyzer Cards - Horizontal Row */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <AnalyzerCard
+              type="subject"
+              title="Subject Analysis"
+              description="Analyzes the main subject, appearance, and pose"
+              imageData={subjectImage}
+              speedMode={speedMode}
+              autoAnalyze={autoAnalyze}
+              icon={<User className="w-5 h-5 text-primary" />}
+              onPromptChange={setSubjectPrompt}
+            />
+            <AnalyzerCard
+              type="scene"
+              title="Scene Analysis"
+              description="Analyzes the environment, lighting, and atmosphere"
+              imageData={sceneImage}
+              speedMode={speedMode}
+              autoAnalyze={autoAnalyze}
+              icon={<ImageIcon className="w-5 h-5 text-primary" />}
+              onPromptChange={setScenePrompt}
+            />
+            <AnalyzerCard
+              type="style"
+              title="Style Analysis"
+              description="Identifies artistic style and visual characteristics"
+              imageData={styleImage}
+              speedMode={speedMode}
+              autoAnalyze={autoAnalyze}
+              icon={<Palette className="w-5 h-5 text-primary" />}
+              onPromptChange={setStylePrompt}
+            />
+          </div>
 
           {/* Combined Prompts Section */}
           <AnimatePresence>
