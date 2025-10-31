@@ -1,22 +1,12 @@
 const { GoogleAuth } = require('google-auth-library');
 
 async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1', seed) {
-  // Enhanced diagnostics - Check all GOOGLE env vars
-  console.log('🔍 DEBUG: All GOOGLE environment variables:',
-    Object.keys(process.env).filter(k => k.startsWith('GOOGLE')));
-
-  // Vertex AI Imagen 3 endpoint
+  // Vertex AI Imagen endpoint configuration
   const projectId = process.env.GOOGLE_CLOUD_PROJECT_ID;
   const location = process.env.GOOGLE_CLOUD_LOCATION || 'us-central1';
 
-  console.log('🔍 DEBUG: GOOGLE_CLOUD_PROJECT_ID raw value:', projectId);
-  console.log('🔍 DEBUG: Variable type:', typeof projectId);
-  console.log('🔍 DEBUG: Variable length:', projectId ? projectId.length : 0);
-  console.log('🔍 DEBUG: Truthiness check:', !!projectId);
-
   if (!projectId) {
-    console.error('❌ CRITICAL: GOOGLE_CLOUD_PROJECT_ID is missing!');
-    console.error('Available env vars:', Object.keys(process.env).length);
+    console.error('❌ GOOGLE_CLOUD_PROJECT_ID environment variable is required');
     throw new Error('GOOGLE_CLOUD_PROJECT_ID environment variable is required for Vertex AI');
   }
 
@@ -38,19 +28,11 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
       throw new Error('GOOGLE_APPLICATION_CREDENTIALS_JSON environment variable is required');
     }
 
-    console.log('🔍 DEBUG: Credentials JSON length:', credentialsJSON.length);
-    console.log('🔍 DEBUG: First 100 chars:', credentialsJSON.substring(0, 100));
-    console.log('🔍 DEBUG: Around position 765:', credentialsJSON.substring(760, 770));
-    console.log('🔍 DEBUG: Last 50 chars:', credentialsJSON.substring(credentialsJSON.length - 50));
-
     let credentials;
     try {
       credentials = JSON.parse(credentialsJSON);
-      console.log('✅ JSON parsed successfully');
-      console.log('🔍 Parsed keys:', Object.keys(credentials));
     } catch (parseError) {
-      console.error('❌ JSON parse failed:', parseError.message);
-      console.error('🔍 Character at error position:', credentialsJSON.charAt(parseError.message.match(/\d+/)?.[0] || 0));
+      console.error('❌ Failed to parse service account credentials:', parseError.message);
       throw new Error(`Invalid JSON in GOOGLE_APPLICATION_CREDENTIALS_JSON: ${parseError.message}`);
     }
 
