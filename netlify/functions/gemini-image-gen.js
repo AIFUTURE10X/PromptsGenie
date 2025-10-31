@@ -1,12 +1,23 @@
-async function generateImagesWithGemini(prompt, count = 1, aspectRatio = '1:1', seed) {
-  const model = 'imagen-3.0-generate-001'; // Gemini's image generation model
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:predict?key=${process.env.GOOGLE_API_KEY}`;
+async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1', seed) {
+  // Vertex AI Imagen 3 endpoint
+  const projectId = process.env.GOOGLE_CLOUD_PROJECT_ID;
+  const location = process.env.GOOGLE_CLOUD_LOCATION || 'us-central1';
+  const apiKey = process.env.GOOGLE_API_KEY;
 
-  console.log('🎨 Gemini Image Generation Request:', {
+  if (!projectId) {
+    throw new Error('GOOGLE_CLOUD_PROJECT_ID environment variable is required for Vertex AI');
+  }
+
+  // Vertex AI Imagen 3 endpoint
+  const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/imagen-3.0-generate-001:predict`;
+
+  console.log('🎨 Vertex AI Image Generation Request:', {
     prompt: prompt.substring(0, 100) + '...',
     count,
     aspectRatio,
-    seed
+    seed,
+    projectId,
+    location
   });
 
   // Map aspect ratios to Imagen format
@@ -44,6 +55,7 @@ async function generateImagesWithGemini(prompt, count = 1, aspectRatio = '1:1', 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
         },
         body: JSON.stringify(requestBody)
       })
@@ -66,7 +78,7 @@ async function generateImagesWithGemini(prompt, count = 1, aspectRatio = '1:1', 
       const result = await response.json();
       console.log(`✅ Image ${i + 1} generated successfully`);
 
-      // Extract image data from response
+      // Extract image data from Vertex AI response
       if (result.predictions && result.predictions[0]) {
         images.push({
           index: i,
@@ -142,7 +154,7 @@ exports.handler = async (event, context) => {
     }
 
     console.log('📤 Generating images...');
-    const images = await generateImagesWithGemini(prompt, count, aspectRatio, seed);
+    const images = await generateImagesWithVertexAI(prompt, count, aspectRatio, seed);
     console.log(`✅ Successfully generated ${images.length} images`);
 
     return {
