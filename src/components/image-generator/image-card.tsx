@@ -107,7 +107,7 @@ export function ImageCard({ imageData, mimeType, aspectRatio, isGenerating, inde
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3, delay: index * 0.1 }}
-      className={`relative bg-black/20 rounded-lg overflow-hidden border-2 border-black/30 ${getAspectRatioClass(aspectRatio)} flex items-center justify-center w-full`}
+      className="relative bg-black/20 rounded-lg overflow-hidden border-2 border-black/30 aspect-square flex items-center justify-center w-full"
     >
       {isGenerating ? (
         <div className="flex flex-col items-center justify-center gap-3">
@@ -119,7 +119,7 @@ export function ImageCard({ imageData, mimeType, aspectRatio, isGenerating, inde
           {/* Wrap image in anchor tag for GLightbox */}
           <a
             href={`data:${mimeType || 'image/png'};base64,${imageData}`}
-            className="glightbox-image w-full h-full flex items-center justify-center"
+            className="glightbox-image w-full h-full flex items-center justify-center p-2"
             data-type="image"
             data-title={`Generated Image ${index + 1}`}
             data-description={`${aspectRatio} aspect ratio`}
@@ -128,8 +128,9 @@ export function ImageCard({ imageData, mimeType, aspectRatio, isGenerating, inde
             <img
               src={`data:${mimeType || 'image/png'};base64,${imageData}`}
               alt={`Generated image ${index + 1}`}
-              className="w-full h-full object-contain cursor-pointer"
+              className="max-w-full max-h-full object-contain cursor-pointer"
               loading="lazy"
+              style={{ aspectRatio: aspectRatio.replace(':', '/') }}
             />
           </a>
 
