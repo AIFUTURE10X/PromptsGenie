@@ -43,6 +43,8 @@ function App() {
     console.log("🔄 Prompt state changed:", prompt ? `"${prompt.substring(0, 50)}..."` : "EMPTY");
   }, [prompt]);
 
+  // Test comment to verify auto-apply is working
+
   useEffect(() => {
     console.log("🔄 LastSource state changed:", lastSource);
   }, [lastSource]);
