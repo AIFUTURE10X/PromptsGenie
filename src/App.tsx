@@ -1011,7 +1011,7 @@ function App() {
       </div>
 
       {/* Content Area */}
-      <div className="max-w-7xl mx-auto px-4 pb-6">
+      <div className="pb-6">
         {currentMode === 'analyzer' ? (
           /* Image Analyzer Mode */
           <div className="min-h-screen">
