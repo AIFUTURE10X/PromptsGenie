@@ -18,7 +18,7 @@ export function ImageCard({ imageData, mimeType, aspectRatio, isGenerating, inde
   const [copied, setCopied] = useState(false);
   const lightboxRef = useRef<any>(null);
 
-  // Map aspect ratio strings to Tailwind aspect ratio classes
+  // Map aspect ratio strings to Tailwind aspect ratio classes (only Imagen-supported ratios)
   const getAspectRatioClass = (ratio: string) => {
     const aspectMap: Record<string, string> = {
       '1:1': 'aspect-square',
@@ -26,7 +26,6 @@ export function ImageCard({ imageData, mimeType, aspectRatio, isGenerating, inde
       '9:16': 'aspect-[9/16]',
       '4:3': 'aspect-[4/3]',
       '3:4': 'aspect-[3/4]',
-      '21:9': 'aspect-[21/9]',
     };
     return aspectMap[ratio] || 'aspect-square';
   };

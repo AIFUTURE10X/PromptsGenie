@@ -10,15 +10,14 @@ const aspectRatios = [
   { value: '16:9', label: '16:9', icon: '▭' },
   { value: '9:16', label: '9:16', icon: '▯' },
   { value: '4:3', label: '4:3', icon: '▬' },
-  { value: '3:4', label: '3:4', icon: '▮' },
-  { value: '21:9', label: '21:9', icon: '▬' }
+  { value: '3:4', label: '3:4', icon: '▮' }
 ];
 
 export function AspectRatioSelector({ selectedRatio, onRatioChange }: AspectRatioSelectorProps) {
   return (
     <div className="space-y-2">
       <label className="text-xs sm:text-sm font-semibold text-white uppercase">Aspect Ratio</label>
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
         {aspectRatios.map((ratio) => (
           <motion.button
             key={ratio.value}

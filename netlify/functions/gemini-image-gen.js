@@ -61,14 +61,13 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
 
   console.log(`🎨 Using model: ${modelVersion} (Imagen ${useImagen3 ? '3' : '2'}${forceImagen2 ? ' - FALLBACK MODE' : ''})`);
 
-  // Map aspect ratios to Imagen format
+  // Map aspect ratios to Imagen format (only Imagen-supported ratios)
   const aspectRatioMap = {
     '1:1': '1:1',
     '16:9': '16:9',
     '9:16': '9:16',
     '4:3': '4:3',
-    '3:4': '3:4',
-    '21:9': '21:9'
+    '3:4': '3:4'
   };
 
   const imagePromises = [];
