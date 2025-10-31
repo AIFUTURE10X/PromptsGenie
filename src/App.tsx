@@ -326,16 +326,16 @@ function App() {
         const model = envModel || "gemini-2.5-flash";  // Use 2.5-flash as default
         // Quality mode needs MORE tokens for comprehensive output
         const genCfg = speedMode === 'Quality'
-          ? { maxOutputTokens: 800, temperature: 0.3 }  // Increased for Quality mode comprehensive output
+          ? { maxOutputTokens: 600, temperature: 0.3 }  // Balanced for Quality mode
           : { maxOutputTokens: 400, temperature: 0.3 };
 
         // Fast mode: Short and concise (20-40 words)
         const instructionFast =
           "Describe the main subject/character in 20-40 words. Include: appearance, clothing, pose, expression. Be specific.";
 
-        // Quality mode: COMPREHENSIVE detailed description (100-150 words)
+        // Quality mode: Detailed but concise (40-60 words) - optimized to avoid MAX_TOKENS
         const instructionQuality =
-          "Create a COMPREHENSIVE, highly detailed description of the main subject/character in 100-150 words. Be thorough and specific. Include: 1) Physical characteristics: detailed hair color/style/length, eye color and shape, facial features (nose, lips, cheeks, jawline, eyebrows), skin tone and texture, body type/build, height estimation, approximate age range. 2) Clothing: complete outfit description with specific garment types, colors (be specific like 'navy blue' not just 'blue'), materials/fabrics, fit and style, patterns or prints, condition (new/worn/damaged). 3) Accessories: jewelry, hats, bags, belts, watches, any worn items. 4) Pose and body language: exact positioning, gesture, stance, what they're doing. 5) Facial expression: emotion, mood, gaze direction. 6) Distinctive features: tattoos, scars, unique characteristics. 7) Context: immediate surroundings, what they're interacting with. Write as a flowing paragraph with rich, vivid details.";
+          "Describe the main subject/character in detail (40-60 words). Include: physical traits (hair, eyes, face, skin, body type, age), complete clothing description with colors and style, accessories, exact pose and body language, facial expression and mood, distinctive features. Be specific and comprehensive.";
 
         const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
 
@@ -388,16 +388,16 @@ function App() {
         const model = envModel || "gemini-2.5-flash";  // Use 2.5-flash as default
         // Quality mode needs MORE tokens for comprehensive output
         const genCfg = speedMode === 'Quality'
-          ? { maxOutputTokens: 700, temperature: 0.3 }  // Increased for Quality mode comprehensive output
+          ? { maxOutputTokens: 600, temperature: 0.3 }  // Balanced for Quality mode
           : { maxOutputTokens: 400, temperature: 0.3 };
 
         // Fast mode: Short and concise (15-30 words)
         const instructionFast =
           "Describe the scene/environment in 15-30 words. Include: location, lighting, atmosphere. Be specific.";
 
-        // Quality mode: COMPREHENSIVE detailed description (80-120 words)
+        // Quality mode: Detailed but concise (35-50 words) - optimized to avoid MAX_TOKENS
         const instructionQuality =
-          "Create a COMPREHENSIVE, highly detailed description of the scene/environment in 80-120 words. Be thorough and specific. Include: 1) Location and setting: exact type of place (indoor/outdoor, urban/rural, natural/built), specific location characteristics, scale and dimensions. 2) Architecture or landscape: building styles, structures, natural formations, vegetation types, terrain features, construction materials. 3) Lighting: direction and source (sunlight/artificial/mixed), quality (harsh/soft/diffused), color temperature (warm/cool), intensity, shadows cast, time of day indicators. 4) Atmosphere: weather conditions, air quality (clear/foggy/hazy), mood/feeling of the space, temperature suggestions. 5) Background elements: objects present, decorative details, textures visible, patterns. 6) Color palette: dominant colors, color relationships, saturation levels, overall color mood. 7) Depth and perspective: foreground/middleground/background elements. Write as a vivid, flowing paragraph.";
+          "Describe the scene/environment in detail (35-50 words). Include: location and setting type, architecture or landscape features, lighting direction and quality, atmospheric conditions, key background elements, color palette and mood. Be comprehensive and specific.";
 
         const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
 
@@ -450,16 +450,16 @@ function App() {
         const model = envModel || "gemini-2.5-flash";  // Use 2.5-flash as default
         // Quality mode needs MORE tokens for comprehensive output
         const genCfg = speedMode === 'Quality'
-          ? { maxOutputTokens: 600, temperature: 0.3 }  // Increased for Quality mode comprehensive output
+          ? { maxOutputTokens: 500, temperature: 0.3 }  // Balanced for Quality mode
           : { maxOutputTokens: 400, temperature: 0.3 };
 
         // Fast mode: Very short style identification (3-8 words)
         const instructionFast =
           "Identify the artistic style in 3-8 words. Examples: 'anime style', 'photorealistic', 'watercolor'. Be concise.";
 
-        // Quality mode: COMPREHENSIVE style analysis (60-90 words)
+        // Quality mode: Detailed analysis (25-40 words) - optimized to avoid MAX_TOKENS
         const instructionQuality =
-          "Create a COMPREHENSIVE, highly detailed analysis of the artistic style in 60-90 words. Be thorough and specific. Include: 1) Core artistic approach and genre: realistic, stylized, abstract, anime, cartoon, fine art, digital art, traditional media. 2) Medium and technique: specific materials used or simulated (oil paint, watercolor, digital 3D, pencil, ink, mixed media), application methods, brush work style, blending techniques. 3) Visual characteristics: detailed color palette (saturation, temperature, harmony), line quality and weight (thick/thin, clean/sketchy, hard/soft edges), shading and lighting approach (cel-shaded, soft gradients, dramatic contrast), texture rendering, level of detail. 4) Art movement or style influence: impressionism, surrealism, pop art, cyberpunk, art nouveau, minimalism, baroque, contemporary trends. 5) Technical execution: skill level visible, polish and finish, intentional stylistic choices. Write as an analytical paragraph.";
+          "Describe the artistic style in detail (25-40 words). Include: core artistic approach, medium and technique, visual characteristics (colors, line quality, shading style), and any art movement influence. Be specific and analytical.";
         const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
 
         console.log("🎨 STYLE ANALYZER:");
