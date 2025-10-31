@@ -113,7 +113,9 @@ export function ImageCard({ imageData, mimeType, aspectRatio, isGenerating, inde
           <a
             href={`data:${mimeType || 'image/png'};base64,${imageData}`}
             className="glightbox-image w-full h-full flex items-center justify-center"
-            data-glightbox={`title: Generated Image ${index + 1}; description: ${aspectRatio} aspect ratio - Click and drag to pan, scroll to zoom`}
+            data-type="image"
+            data-title={`Generated Image ${index + 1}`}
+            data-description={`${aspectRatio} aspect ratio`}
             data-gallery="generated-images"
           >
             <img
