@@ -125,11 +125,11 @@ const ImageUploadComponent = ({ onImageSelect, selectedImage, onClear, label }: 
                       alt="Selected image"
                       loading="lazy"
                       decoding="async"
-                      className="w-full h-auto max-h-96 object-contain bg-black/5 transition-opacity group-hover:opacity-90"
+                      className="w-full h-auto max-h-64 sm:max-h-80 md:max-h-96 object-contain bg-black/5 transition-opacity group-hover:opacity-90"
                     />
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                      <div className="bg-black/50 backdrop-blur-sm rounded-full p-3">
-                        <Maximize2 className="w-6 h-6 text-white" />
+                      <div className="bg-black/50 backdrop-blur-sm rounded-full p-2 sm:p-3">
+                        <Maximize2 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                       </div>
                     </div>
                   </div>
