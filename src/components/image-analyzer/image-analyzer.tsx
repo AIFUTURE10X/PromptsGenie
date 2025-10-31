@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Zap, Sparkles, User, ImageIcon, Palette } from 'lucide-react';
+import { Zap, Sparkles, User, ImageIcon, Palette, Copy, Check } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ImageUpload } from './image-upload';
 import { AnalyzerCard } from './analyzer-card';
 import { Button } from '../ui/button';
-import { Card, CardContent } from '../ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import type { SpeedMode } from '../../lib/schemas';
 
 export function ImageAnalyzer() {
@@ -23,6 +24,14 @@ export function ImageAnalyzer() {
   const [subjectPrompt, setSubjectPrompt] = useState<string | null>(null);
   const [scenePrompt, setScenePrompt] = useState<string | null>(null);
   const [stylePrompt, setStylePrompt] = useState<string | null>(null);
+
+  // Combined prompt copy state
+  const [copiedCombined, setCopiedCombined] = useState(false);
+
+  // Combine prompts
+  const combinedPrompt = [subjectPrompt, scenePrompt, stylePrompt]
+    .filter(Boolean)
+    .join(' ') || '';
 
   // Image handlers
   const handleSubjectImageSelect = (imageData: string, file: File) => {
@@ -46,6 +55,14 @@ export function ImageAnalyzer() {
 
   const toggleAutoAnalyze = () => {
     setAutoAnalyze((prev) => !prev);
+  };
+
+  const handleCopyCombined = async () => {
+    if (combinedPrompt) {
+      await navigator.clipboard.writeText(combinedPrompt);
+      setCopiedCombined(true);
+      setTimeout(() => setCopiedCombined(false), 2000);
+    }
   };
 
   return (
@@ -186,6 +203,57 @@ export function ImageAnalyzer() {
               onPromptChange={setStylePrompt}
             />
           </div>
+
+          {/* Combined Prompt Card */}
+          <AnimatePresence>
+            {combinedPrompt && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Card className="bg-[#F77000] backdrop-blur-sm border-[#F77000]">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-xl text-white">Combined Prompt</CardTitle>
+                        <p className="text-sm text-white/80 mt-1">
+                          All three analyses combined into one prompt
+                        </p>
+                      </div>
+                      <Button
+                        onClick={handleCopyCombined}
+                        variant="secondary"
+                        size="sm"
+                        className="flex items-center gap-2"
+                      >
+                        {copiedCombined ? (
+                          <>
+                            <Check className="w-4 h-4" />
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-4 h-4" />
+                            Copy All
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <textarea
+                      readOnly
+                      value={combinedPrompt}
+                      className="w-full min-h-32 p-4 rounded-lg bg-black/20 border border-black/30 text-white resize-y focus:outline-none focus:ring-2 focus:ring-white/50"
+                      rows={4}
+                    />
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>
