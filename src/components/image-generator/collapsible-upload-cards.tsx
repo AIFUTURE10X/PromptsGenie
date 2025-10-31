@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { Upload, User, MapPin, Palette, ChevronDown, ChevronUp, Plus } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ImageUpload } from '../image-analyzer/image-upload';
 import { Card, CardContent } from '../ui/card';
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '../ui/collapsible';
 import { cn } from '../../lib/utils';
 
 export interface UploadedFile {
@@ -129,62 +128,68 @@ export function CollapsibleUploadCards({
         </button>
       </div>
 
-      {/* Three Upload Cards */}
+      {/* Three Upload Cards - Synchronized Collapse */}
       <div className="space-y-3">
         {cardSections.map((section) => {
           const Icon = section.icon;
 
           return (
-            <Collapsible key={section.id} open={isExpanded}>
-              <motion.div
-                initial={false}
-                animate={{
-                  height: isExpanded ? 'auto' : '60px',
-                }}
-                transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className="overflow-hidden"
-              >
-                <Card className="bg-[#F77000] border-2 border-dashed border-black">
-                  <CardContent className="p-4">
-                    {/* Card Header - Always Visible */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="rounded-full p-2 bg-black/10">
-                          <Icon className="w-5 h-5 text-black" />
-                        </div>
-                        <h3 className="text-sm font-bold uppercase tracking-wide text-black">
-                          {section.title}
-                        </h3>
+            <motion.div
+              key={section.id}
+              initial={false}
+              animate={{
+                height: isExpanded ? 'auto' : '60px',
+                scaleX: isExpanded ? 1 : 0.98,
+              }}
+              transition={{
+                duration: 0.3,
+                ease: 'easeInOut',
+              }}
+              style={{ originX: 1 }} // Right side origin for right-to-left effect
+              className="overflow-hidden"
+            >
+              <Card className="bg-[#F77000] border-2 border-dashed border-black">
+                <CardContent className="p-4">
+                  {/* Card Header - Always Visible */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-full p-2 bg-black/10">
+                        <Icon className="w-5 h-5 text-black" />
                       </div>
-
-                      {/* Plus button - only visible when collapsed */}
-                      <motion.div
-                        initial={false}
-                        animate={{
-                          opacity: isExpanded ? 0 : 1,
-                          scale: isExpanded ? 0.8 : 1,
-                        }}
-                        transition={{ duration: 0.2 }}
-                        className={cn(
-                          'rounded-full p-1.5 bg-black/10 hover:bg-black/20 transition-colors cursor-pointer',
-                          isExpanded && 'pointer-events-none'
-                        )}
-                        onClick={() => !isExpanded && setIsExpanded(true)}
-                        role="button"
-                        tabIndex={isExpanded ? -1 : 0}
-                        aria-label={`Add ${section.title.toLowerCase()}`}
-                      >
-                        <Plus className="w-4 h-4 text-black" />
-                      </motion.div>
+                      <h3 className="text-sm font-bold uppercase tracking-wide text-black">
+                        {section.title}
+                      </h3>
                     </div>
 
-                    {/* Card Content - Only Visible When Expanded */}
-                    <CollapsibleContent>
+                    {/* Plus button - only visible when collapsed */}
+                    <motion.div
+                      initial={false}
+                      animate={{
+                        opacity: isExpanded ? 0 : 1,
+                        scale: isExpanded ? 0.8 : 1,
+                      }}
+                      transition={{ duration: 0.2 }}
+                      className={cn(
+                        'rounded-full p-1.5 bg-black/10 hover:bg-black/20 transition-colors cursor-pointer',
+                        isExpanded && 'pointer-events-none'
+                      )}
+                      onClick={() => !isExpanded && setIsExpanded(true)}
+                      role="button"
+                      tabIndex={isExpanded ? -1 : 0}
+                      aria-label={`Add ${section.title.toLowerCase()}`}
+                    >
+                      <Plus className="w-4 h-4 text-black" />
+                    </motion.div>
+                  </div>
+
+                  {/* Card Content - Only Visible When Expanded */}
+                  <AnimatePresence initial={false}>
+                    {isExpanded && (
                       <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.3, delay: 0.1 }}
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3, ease: 'easeInOut' }}
                         className="mt-4"
                       >
                         <ImageUpload
@@ -194,11 +199,11 @@ export function CollapsibleUploadCards({
                           label={section.label}
                         />
                       </motion.div>
-                    </CollapsibleContent>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </Collapsible>
+                    )}
+                  </AnimatePresence>
+                </CardContent>
+              </Card>
+            </motion.div>
           );
         })}
       </div>
