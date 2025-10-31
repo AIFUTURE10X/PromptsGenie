@@ -995,8 +995,39 @@ function App() {
         <BrandHeader logoSrc="Genie.png" />
         
         {/* Mode Toggle Navigation */}
-        <div className="flex justify-center items-center mt-4 mb-6 gap-3">
+        <div className="flex justify-center items-center mt-4 mb-6">
           <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-1 flex gap-1">
+            {/* Settings Buttons - Only visible in Analyzer mode */}
+            {currentMode === 'analyzer' && (
+              <>
+                <button
+                  onClick={toggleSpeedMode}
+                  className={`px-4 py-2 rounded-md font-medium text-sm transition-all flex items-center gap-2 ${
+                    speedMode === 'Fast'
+                      ? 'bg-gray-700 text-white'
+                      : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  {speedMode === 'Fast' ? 'Fast' : 'Quality'}
+                </button>
+                <button
+                  onClick={toggleAutoAnalyze}
+                  className={`px-4 py-2 rounded-md font-medium text-sm transition-all flex items-center gap-2 ${
+                    autoAnalyzeImageAnalyzer
+                      ? 'bg-gray-700 text-white'
+                      : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  {autoAnalyzeImageAnalyzer ? 'Auto' : 'Manual'}
+                </button>
+              </>
+            )}
             <button
               onClick={() => setCurrentMode('analyzer')}
               className={`px-6 py-2 rounded-md font-medium transition-all ${
@@ -1018,38 +1049,6 @@ function App() {
               Storyboard Creator
             </button>
           </div>
-
-          {/* Settings Buttons - Only visible in Analyzer mode - Left Side */}
-          {currentMode === 'analyzer' && (
-            <div className="flex gap-2">
-              <button
-                onClick={toggleSpeedMode}
-                className={`px-4 py-2 rounded-md font-medium text-sm border transition-all flex items-center gap-2 ${
-                  speedMode === 'Fast'
-                    ? 'bg-gray-700 border-gray-600 text-white'
-                    : 'bg-gray-800/50 border-gray-700 text-gray-300 hover:text-white hover:bg-gray-700/50'
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                {speedMode === 'Fast' ? 'Fast' : 'Quality'}
-              </button>
-              <button
-                onClick={toggleAutoAnalyze}
-                className={`px-4 py-2 rounded-md font-medium text-sm border transition-all flex items-center gap-2 ${
-                  autoAnalyzeImageAnalyzer
-                    ? 'bg-gray-700 border-gray-600 text-white'
-                    : 'bg-gray-800/50 border-gray-700 text-gray-300 hover:text-white hover:bg-gray-700/50'
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                {autoAnalyzeImageAnalyzer ? 'Auto' : 'Manual'}
-              </button>
-            </div>
-          )}
         </div>
       </div>
 
