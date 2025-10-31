@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Download, Copy, Check, Loader2 } from 'lucide-react';
 import { Button } from '../ui/button';
+import GLightbox from 'glightbox';
+import 'glightbox/dist/css/glightbox.min.css';
 
 interface ImageCardProps {
   imageData?: string;
@@ -13,6 +15,8 @@ interface ImageCardProps {
 
 export function ImageCard({ imageData, mimeType, aspectRatio, isGenerating, index }: ImageCardProps) {
   const [copied, setCopied] = useState(false);
+  const lightboxRef = useRef<any>(null);
+  const imageId = `image-${index}`;
 
   // Map aspect ratio strings to Tailwind aspect ratio classes
   const getAspectRatioClass = (ratio: string) => {
@@ -54,6 +58,39 @@ export function ImageCard({ imageData, mimeType, aspectRatio, isGenerating, inde
     }
   };
 
+  // Initialize GLightbox when image data is available
+  useEffect(() => {
+    if (imageData && !isGenerating) {
+      // Clean up previous instance if it exists
+      if (lightboxRef.current) {
+        lightboxRef.current.destroy();
+      }
+
+      // Initialize new GLightbox instance
+      lightboxRef.current = GLightbox({
+        selector: `[data-glightbox="${imageId}"]`,
+        touchNavigation: true,
+        loop: false,
+        autoplayVideos: false,
+        zoomable: true,
+        draggable: true,
+        closeButton: true,
+        closeOnOutsideClick: true,
+        svg: {
+          close: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
+        },
+      });
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (lightboxRef.current) {
+        lightboxRef.current.destroy();
+        lightboxRef.current = null;
+      }
+    };
+  }, [imageData, isGenerating, imageId]);
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -71,8 +108,11 @@ export function ImageCard({ imageData, mimeType, aspectRatio, isGenerating, inde
           <img
             src={`data:${mimeType || 'image/png'};base64,${imageData}`}
             alt={`Generated image ${index + 1}`}
-            className="w-full h-full object-contain"
+            className="w-full h-full object-contain cursor-pointer"
             loading="lazy"
+            data-glightbox={imageId}
+            data-title={`Generated Image ${index + 1} (${aspectRatio})`}
+            data-description={`Click and drag to pan, scroll to zoom`}
           />
           <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
             <Button
