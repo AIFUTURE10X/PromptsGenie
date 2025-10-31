@@ -40,3 +40,8 @@ supabase/
 
 # Claude Code settings (local only)
 .claude/
+
+# Generated/test images (don't commit these to save bandwidth)
+public/storyboards/
+public/test-images/
+public/generated/

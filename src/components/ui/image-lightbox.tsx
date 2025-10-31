@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, memo } from 'react';
 import { X, ZoomIn, ZoomOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from './button';
@@ -10,7 +10,7 @@ interface ImageLightboxProps {
   onClose: () => void;
 }
 
-export function ImageLightbox({ src, alt = 'Image', isOpen, onClose }: ImageLightboxProps) {
+const ImageLightboxComponent = ({ src, alt = 'Image', isOpen, onClose }: ImageLightboxProps) => {
   // Close on Escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -70,6 +70,8 @@ export function ImageLightbox({ src, alt = 'Image', isOpen, onClose }: ImageLigh
             <img
               src={src}
               alt={alt}
+              loading="eager"
+              decoding="async"
               className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
             />
           </motion.div>
@@ -82,4 +84,7 @@ export function ImageLightbox({ src, alt = 'Image', isOpen, onClose }: ImageLigh
       )}
     </AnimatePresence>
   );
-}
+};
+
+// Export memoized version to prevent unnecessary re-renders
+export const ImageLightbox = memo(ImageLightboxComponent);

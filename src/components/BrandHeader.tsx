@@ -33,7 +33,12 @@ export default function BrandHeader({
             {!logoFailed ? (
               <img
                 src={srcToUse}
-                alt="Brand logo"
+                alt="PromptsGenie - AI Prompt Generator"
+                loading="eager"
+                fetchpriority="high"
+                decoding="async"
+                width="48"
+                height="48"
                 className="h-10 w-10 md:h-12 md:w-12 object-cover"
                 onError={() => {
                   if (!fallbackTried) {

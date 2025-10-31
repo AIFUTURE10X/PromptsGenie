@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, memo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, X, Maximize2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,7 +15,7 @@ interface ImageUploadProps {
   label?: string;
 }
 
-export function ImageUpload({ onImageSelect, selectedImage, onClear, label }: ImageUploadProps) {
+const ImageUploadComponent = ({ onImageSelect, selectedImage, onClear, label }: ImageUploadProps) => {
   const [error, setError] = useState<string | null>(null);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
@@ -76,7 +76,7 @@ export function ImageUpload({ onImageSelect, selectedImage, onClear, label }: Im
               }`}
             >
               <CardContent className="flex flex-col items-center justify-center py-12 px-6">
-                <input {...getInputProps()} />
+                <input {...getInputProps()} aria-label={label || "Upload an image"} />
                 <div
                   className={`rounded-full p-4 mb-4 transition-colors ${
                     isDragActive ? 'bg-black/20' : 'bg-black/10'
@@ -109,7 +109,9 @@ export function ImageUpload({ onImageSelect, selectedImage, onClear, label }: Im
                 <div className="relative">
                   <img
                     src={`data:image/jpeg;base64,${selectedImage}`}
-                    alt="Selected"
+                    alt="Selected image"
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-auto max-h-96 object-contain bg-black/5 cursor-pointer transition-opacity group-hover:opacity-90"
                     onClick={() => setIsLightboxOpen(true)}
                   />
@@ -156,4 +158,7 @@ export function ImageUpload({ onImageSelect, selectedImage, onClear, label }: Im
       </AnimatePresence>
     </div>
   );
-}
+};
+
+// Export memoized version to prevent unnecessary re-renders
+export const ImageUpload = memo(ImageUploadComponent);

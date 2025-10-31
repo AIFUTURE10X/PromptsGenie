@@ -10,9 +10,21 @@
   framework = "#custom"
 
 [build.environment]
-  NODE_VERSION = "18"
+  NODE_VERSION = "20"
   # Disable secrets scanning for client-side API keys
   SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
+
+# Asset optimization for better performance
+[build.processing]
+  skip_processing = false
+[build.processing.css]
+  bundle = true
+  minify = true
+[build.processing.js]
+  bundle = true
+  minify = true
+[build.processing.images]
+  compress = true
 
 # Function configuration - applies to all functions
 [functions]

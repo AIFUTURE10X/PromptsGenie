@@ -106,7 +106,12 @@ export function AnalyzerCard({
                   </p>
                 </div>
                 {!autoAnalyze && (
-                  <Button onClick={handleManualAnalyze} variant="outline" size="sm">
+                  <Button
+                    onClick={handleManualAnalyze}
+                    variant="outline"
+                    size="sm"
+                    aria-label={`Retry ${type} analysis`}
+                  >
                     <Sparkles className="w-4 h-4 mr-2" />
                     Retry Analysis
                   </Button>
@@ -127,6 +132,7 @@ export function AnalyzerCard({
                     size="icon"
                     className="absolute top-1 right-1 h-7 w-7"
                     onClick={handleCopy}
+                    aria-label={`Copy ${type} analysis to clipboard`}
                     title="Copy to clipboard"
                   >
                     {copied ? (
@@ -143,7 +149,12 @@ export function AnalyzerCard({
                 )}
                 {!autoAnalyze && (
                   <div className="mt-3 text-center">
-                    <Button onClick={handleManualAnalyze} variant="outline" size="sm">
+                    <Button
+                      onClick={handleManualAnalyze}
+                      variant="outline"
+                      size="sm"
+                      aria-label={`Re-analyze ${type}`}
+                    >
                       <Sparkles className="w-4 h-4 mr-2" />
                       Re-analyze
                     </Button>
@@ -154,7 +165,12 @@ export function AnalyzerCard({
               <div className="text-center">
                 <Sparkles className="w-8 h-8 mx-auto mb-3 text-black/70" />
                 <p className="text-sm text-black mb-3">Ready to analyze</p>
-                <Button onClick={handleManualAnalyze} variant="default" size="lg">
+                <Button
+                  onClick={handleManualAnalyze}
+                  variant="default"
+                  size="lg"
+                  aria-label={`Analyze ${type} now`}
+                >
                   <Sparkles className="w-4 h-4 mr-2" />
                   Analyze Now
                 </Button>
