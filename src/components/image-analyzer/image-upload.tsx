@@ -67,28 +67,28 @@ export function ImageUpload({ onImageSelect, selectedImage, onClear, label }: Im
           >
             <Card
               {...getRootProps()}
-              className={`cursor-pointer transition-all duration-200 ${
+              className={`cursor-pointer transition-all duration-200 bg-[#F77000] ${
                 isDragActive
-                  ? 'border-[#F77000] bg-[#F77000] scale-[1.02]'
-                  : 'border-dashed hover:border-[#F77000] hover:bg-[#F77000]/50'
+                  ? 'border-2 border-dashed border-black scale-[1.02]'
+                  : 'border-2 border-dashed border-black hover:brightness-110'
               }`}
             >
               <CardContent className="flex flex-col items-center justify-center py-12 px-6">
                 <input {...getInputProps()} />
                 <div
                   className={`rounded-full p-4 mb-4 transition-colors ${
-                    isDragActive ? 'bg-white/20' : 'bg-white/10'
+                    isDragActive ? 'bg-black/20' : 'bg-black/10'
                   }`}
                 >
-                  <Upload className="w-8 h-8 text-white" />
+                  <Upload className="w-8 h-8 text-black" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">
+                <h3 className="text-lg font-semibold mb-2 text-black">
                   {isDragActive ? 'Drop your image here' : (label || 'Upload an image')}
                 </h3>
-                <p className="text-sm text-muted-foreground text-center mb-4">
+                <p className="text-sm text-black/80 text-center mb-4">
                   Drag and drop or click to select an image
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-black/70">
                   Supports JPEG, PNG, WebP, GIF (max 5MB)
                 </p>
               </CardContent>
