@@ -375,10 +375,10 @@ function App() {
         const imageDataUrls = await getImageDataUrls(sceneImages, speedMode);
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
         const model = envModel || "gemini-2.5-flash";  // Use 2.5-flash as default
-        // Use low temperature and reduced tokens for concise scene descriptions
+        // Use same config as working Subject analyzer
         const genCfg = speedMode === 'Quality'
-          ? { maxOutputTokens: 200, temperature: 0.3 }  // Reduced for concise output
-          : { maxOutputTokens: 100, temperature: 0.3 };  // Even more concise for fast mode
+          ? { maxOutputTokens: 500, temperature: 0.3 }
+          : { maxOutputTokens: 400, temperature: 0.3 };
 
         const instructionFast =
           "Describe the scene/environment in 10-20 words. Examples: 'dark forest with fog', 'modern city skyline at sunset', 'cozy bedroom with warm lighting', 'beach with palm trees', 'mountain landscape'. Focus on the main setting and atmosphere.";
