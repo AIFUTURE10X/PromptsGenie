@@ -50,12 +50,23 @@ function App() {
     console.log("🔄 LastSource state changed:", lastSource);
   }, [lastSource]);
   const [speedMode, setSpeedMode] = useState<SpeedMode>('Fast');
+  const [autoAnalyzeImageAnalyzer, setAutoAnalyzeImageAnalyzer] = useState(true);
 
   // Debug speedMode changes
   useEffect(() => {
     console.log("⚡ SPEED MODE CHANGED:", speedMode);
     console.log("   This will trigger re-analysis of all images with new prompts");
   }, [speedMode]);
+
+  // Toggle functions for Image Analyzer
+  const toggleSpeedMode = () => {
+    setSpeedMode((prev) => (prev === 'Fast' ? 'Quality' : 'Fast'));
+  };
+
+  const toggleAutoAnalyze = () => {
+    setAutoAnalyzeImageAnalyzer((prev) => !prev);
+  };
+
   const [rewriteStyle, setRewriteStyle] = useState<RewriteStyle>('Descriptive');
   
   // State for independent image analysis
@@ -984,8 +995,8 @@ function App() {
         <BrandHeader logoSrc="Genie.png" />
         
         {/* Mode Toggle Navigation */}
-        <div className="flex justify-center items-center mt-4 mb-6 gap-4">
-          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-1 flex gap-1">
+        <div className="flex justify-between items-center mt-4 mb-6">
+          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-1 flex gap-1 mx-auto">
             <button
               onClick={() => setCurrentMode('analyzer')}
               className={`px-6 py-2 rounded-md font-medium transition-all ${
@@ -1008,32 +1019,34 @@ function App() {
             </button>
           </div>
 
-          {/* Settings Buttons - Only visible in Analyzer mode */}
+          {/* Settings Buttons - Only visible in Analyzer mode - Right Side */}
           {currentMode === 'analyzer' && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 absolute right-4">
               <button
-                onClick={() => {
-                  // Toggle speed mode logic will be handled via state
-                  console.log('Speed mode toggle clicked');
-                }}
-                className="px-4 py-2 rounded-md font-medium text-sm bg-gray-800/50 border border-gray-700 text-gray-300 hover:text-white hover:bg-gray-700/50 transition-all flex items-center gap-2"
+                onClick={toggleSpeedMode}
+                className={`px-4 py-2 rounded-md font-medium text-sm border transition-all flex items-center gap-2 ${
+                  speedMode === 'Fast'
+                    ? 'bg-gray-700 border-gray-600 text-white'
+                    : 'bg-gray-800/50 border-gray-700 text-gray-300 hover:text-white hover:bg-gray-700/50'
+                }`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
-                Fast
+                {speedMode === 'Fast' ? 'Fast' : 'Quality'}
               </button>
               <button
-                onClick={() => {
-                  // Toggle auto analyze logic will be handled via state
-                  console.log('Auto analyze toggle clicked');
-                }}
-                className="px-4 py-2 rounded-md font-medium text-sm bg-gray-800/50 border border-gray-700 text-gray-300 hover:text-white hover:bg-gray-700/50 transition-all flex items-center gap-2"
+                onClick={toggleAutoAnalyze}
+                className={`px-4 py-2 rounded-md font-medium text-sm border transition-all flex items-center gap-2 ${
+                  autoAnalyzeImageAnalyzer
+                    ? 'bg-gray-700 border-gray-600 text-white'
+                    : 'bg-gray-800/50 border-gray-700 text-gray-300 hover:text-white hover:bg-gray-700/50'
+                }`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
-                Auto
+                {autoAnalyzeImageAnalyzer ? 'Auto' : 'Manual'}
               </button>
             </div>
           )}
@@ -1045,7 +1058,12 @@ function App() {
         {currentMode === 'analyzer' ? (
           /* Image Analyzer Mode */
           <div className="min-h-screen">
-            <ImageAnalyzer />
+            <ImageAnalyzer
+              speedMode={speedMode}
+              autoAnalyze={autoAnalyzeImageAnalyzer}
+              onSpeedModeChange={setSpeedMode}
+              onAutoAnalyzeChange={setAutoAnalyzeImageAnalyzer}
+            />
           </div>
         ) : (
           /* Storyboard Mode */

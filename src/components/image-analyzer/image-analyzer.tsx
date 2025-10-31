@@ -7,7 +7,19 @@ import { Button } from '../ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import type { SpeedMode } from '../../lib/schemas';
 
-export function ImageAnalyzer() {
+interface ImageAnalyzerProps {
+  speedMode?: SpeedMode;
+  autoAnalyze?: boolean;
+  onSpeedModeChange?: (mode: SpeedMode) => void;
+  onAutoAnalyzeChange?: (auto: boolean) => void;
+}
+
+export function ImageAnalyzer({
+  speedMode: externalSpeedMode,
+  autoAnalyze: externalAutoAnalyze,
+  onSpeedModeChange,
+  onAutoAnalyzeChange
+}: ImageAnalyzerProps = {}) {
   // Image states for each analyzer
   const [subjectImage, setSubjectImage] = useState<string | null>(null);
   const [subjectFile, setSubjectFile] = useState<File | null>(null);
@@ -16,9 +28,12 @@ export function ImageAnalyzer() {
   const [styleImage, setStyleImage] = useState<string | null>(null);
   const [styleFile, setStyleFile] = useState<File | null>(null);
 
-  // Settings states
-  const [speedMode, setSpeedMode] = useState<SpeedMode>('Fast');
-  const [autoAnalyze, setAutoAnalyze] = useState(true);
+  // Settings states - use props if provided, otherwise local state
+  const [localSpeedMode, setLocalSpeedMode] = useState<SpeedMode>('Fast');
+  const [localAutoAnalyze, setLocalAutoAnalyze] = useState(true);
+
+  const speedMode = externalSpeedMode ?? localSpeedMode;
+  const autoAnalyze = externalAutoAnalyze ?? localAutoAnalyze;
 
   // Prompt states
   const [subjectPrompt, setSubjectPrompt] = useState<string | null>(null);
@@ -47,14 +62,6 @@ export function ImageAnalyzer() {
   const handleStyleImageSelect = (imageData: string, file: File) => {
     setStyleImage(imageData);
     setStyleFile(file);
-  };
-
-  const toggleSpeedMode = () => {
-    setSpeedMode((prev) => (prev === 'Fast' ? 'Quality' : 'Fast'));
-  };
-
-  const toggleAutoAnalyze = () => {
-    setAutoAnalyze((prev) => !prev);
   };
 
   const handleCopyCombined = async () => {
