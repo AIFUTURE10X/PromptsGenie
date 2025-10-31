@@ -102,6 +102,12 @@
   status = 200
   force = true
 
+[[redirects]]
+  from = "/api/check-env"
+  to = "/.netlify/functions/check-env"
+  status = 200
+  force = true
+
 # Performance optimizations - Cache static assets aggressively
 [[headers]]
   for = "/assets/*"
