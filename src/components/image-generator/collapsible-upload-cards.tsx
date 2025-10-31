@@ -128,86 +128,84 @@ export function CollapsibleUploadCards({
         </button>
       </div>
 
-      {/* Three Upload Cards - Synchronized Collapse */}
+      {/* Three Upload Cards - Synchronized Right-to-Left Collapse */}
       <div className="space-y-3">
         {cardSections.map((section) => {
           const Icon = section.icon;
 
           return (
-            <motion.div
-              key={section.id}
-              initial={false}
-              animate={{
-                height: isExpanded ? 'auto' : '60px',
-                width: isExpanded ? '100%' : '95%',
-                x: isExpanded ? 0 : 20,
-              }}
-              transition={{
-                duration: 0.3,
-                ease: 'easeInOut',
-              }}
-              style={{
-                transformOrigin: 'right center',
-                marginLeft: 'auto',
-              }}
-              className="overflow-hidden"
-            >
-              <Card className="bg-[#F77000] border-2 border-dashed border-black">
-                <CardContent className="p-4">
-                  {/* Card Header - Always Visible */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="rounded-full p-2 bg-black/10">
-                        <Icon className="w-5 h-5 text-black" />
+            <div key={section.id} className="w-full overflow-hidden">
+              <motion.div
+                initial={false}
+                animate={{
+                  scaleX: isExpanded ? 1 : 0.15,
+                  scaleY: isExpanded ? 1 : 0.35,
+                }}
+                transition={{
+                  duration: 0.3,
+                  ease: 'easeInOut',
+                }}
+                style={{
+                  transformOrigin: 'left center',
+                  width: '100%',
+                }}
+              >
+                <Card className="bg-[#F77000] border-2 border-dashed border-black">
+                  <CardContent className="p-4">
+                    {/* Card Header - Always Visible */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-full p-2 bg-black/10">
+                          <Icon className="w-5 h-5 text-black" />
+                        </div>
+                        <h3 className="text-sm font-bold uppercase tracking-wide text-black whitespace-nowrap">
+                          {section.title}
+                        </h3>
                       </div>
-                      <h3 className="text-sm font-bold uppercase tracking-wide text-black">
-                        {section.title}
-                      </h3>
+
+                      {/* Plus button - only visible when collapsed */}
+                      <AnimatePresence>
+                        {!isExpanded && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.8 }}
+                            transition={{ duration: 0.2 }}
+                            className="rounded-full p-1.5 bg-black/10 hover:bg-black/20 transition-colors cursor-pointer"
+                            onClick={() => setIsExpanded(true)}
+                            role="button"
+                            tabIndex={0}
+                            aria-label={`Add ${section.title.toLowerCase()}`}
+                          >
+                            <Plus className="w-4 h-4 text-black" />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
 
-                    {/* Plus button - only visible when collapsed */}
-                    <motion.div
-                      initial={false}
-                      animate={{
-                        opacity: isExpanded ? 0 : 1,
-                        scale: isExpanded ? 0.8 : 1,
-                      }}
-                      transition={{ duration: 0.2 }}
-                      className={cn(
-                        'rounded-full p-1.5 bg-black/10 hover:bg-black/20 transition-colors cursor-pointer',
-                        isExpanded && 'pointer-events-none'
+                    {/* Card Content - Only Visible When Expanded */}
+                    <AnimatePresence initial={false}>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.3, ease: 'easeInOut' }}
+                          className="mt-4"
+                        >
+                          <ImageUpload
+                            onImageSelect={section.onUpload}
+                            selectedImage={section.image}
+                            onClear={section.onClear}
+                            label={section.label}
+                          />
+                        </motion.div>
                       )}
-                      onClick={() => !isExpanded && setIsExpanded(true)}
-                      role="button"
-                      tabIndex={isExpanded ? -1 : 0}
-                      aria-label={`Add ${section.title.toLowerCase()}`}
-                    >
-                      <Plus className="w-4 h-4 text-black" />
-                    </motion.div>
-                  </div>
-
-                  {/* Card Content - Only Visible When Expanded */}
-                  <AnimatePresence initial={false}>
-                    {isExpanded && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.3, ease: 'easeInOut' }}
-                        className="mt-4"
-                      >
-                        <ImageUpload
-                          onImageSelect={section.onUpload}
-                          selectedImage={section.image}
-                          onClear={section.onClear}
-                          label={section.label}
-                        />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </CardContent>
-              </Card>
-            </motion.div>
+                    </AnimatePresence>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </div>
           );
         })}
       </div>
