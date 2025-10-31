@@ -46,10 +46,17 @@
   status = 200
   force = true
 
-# Image generation endpoint using Gemini Imagen 3.0
+# Image generation endpoint using Vertex AI Imagen 3
 [[redirects]]
   from = "/api/gemini/image-gen"
   to = "/.netlify/functions/gemini-image-gen"
+  status = 200
+  force = true
+
+# Prompt enhancement endpoint using Gemini Flash 2.5
+[[redirects]]
+  from = "/api/gemini/enhance-prompt"
+  to = "/.netlify/functions/gemini-enhance-prompt"
   status = 200
   force = true
 
