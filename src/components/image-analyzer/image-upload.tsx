@@ -69,18 +69,18 @@ export function ImageUpload({ onImageSelect, selectedImage, onClear, label }: Im
               {...getRootProps()}
               className={`cursor-pointer transition-all duration-200 ${
                 isDragActive
-                  ? 'border-primary bg-primary/5 scale-[1.02]'
-                  : 'border-dashed hover:border-primary/50 hover:bg-accent/50'
+                  ? 'border-[#F74B00] bg-[#F74B00]/5 scale-[1.02]'
+                  : 'border-dashed hover:border-[#F74B00]/50 hover:bg-accent/50'
               }`}
             >
               <CardContent className="flex flex-col items-center justify-center py-12 px-6">
                 <input {...getInputProps()} />
                 <div
                   className={`rounded-full p-4 mb-4 transition-colors ${
-                    isDragActive ? 'bg-primary/20' : 'bg-primary/10'
+                    isDragActive ? 'bg-[#F74B00]/20' : 'bg-[#F74B00]/10'
                   }`}
                 >
-                  <Upload className="w-8 h-8 text-primary" />
+                  <Upload className="w-8 h-8 text-[#F74B00]" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">
                   {isDragActive ? 'Drop your image here' : (label || 'Upload an image')}
