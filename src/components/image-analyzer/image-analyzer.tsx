@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Zap, Sparkles, User, ImageIcon, Palette, Copy, Check } from 'lucide-react';
+import { Zap, Sparkles, User, ImageIcon, Palette, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ImageUpload } from './image-upload';
 import { AnalyzerCard } from './analyzer-card';
@@ -44,6 +44,9 @@ export function ImageAnalyzer({
   // Combined prompt copy state
   const [copiedCombined, setCopiedCombined] = useState(false);
 
+  // Collapsible state for upload sections
+  const [isExpanded, setIsExpanded] = useState(true);
+
   // Combine prompts
   const combinedPrompt = [subjectPrompt, scenePrompt, stylePrompt]
     .filter(Boolean)
@@ -81,22 +84,56 @@ export function ImageAnalyzer({
         <div className="px-4 sm:px-6 lg:pl-0 lg:pr-0">
           <Card className="bg-[#F77000] backdrop-blur-sm border-[#F77000]">
             <CardContent className="p-3 sm:p-4 space-y-3 sm:space-y-4">
+              {/* Master Toggle Button */}
+              <div className="flex items-center justify-between pb-2 border-b border-white/20">
+                <h3 className="text-sm font-semibold text-white">Upload Images</h3>
+                <button
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  className="p-1 rounded hover:bg-white/10 transition-colors"
+                  aria-label={isExpanded ? 'Collapse all sections' : 'Expand all sections'}
+                  aria-expanded={isExpanded}
+                >
+                  <motion.div
+                    animate={{ rotate: isExpanded ? 0 : 180 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                  >
+                    {isExpanded ? (
+                      <ChevronUp className="w-5 h-5 text-white" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-white" />
+                    )}
+                  </motion.div>
+                </button>
+              </div>
+
               {/* Subject Image Upload */}
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-xs sm:text-sm font-semibold uppercase text-white">Subject</h3>
                   <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
                 </div>
-                <ImageUpload
-                  onImageSelect={handleSubjectImageSelect}
-                  selectedImage={subjectImage}
-                  onClear={() => {
-                    setSubjectImage(null);
-                    setSubjectFile(null);
-                    setSubjectPrompt(null);
-                  }}
-                  label="Upload Subject"
-                />
+                <AnimatePresence initial={false}>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0, width: '100%', x: 0 }}
+                      animate={{ height: 'auto', opacity: 1, width: '100%', x: 0 }}
+                      exit={{ height: 0, opacity: 0, width: '90%', x: 20 }}
+                      transition={{ duration: 0.3, ease: 'easeInOut' }}
+                      style={{ transformOrigin: 'right center', overflow: 'hidden' }}
+                    >
+                      <ImageUpload
+                        onImageSelect={handleSubjectImageSelect}
+                        selectedImage={subjectImage}
+                        onClear={() => {
+                          setSubjectImage(null);
+                          setSubjectFile(null);
+                          setSubjectPrompt(null);
+                        }}
+                        label="Upload Subject"
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Scene Image Upload */}
@@ -105,16 +142,28 @@ export function ImageAnalyzer({
                   <h3 className="text-xs sm:text-sm font-semibold uppercase text-white">Scene</h3>
                   <ImageIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
                 </div>
-                <ImageUpload
-                  onImageSelect={handleSceneImageSelect}
-                  selectedImage={sceneImage}
-                  onClear={() => {
-                    setSceneImage(null);
-                    setSceneFile(null);
-                    setScenePrompt(null);
-                  }}
-                  label="Upload Scene"
-                />
+                <AnimatePresence initial={false}>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0, width: '100%', x: 0 }}
+                      animate={{ height: 'auto', opacity: 1, width: '100%', x: 0 }}
+                      exit={{ height: 0, opacity: 0, width: '90%', x: 20 }}
+                      transition={{ duration: 0.3, ease: 'easeInOut' }}
+                      style={{ transformOrigin: 'right center', overflow: 'hidden' }}
+                    >
+                      <ImageUpload
+                        onImageSelect={handleSceneImageSelect}
+                        selectedImage={sceneImage}
+                        onClear={() => {
+                          setSceneImage(null);
+                          setSceneFile(null);
+                          setScenePrompt(null);
+                        }}
+                        label="Upload Scene"
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Style Image Upload */}
@@ -123,16 +172,28 @@ export function ImageAnalyzer({
                   <h3 className="text-xs sm:text-sm font-semibold uppercase text-white">Style</h3>
                   <Palette className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
                 </div>
-                <ImageUpload
-                  onImageSelect={handleStyleImageSelect}
-                  selectedImage={styleImage}
-                  onClear={() => {
-                    setStyleImage(null);
-                    setStyleFile(null);
-                    setStylePrompt(null);
-                  }}
-                  label="Upload Style"
-                />
+                <AnimatePresence initial={false}>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0, width: '100%', x: 0 }}
+                      animate={{ height: 'auto', opacity: 1, width: '100%', x: 0 }}
+                      exit={{ height: 0, opacity: 0, width: '90%', x: 20 }}
+                      transition={{ duration: 0.3, ease: 'easeInOut' }}
+                      style={{ transformOrigin: 'right center', overflow: 'hidden' }}
+                    >
+                      <ImageUpload
+                        onImageSelect={handleStyleImageSelect}
+                        selectedImage={styleImage}
+                        onClear={() => {
+                          setStyleImage(null);
+                          setStyleFile(null);
+                          setStylePrompt(null);
+                        }}
+                        label="Upload Style"
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </CardContent>
           </Card>
