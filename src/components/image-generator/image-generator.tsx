@@ -136,17 +136,17 @@ export function ImageGenerator({ prompt }: ImageGeneratorProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="w-full px-4"
+      className="w-full"
     >
       <Card className="bg-[#F77000] backdrop-blur-sm border-[#F77000]">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
+        <CardHeader className="pb-3 px-3 sm:px-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
-              <CardTitle className="text-xl text-white flex items-center gap-2">
-                <Sparkles className="w-6 h-6" />
+              <CardTitle className="text-lg sm:text-xl text-white flex items-center gap-2">
+                <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
                 Image Generator
               </CardTitle>
-              <p className="text-sm text-black mt-1">
+              <p className="text-xs sm:text-sm text-black mt-1">
                 {useEnhancement ? 'Gemini Flash 2.5 + Imagen 3' : 'Imagen 3'}
               </p>
             </div>
@@ -155,28 +155,28 @@ export function ImageGenerator({ prompt }: ImageGeneratorProps) {
                 onClick={handleClearAll}
                 variant="secondary"
                 size="sm"
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 text-xs sm:text-sm w-full sm:w-auto"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 Clear All
               </Button>
             )}
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 px-3 sm:px-6">
           {/* Prompt Enhancement Toggle */}
-          <div className="flex items-center justify-between p-3 rounded-lg bg-black/10 border border-black/20">
-            <div className="flex items-center gap-3">
-              <Wand2 className="w-5 h-5 text-white" />
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 rounded-lg bg-black/10 border border-black/20">
+            <div className="flex items-start gap-3">
+              <Wand2 className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-white">Enhance Prompt with Gemini Flash 2.5</p>
+                <p className="text-xs sm:text-sm font-semibold text-white">Enhance Prompt with Gemini Flash 2.5</p>
                 <p className="text-xs text-white/80">AI improves your prompt for better images</p>
               </div>
             </div>
             <button
               onClick={handleToggleEnhancement}
-              className={`relative w-12 h-6 rounded-full transition-colors ${
+              className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${
                 useEnhancement ? 'bg-white' : 'bg-black/30'
               }`}
             >
@@ -189,16 +189,16 @@ export function ImageGenerator({ prompt }: ImageGeneratorProps) {
           </div>
 
           {/* Controls Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Image Count Selector */}
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-white uppercase">Number of Images</label>
-              <div className="flex gap-2">
+              <label className="text-xs sm:text-sm font-semibold text-white uppercase">Number of Images</label>
+              <div className="grid grid-cols-4 gap-2">
                 {[1, 2, 3, 4].map((count) => (
                   <button
                     key={count}
                     onClick={() => setImageCount(count)}
-                    className={`flex-1 px-4 py-3 rounded-md font-bold text-lg transition-all ${
+                    className={`px-3 py-2.5 sm:px-4 sm:py-3 rounded-md font-bold text-base sm:text-lg transition-all ${
                       imageCount === count
                         ? 'bg-black text-white shadow-lg'
                         : 'bg-black/20 text-white hover:bg-black/30'
@@ -212,7 +212,7 @@ export function ImageGenerator({ prompt }: ImageGeneratorProps) {
 
             {/* Seed Input (Optional) */}
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-white uppercase">
+              <label className="text-xs sm:text-sm font-semibold text-white uppercase">
                 Seed (Optional)
               </label>
               <input
@@ -220,7 +220,7 @@ export function ImageGenerator({ prompt }: ImageGeneratorProps) {
                 value={seed ?? ''}
                 onChange={(e) => setSeed(e.target.value ? parseInt(e.target.value) : undefined)}
                 placeholder="Random"
-                className="w-full px-4 py-3 rounded-md bg-black/20 border border-black/30 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50"
+                className="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-md bg-black/20 border border-black/30 text-white text-sm sm:text-base placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50"
               />
             </div>
           </div>
@@ -234,7 +234,7 @@ export function ImageGenerator({ prompt }: ImageGeneratorProps) {
           {/* Prompt Display */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-semibold text-white uppercase">
+              <label className="text-xs sm:text-sm font-semibold text-white uppercase">
                 {useEnhancement && enhancedPrompt ? 'Enhanced Prompt' : 'Current Prompt'}
               </label>
               {useEnhancement && enhancedPrompt && (
@@ -250,19 +250,19 @@ export function ImageGenerator({ prompt }: ImageGeneratorProps) {
 
             {isEnhancing ? (
               <div className="p-3 rounded-lg bg-black/20 border border-black/30 flex items-center gap-2">
-                <Wand2 className="w-4 h-4 text-white animate-spin" />
-                <p className="text-sm text-white">Enhancing prompt with Gemini Flash 2.5...</p>
+                <Wand2 className="w-4 h-4 text-white animate-spin flex-shrink-0" />
+                <p className="text-xs sm:text-sm text-white">Enhancing prompt with Gemini Flash 2.5...</p>
               </div>
             ) : isEditingEnhanced && useEnhancement && enhancedPrompt ? (
               <textarea
                 value={enhancedPrompt}
                 onChange={(e) => setEnhancedPrompt(e.target.value)}
-                className="w-full p-3 rounded-lg bg-black/20 border border-black/30 text-white resize-none focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
+                className="w-full p-2.5 sm:p-3 rounded-lg bg-black/20 border border-black/30 text-white resize-none focus:outline-none focus:ring-2 focus:ring-white/50 text-xs sm:text-sm"
                 rows={4}
               />
             ) : (
-              <div className="p-3 rounded-lg bg-black/20 border border-black/30">
-                <p className="text-sm text-white whitespace-pre-wrap">{displayPrompt}</p>
+              <div className="p-2.5 sm:p-3 rounded-lg bg-black/20 border border-black/30">
+                <p className="text-xs sm:text-sm text-white whitespace-pre-wrap break-words">{displayPrompt}</p>
               </div>
             )}
 
@@ -272,7 +272,7 @@ export function ImageGenerator({ prompt }: ImageGeneratorProps) {
                 <summary className="cursor-pointer text-white/60 hover:text-white/80">
                   Show original prompt
                 </summary>
-                <div className="mt-2 p-2 rounded bg-black/10 text-white/80">
+                <div className="mt-2 p-2 rounded bg-black/10 text-white/80 break-words">
                   {prompt}
                 </div>
               </details>
@@ -285,9 +285,9 @@ export function ImageGenerator({ prompt }: ImageGeneratorProps) {
               onClick={handleEnhancePrompt}
               variant="secondary"
               size="sm"
-              className="w-full flex items-center justify-center gap-2"
+              className="w-full flex items-center justify-center gap-2 text-xs sm:text-sm"
             >
-              <Wand2 className="w-4 h-4" />
+              <Wand2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               Re-enhance Prompt
             </Button>
           )}
@@ -296,18 +296,20 @@ export function ImageGenerator({ prompt }: ImageGeneratorProps) {
           <Button
             onClick={handleGenerate}
             disabled={isGenerating || isEnhancing || !prompt}
-            className="w-full py-6 text-lg font-bold"
+            className="w-full py-4 sm:py-6 text-base sm:text-lg font-bold"
             size="lg"
           >
             {isGenerating ? (
               <>
-                <Sparkles className="w-5 h-5 mr-2 animate-spin" />
-                Generating {imageCount} {imageCount === 1 ? 'Image' : 'Images'}...
+                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-2 animate-spin" />
+                <span className="hidden sm:inline">Generating {imageCount} {imageCount === 1 ? 'Image' : 'Images'}...</span>
+                <span className="sm:hidden">Generating...</span>
               </>
             ) : (
               <>
-                <Sparkles className="w-5 h-5 mr-2" />
-                Generate {imageCount} {imageCount === 1 ? 'Image' : 'Images'}
+                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                <span className="hidden sm:inline">Generate {imageCount} {imageCount === 1 ? 'Image' : 'Images'}</span>
+                <span className="sm:hidden">Generate</span>
               </>
             )}
           </Button>

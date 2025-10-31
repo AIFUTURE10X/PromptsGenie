@@ -18,7 +18,7 @@ export function ImageGrid({ images, imageCount, aspectRatio, isGenerating }: Ima
   const slots = Array.from({ length: imageCount }, (_, i) => i);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
       {slots.map((slotIndex) => {
         const image = images.find(img => img.index === slotIndex);
         return (

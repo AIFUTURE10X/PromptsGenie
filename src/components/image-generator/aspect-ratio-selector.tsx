@@ -17,21 +17,21 @@ const aspectRatios = [
 export function AspectRatioSelector({ selectedRatio, onRatioChange }: AspectRatioSelectorProps) {
   return (
     <div className="space-y-2">
-      <label className="text-sm font-semibold text-white uppercase">Aspect Ratio</label>
-      <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+      <label className="text-xs sm:text-sm font-semibold text-white uppercase">Aspect Ratio</label>
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
         {aspectRatios.map((ratio) => (
           <motion.button
             key={ratio.value}
             onClick={() => onRatioChange(ratio.value)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className={`px-3 py-2 rounded-md font-medium text-sm transition-all flex flex-col items-center gap-1 ${
+            className={`px-2 py-2 sm:px-3 sm:py-2.5 rounded-md font-medium text-xs sm:text-sm transition-all flex flex-col items-center gap-1 ${
               selectedRatio === ratio.value
                 ? 'bg-black text-white shadow-lg'
                 : 'bg-black/20 text-white hover:bg-black/30'
             }`}
           >
-            <span className="text-xl">{ratio.icon}</span>
+            <span className="text-lg sm:text-xl">{ratio.icon}</span>
             <span className="text-xs">{ratio.label}</span>
           </motion.button>
         ))}

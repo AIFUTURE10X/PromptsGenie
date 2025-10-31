@@ -545,7 +545,7 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
   };
 
   return (
-    <div className="w-full h-full flex flex-col lg:flex-row gap-6 p-6 min-h-storyboard">
+    <div className="w-full h-full flex flex-col lg:flex-row gap-4 sm:gap-6 p-3 sm:p-4 lg:p-6 min-h-storyboard">
       {/* Left Column - Storyboard Gallery (responsive width) */}
       <motion.div
         initial={{ opacity: 0, x: -50 }}
@@ -563,21 +563,21 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
               className="h-full flex flex-col"
             >
               {/* Header with Selection Controls */}
-              <div className="mb-6">
-                <div className="flex items-start justify-between">
+              <div className="mb-4 sm:mb-6">
+                <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                   <div>
-                    <h3 className="text-3xl font-bold text-white flex items-center gap-3">
-                      <Sparkles className="w-8 h-8 text-purple-400" />
-                      Generated Storyboard
+                    <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white flex items-center gap-2 sm:gap-3">
+                      <Sparkles className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-purple-400 flex-shrink-0" />
+                      <span className="truncate">Generated Storyboard</span>
                     </h3>
-                    <p className="text-gray-400 mt-1">
+                    <p className="text-sm sm:text-base text-gray-400 mt-1">
                       {storyboard.frames.length} scene
                       {storyboard.frames.length !== 1 ? "s" : ""} generated
                     </p>
                   </div>
 
                   {/* Bulk Actions */}
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
                     {/* Select All/None Buttons */}
                     <div className="flex gap-2">
                       <button
@@ -585,16 +585,18 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                           const allIndices = new Set(storyboard.frames.map((_, i) => i));
                           setSelectedFrames(allIndices);
                         }}
-                        className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition-all flex items-center gap-2"
+                        className="flex-1 sm:flex-none px-2 sm:px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white text-xs sm:text-sm rounded-lg transition-all flex items-center justify-center gap-1.5 sm:gap-2"
                       >
-                        <Check className="w-4 h-4" />
-                        Select All
+                        <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        <span className="hidden xs:inline">Select All</span>
+                        <span className="xs:hidden">All</span>
                       </button>
                       <button
                         onClick={() => setSelectedFrames(new Set())}
-                        className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition-all"
+                        className="flex-1 sm:flex-none px-2 sm:px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white text-xs sm:text-sm rounded-lg transition-all"
                       >
-                        Clear Selection
+                        <span className="hidden xs:inline">Clear Selection</span>
+                        <span className="xs:hidden">Clear</span>
                       </button>
                     </div>
 
@@ -612,10 +614,11 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                             }
                             setSelectedFrames(new Set());
                           }}
-                          className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm rounded-lg transition-all flex items-center gap-2"
+                          className="px-3 sm:px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-xs sm:text-sm rounded-lg transition-all flex items-center justify-center gap-1.5 sm:gap-2"
                         >
-                          <RotateCw className="w-4 h-4" />
-                          Regenerate {selectedFrames.size} Selected
+                          <RotateCw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          <span className="hidden sm:inline">Regenerate {selectedFrames.size} Selected</span>
+                          <span className="sm:hidden">Regen ({selectedFrames.size})</span>
                         </button>
 
                         {/* Bulk Delete Button - Single click deletion */}
@@ -634,10 +637,11 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
                               setSelectedFrame(Math.max(0, newFrames.length - 1));
                             }
                           }}
-                          className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-all flex items-center gap-2"
+                          className="px-3 sm:px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm rounded-lg transition-all flex items-center justify-center gap-1.5 sm:gap-2"
                         >
-                          <Trash2 className="w-4 h-4" />
-                          Delete {selectedFrames.size} Selected
+                          <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          <span className="hidden sm:inline">Delete {selectedFrames.size} Selected</span>
+                          <span className="sm:hidden">Delete ({selectedFrames.size})</span>
                         </button>
                       </>
                     )}

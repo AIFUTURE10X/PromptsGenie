@@ -75,17 +75,17 @@ export function ImageAnalyzer({
 
   return (
     <div className="w-full">
-      {/* 2-Column Layout: Images (Left) | Results (Right) */}
-      <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6">
+      {/* Responsive Layout: Stack on mobile, side-by-side on desktop */}
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(280px,350px)_1fr] gap-4 sm:gap-6">
         {/* LEFT COLUMN: Image Uploads */}
-        <div className="px-4 lg:pl-0 lg:pr-0">
+        <div className="px-4 sm:px-6 lg:pl-0 lg:pr-0">
           <Card className="bg-[#F77000] backdrop-blur-sm border-[#F77000]">
-            <CardContent className="p-4 space-y-4">
+            <CardContent className="p-3 sm:p-4 space-y-3 sm:space-y-4">
               {/* Subject Image Upload */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-semibold uppercase text-white">Subject</h3>
-                  <User className="w-4 h-4 text-white" />
+                  <h3 className="text-xs sm:text-sm font-semibold uppercase text-white">Subject</h3>
+                  <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
                 </div>
                 <ImageUpload
                   onImageSelect={handleSubjectImageSelect}
@@ -102,8 +102,8 @@ export function ImageAnalyzer({
               {/* Scene Image Upload */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-semibold uppercase text-white">Scene</h3>
-                  <ImageIcon className="w-4 h-4 text-white" />
+                  <h3 className="text-xs sm:text-sm font-semibold uppercase text-white">Scene</h3>
+                  <ImageIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
                 </div>
                 <ImageUpload
                   onImageSelect={handleSceneImageSelect}
@@ -120,8 +120,8 @@ export function ImageAnalyzer({
               {/* Style Image Upload */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-semibold uppercase text-white">Style</h3>
-                  <Palette className="w-4 h-4 text-white" />
+                  <h3 className="text-xs sm:text-sm font-semibold uppercase text-white">Style</h3>
+                  <Palette className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
                 </div>
                 <ImageUpload
                   onImageSelect={handleStyleImageSelect}
@@ -139,9 +139,9 @@ export function ImageAnalyzer({
         </div>
 
         {/* RIGHT COLUMN: Results */}
-        <div className="space-y-4 px-4 lg:pl-0 lg:pr-4">
-          {/* Analyzer Cards + Combined Prompt - Horizontal Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
+        <div className="space-y-4 px-4 sm:px-6 lg:pl-0 lg:pr-4">
+          {/* Analyzer Cards + Combined Prompt - Responsive Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 items-stretch">
             <AnalyzerCard
               type="subject"
               title="Subject Analysis"
@@ -181,13 +181,13 @@ export function ImageAnalyzer({
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.3 }}
-                  className="h-full"
+                  className="h-full min-h-[200px] sm:min-h-[250px]"
                 >
                   <Card className="h-full flex flex-col bg-[#F77000] backdrop-blur-sm border-[#F77000]">
-                    <CardHeader className="pb-2">
-                      <div className="flex items-center justify-between">
+                    <CardHeader className="pb-2 px-3 sm:px-6">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                         <div>
-                          <CardTitle className="text-base text-white">Combined Prompt</CardTitle>
+                          <CardTitle className="text-sm sm:text-base text-white">Combined Prompt</CardTitle>
                           <p className="text-xs text-white/80 mt-0.5">
                             All three analyses combined
                           </p>
@@ -196,7 +196,7 @@ export function ImageAnalyzer({
                           onClick={handleCopyCombined}
                           variant="secondary"
                           size="sm"
-                          className="flex items-center gap-1.5"
+                          className="flex items-center gap-1.5 text-xs sm:text-sm w-full sm:w-auto"
                         >
                           {copiedCombined ? (
                             <>
@@ -212,11 +212,11 @@ export function ImageAnalyzer({
                         </Button>
                       </div>
                     </CardHeader>
-                    <CardContent className="flex-1 flex flex-col pt-2">
+                    <CardContent className="flex-1 flex flex-col pt-2 px-3 sm:px-6">
                       <textarea
                         readOnly
                         value={combinedPrompt}
-                        className="w-full flex-1 p-2.5 rounded-lg bg-black/20 border border-black/30 text-white resize-none focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
+                        className="w-full flex-1 p-2 sm:p-2.5 rounded-lg bg-black/20 border border-black/30 text-white resize-none focus:outline-none focus:ring-2 focus:ring-white/50 text-xs sm:text-sm"
                       />
                     </CardContent>
                   </Card>

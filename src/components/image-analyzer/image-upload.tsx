@@ -75,23 +75,23 @@ const ImageUploadComponent = ({ onImageSelect, selectedImage, onClear, label }: 
                   : 'border-2 border-dashed border-black hover:brightness-110'
               }`}
             >
-              <CardContent className="flex flex-col items-center justify-center py-12 px-6">
+              <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12 px-4 sm:px-6">
                 <input {...getInputProps()} aria-label={label || "Upload an image"} />
                 <div
-                  className={`rounded-full p-4 mb-4 transition-colors ${
+                  className={`rounded-full p-3 sm:p-4 mb-3 sm:mb-4 transition-colors ${
                     isDragActive ? 'bg-black/20' : 'bg-black/10'
                   }`}
                 >
-                  <Upload className="w-8 h-8 text-black" />
+                  <Upload className="w-6 h-6 sm:w-8 sm:h-8 text-black" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2 text-black">
+                <h3 className="text-base sm:text-lg font-semibold mb-2 text-black text-center">
                   {isDragActive ? 'Drop your image here' : (label || 'Upload an image')}
                 </h3>
-                <p className="text-sm text-black/80 text-center mb-4">
-                  Drag and drop or click to select an image
+                <p className="text-xs sm:text-sm text-black/80 text-center mb-3 sm:mb-4">
+                  Drag and drop or click to select
                 </p>
-                <p className="text-xs text-black/70">
-                  Supports JPEG, PNG, WebP, GIF (max 5MB)
+                <p className="text-xs text-black/70 text-center">
+                  JPEG, PNG, WebP, GIF (max 5MB)
                 </p>
               </CardContent>
             </Card>

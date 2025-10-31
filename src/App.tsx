@@ -996,18 +996,18 @@ function App() {
       <BackgroundCanvas color="#000000" opacity={1} effect="grain" effectOpacity={0.06} />
       
       {/* Header with Navigation */}
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <BrandHeader logoSrc="Genie.png" />
-        
+
         {/* Mode Toggle Navigation */}
         <div className="flex justify-center items-center mt-4 mb-6">
-          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-1 flex gap-1">
+          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-1 flex flex-col sm:flex-row gap-1 w-full sm:w-auto">
             {/* Settings Buttons - Only visible in Analyzer mode */}
             {currentMode === 'analyzer' && (
-              <>
+              <div className="flex gap-1 w-full sm:w-auto">
                 <button
                   onClick={toggleSpeedMode}
-                  className={`px-4 py-2 rounded-md font-medium text-sm transition-all flex items-center gap-2 ${
+                  className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-md font-medium text-xs sm:text-sm transition-all flex items-center justify-center gap-2 ${
                     speedMode === 'Fast'
                       ? 'bg-gray-700 text-white'
                       : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
@@ -1016,11 +1016,12 @@ function App() {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
-                  {speedMode === 'Fast' ? 'Fast' : 'Quality'}
+                  <span className="hidden xs:inline">{speedMode === 'Fast' ? 'Fast' : 'Quality'}</span>
+                  <span className="xs:hidden">{speedMode === 'Fast' ? 'F' : 'Q'}</span>
                 </button>
                 <button
                   onClick={toggleAutoAnalyze}
-                  className={`px-4 py-2 rounded-md font-medium text-sm transition-all flex items-center gap-2 ${
+                  className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-md font-medium text-xs sm:text-sm transition-all flex items-center justify-center gap-2 ${
                     autoAnalyzeImageAnalyzer
                       ? 'bg-gray-700 text-white'
                       : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
@@ -1029,30 +1030,35 @@ function App() {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
-                  {autoAnalyzeImageAnalyzer ? 'Auto' : 'Manual'}
+                  <span className="hidden xs:inline">{autoAnalyzeImageAnalyzer ? 'Auto' : 'Manual'}</span>
+                  <span className="xs:hidden">{autoAnalyzeImageAnalyzer ? 'A' : 'M'}</span>
                 </button>
-              </>
+              </div>
             )}
-            <button
-              onClick={() => setCurrentMode('analyzer')}
-              className={`px-6 py-2 rounded-md font-medium transition-all ${
-                currentMode === 'analyzer'
-                  ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-lg'
-                  : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
-              }`}
-            >
-              Image Analyzer
-            </button>
-            <button
-              onClick={() => setCurrentMode('storyboard')}
-              className={`px-6 py-2 rounded-md font-medium transition-all ${
-                currentMode === 'storyboard'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
-                  : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
-              }`}
-            >
-              Storyboard Creator
-            </button>
+            <div className="flex gap-1 w-full sm:w-auto">
+              <button
+                onClick={() => setCurrentMode('analyzer')}
+                className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-md font-medium text-xs sm:text-sm transition-all ${
+                  currentMode === 'analyzer'
+                    ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-lg'
+                    : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                }`}
+              >
+                <span className="hidden sm:inline">Image Analyzer</span>
+                <span className="sm:hidden">Analyzer</span>
+              </button>
+              <button
+                onClick={() => setCurrentMode('storyboard')}
+                className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-md font-medium text-xs sm:text-sm transition-all ${
+                  currentMode === 'storyboard'
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
+                    : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                }`}
+              >
+                <span className="hidden sm:inline">Storyboard Creator</span>
+                <span className="sm:hidden">Storyboard</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
