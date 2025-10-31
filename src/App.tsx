@@ -1,14 +1,19 @@
-import React, { useEffect, useState } from "react";
-import DM2PromptEditor, { RewriteStyle } from "./components/DM2PromptEditor";
-import CurrentPromptPanel from "./components/CurrentPromptPanel";
-import ImageDropZone from "./components/ImageDropZone";
+import React, { useEffect, useState, lazy, Suspense } from "react";
 import { generateWithGemini } from "./services/promptApi";
 import { generateWithImagesREST } from "./helpers/gemini";
 import BackgroundCanvas from "./components/BackgroundCanvas";
 import BrandHeader from "./components/BrandHeader";
 import { composePrompt, applyRewriteStyle } from "./lib/utils";
-import StoryboardPanel from "./components/StoryboardPanel";
-import { ImageAnalyzer } from "./components/image-analyzer/image-analyzer";
+
+// Lazy load heavy components for better initial load performance
+const ImageAnalyzer = lazy(() => import("./components/image-analyzer/image-analyzer").then(module => ({ default: module.ImageAnalyzer })));
+const StoryboardPanel = lazy(() => import("./components/StoryboardPanel"));
+const DM2PromptEditor = lazy(() => import("./components/DM2PromptEditor"));
+const CurrentPromptPanel = lazy(() => import("./components/CurrentPromptPanel"));
+const ImageDropZone = lazy(() => import("./components/ImageDropZone"));
+
+// Import types
+import type { RewriteStyle } from "./components/DM2PromptEditor";
 
 // Local type to coordinate speed across components
 type SpeedMode = 'Fast' | 'Quality';
@@ -1054,25 +1059,34 @@ function App() {
 
       {/* Content Area */}
       <div className="pb-6">
-        {currentMode === 'analyzer' ? (
-          /* Image Analyzer Mode */
-          <div className="min-h-screen">
-            <ImageAnalyzer
-              speedMode={speedMode}
-              autoAnalyze={autoAnalyzeImageAnalyzer}
-              onSpeedModeChange={setSpeedMode}
-              onAutoAnalyzeChange={setAutoAnalyzeImageAnalyzer}
-            />
+        <Suspense fallback={
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gray-200"></div>
+              <p className="mt-4 text-gray-400">Loading...</p>
+            </div>
           </div>
-        ) : (
-          /* Storyboard Mode */
-          <div className="min-h-storyboard bg-gray-900/50 border border-gray-700 rounded-xl">
-            <StoryboardPanel
-              initialPrompt={prompt}
-              onBackToPrompts={() => setCurrentMode('analyzer')}
-            />
-          </div>
-        )}
+        }>
+          {currentMode === 'analyzer' ? (
+            /* Image Analyzer Mode */
+            <div className="min-h-screen">
+              <ImageAnalyzer
+                speedMode={speedMode}
+                autoAnalyze={autoAnalyzeImageAnalyzer}
+                onSpeedModeChange={setSpeedMode}
+                onAutoAnalyzeChange={setAutoAnalyzeImageAnalyzer}
+              />
+            </div>
+          ) : (
+            /* Storyboard Mode */
+            <div className="min-h-storyboard bg-gray-900/50 border border-gray-700 rounded-xl">
+              <StoryboardPanel
+                initialPrompt={prompt}
+                onBackToPrompts={() => setCurrentMode('analyzer')}
+              />
+            </div>
+          )}
+        </Suspense>
       </div>
     </div>
   );

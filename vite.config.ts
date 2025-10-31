@@ -36,9 +36,43 @@ export default defineConfig(({ mode }) => ({
     },
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Keep React together in one chunk - critical for proper loading order
-          'react-vendor': ['react', 'react-dom', 'react/jsx-runtime'],
+        manualChunks(id) {
+          // Vendor splitting strategy for optimal caching
+          if (id.includes('node_modules')) {
+            // React core (loaded on every page)
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react/jsx-runtime')) {
+              return 'react-vendor';
+            }
+            // Framer Motion (heavy animation library)
+            if (id.includes('framer-motion')) {
+              return 'framer-motion';
+            }
+            // React Query (data fetching)
+            if (id.includes('@tanstack/react-query')) {
+              return 'react-query';
+            }
+            // UI components from radix-ui
+            if (id.includes('@radix-ui')) {
+              return 'radix-ui';
+            }
+            // Lucide icons
+            if (id.includes('lucide-react')) {
+              return 'lucide-icons';
+            }
+            // All other node_modules
+            return 'vendor';
+          }
+
+          // Component-based splitting for better lazy loading
+          if (id.includes('/components/image-analyzer/')) {
+            return 'image-analyzer';
+          }
+          if (id.includes('/components/image-generator/')) {
+            return 'image-generator';
+          }
+          if (id.includes('/components/StoryboardPanel')) {
+            return 'storyboard';
+          }
         },
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
