@@ -1,4 +1,4 @@
-async function enhancePromptWithGemini(originalPrompt, subjectPrompt, scenePrompt, stylePrompt) {
+async function enhancePromptWithGemini(originalPrompt, subjectPrompt, scenePrompt, stylePrompt, styleIntensity = 'moderate') {
   const apiKey = process.env.GOOGLE_API_KEY;
 
   if (!apiKey) {
@@ -17,30 +17,59 @@ async function enhancePromptWithGemini(originalPrompt, subjectPrompt, scenePromp
     const components = [];
     if (subjectPrompt) components.push(`SUBJECT (highest priority - preserve exactly): ${subjectPrompt}`);
     if (scenePrompt) components.push(`SCENE (context): ${scenePrompt}`);
-    if (stylePrompt) components.push(`STYLE (apply without distorting subject): ${stylePrompt}`);
+    if (stylePrompt) {
+      // Add style intensity guidance
+      const intensityNote = {
+        subtle: ' (apply as SUBTLE aesthetic hints only - photorealistic base required)',
+        moderate: ' (balance style with realism - render subject realistically in style)',
+        strong: ' (full artistic interpretation allowed - style takes priority)'
+      }[styleIntensity] || '';
+      components.push(`STYLE (apply without distorting subject${intensityNote}): ${stylePrompt}`);
+    }
 
     enhancementInstruction = `You are an expert prompt engineer for AI image generation (Imagen 3). Create an enhanced prompt from these components:
 
 ${components.join('\n')}
 
-CRITICAL RULES:
-1. **SUBJECT INTEGRITY**: The subject's anatomical features, proportions, and identity MUST remain accurate and undistorted
-2. **HIERARCHY**: Subject > Scene > Style. Style should enhance, never distort the subject
-3. **SEPARATION**: Keep subject description first and primary, then blend scene context, then apply style as a visual treatment
-4. **ANATOMICAL ACCURACY**: Explicitly preserve facial features, body proportions, and realistic anatomy
-5. **STYLE APPLICATION**: Apply style to lighting, color palette, artistic medium, and atmosphere - NOT to subject anatomy
+CRITICAL RULES - ANATOMY PRESERVATION:
+1. **SUBJECT INTEGRITY**: The subject's anatomical features, proportions, and identity MUST remain EXACTLY as described - no alterations, no artistic interpretation
+2. **HIERARCHY**: Subject > Scene > Style. Style should enhance the presentation, NEVER modify the subject's physical appearance
+3. **SEPARATION**: Keep subject description first and complete, then blend scene context, then apply style ONLY to rendering technique
+4. **ANATOMICAL ACCURACY**: Explicitly preserve facial features, body proportions, realistic human anatomy. Add phrases like "maintaining exact facial proportions", "preserving realistic human anatomy", "keeping subject identity unchanged"
+5. **STYLE APPLICATION**: Apply style ONLY to: lighting, color palette, artistic medium/rendering, atmosphere, background treatment - NEVER to subject anatomy, facial features, or body proportions
+
+MANDATORY ANATOMY PRESERVATION PHRASES:
+- Include "maintaining exact facial proportions and features"
+- Include "preserving realistic human anatomy and body structure"
+- Include "keeping subject's physical appearance unchanged"
+- Add "photorealistic rendering of subject" before any artistic style modifiers
+
+AVOID (Negative Prompt Simulation):
+Never allow: distorted anatomy, unrealistic proportions, exaggerated facial features, anime-style eyes (unless explicitly requested), stylized body shapes, altered facial structure, morphed features
+
+STYLE INTENSITY RULES (currently set to: ${styleIntensity.toUpperCase()}):
+${styleIntensity === 'subtle' ? `- Add "photorealistic rendering with subtle [style] aesthetic"
+- Apply style ONLY to color palette, lighting mood, and minimal artistic flourishes
+- Emphasize "maintaining photorealistic subject accuracy"
+- Keep subject completely realistic and anatomically accurate` : ''}${styleIntensity === 'moderate' ? `- Add "rendered in [style], maintaining realistic subject proportions"
+- Apply style to lighting, atmosphere, color grading, and artistic medium
+- Balance artistic interpretation with anatomical accuracy
+- Phrase as "realistically depicted in [style] aesthetic"` : ''}${styleIntensity === 'strong' ? `- Add "full [style] artistic interpretation"
+- Allow style to influence overall composition and rendering
+- Still preserve core subject identity and basic proportions
+- Phrase as "artistic [style] rendering" or "complete [style] stylization"` : ''}
 
 Enhance the prompt by:
-- Making subject details more specific and visually descriptive (without changing core features)
+- Making subject details more specific and visually descriptive (without changing any core features)
 - Adding environmental context from scene
-- Applying style as a rendering technique (e.g., "rendered in [style]", "with [style] aesthetic")
-- Including quality modifiers (highly detailed, professional quality, 8k resolution)
+- Applying style as appropriate for ${styleIntensity} intensity level
+- Including quality modifiers (highly detailed, professional quality, 8k resolution, sharp focus)
 - Specifying composition and framing
 - Adding appropriate lighting that complements both scene and style
 
-Structure the enhanced prompt as: [Subject details] in [Scene context], [Style treatment], [Quality/composition modifiers]
+Structure the enhanced prompt as: [Subject details with anatomy preservation phrases] in [Scene context], [Style treatment based on intensity], [Quality/composition modifiers]
 
-Keep it concise (100-200 words max). Return ONLY the enhanced prompt, nothing else.`;
+Keep it concise (120-200 words max). Return ONLY the enhanced prompt, nothing else.`;
   } else {
     // Fallback to simple enhancement if no structure provided
     enhancementInstruction = `You are an expert prompt engineer for AI image generation. Your task is to enhance the following prompt to produce better, more detailed images from text-to-image models like Imagen.
@@ -75,8 +104,8 @@ Return ONLY the enhanced prompt, nothing else.`;
           }]
         }],
         generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 500,
+          temperature: 0.5,
+          maxOutputTokens: 600,
           topP: 0.95,
         },
         safetySettings: [
@@ -152,7 +181,7 @@ exports.handler = async (event, context) => {
   try {
     console.log('🎨 Received prompt enhancement request');
     const requestBody = JSON.parse(event.body);
-    const { prompt, subjectPrompt, scenePrompt, stylePrompt } = requestBody;
+    const { prompt, subjectPrompt, scenePrompt, stylePrompt, styleIntensity } = requestBody;
 
     if (!prompt || prompt.trim().length === 0) {
       return {
@@ -174,8 +203,9 @@ exports.handler = async (event, context) => {
       if (subjectPrompt) console.log('  - Subject:', subjectPrompt.substring(0, 50) + '...');
       if (scenePrompt) console.log('  - Scene:', scenePrompt.substring(0, 50) + '...');
       if (stylePrompt) console.log('  - Style:', stylePrompt.substring(0, 50) + '...');
+      if (styleIntensity) console.log('  - Style Intensity:', styleIntensity);
     }
-    const enhancedPrompt = await enhancePromptWithGemini(prompt, subjectPrompt, scenePrompt, stylePrompt);
+    const enhancedPrompt = await enhancePromptWithGemini(prompt, subjectPrompt, scenePrompt, stylePrompt, styleIntensity);
     console.log(`✅ Successfully enhanced prompt`);
 
     return {

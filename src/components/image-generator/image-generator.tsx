@@ -32,6 +32,7 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [enhancedPrompt, setEnhancedPrompt] = useState<string>('');
   const [isEditingEnhanced, setIsEditingEnhanced] = useState(false);
+  const [styleIntensity, setStyleIntensity] = useState<'subtle' | 'moderate' | 'strong'>('moderate');
 
   // Auto-enhance when prompt changes and enhancement is enabled
   useEffect(() => {
@@ -58,7 +59,8 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
           prompt,
           subjectPrompt: subjectPrompt || null,
           scenePrompt: scenePrompt || null,
-          stylePrompt: stylePrompt || null
+          stylePrompt: stylePrompt || null,
+          styleIntensity: styleIntensity
         })
       });
 
@@ -242,6 +244,35 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
             selectedRatio={aspectRatio}
             onRatioChange={setAspectRatio}
           />
+
+          {/* Style Intensity Control */}
+          {stylePrompt && (
+            <div className="space-y-2">
+              <label className="text-xs sm:text-sm font-semibold text-white uppercase">
+                Style Intensity (Accuracy vs Creativity)
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {(['subtle', 'moderate', 'strong'] as const).map((intensity) => (
+                  <button
+                    key={intensity}
+                    onClick={() => setStyleIntensity(intensity)}
+                    className={`px-3 py-2.5 sm:px-4 sm:py-3 rounded-md font-bold text-xs sm:text-sm transition-all capitalize ${
+                      styleIntensity === intensity
+                        ? 'bg-black text-white shadow-lg'
+                        : 'bg-black/20 text-white hover:bg-black/30'
+                    }`}
+                  >
+                    {intensity}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-white/70">
+                {styleIntensity === 'subtle' && 'Photorealistic base with subtle style hints - best for preserving subject accuracy'}
+                {styleIntensity === 'moderate' && 'Balanced style application while maintaining realism'}
+                {styleIntensity === 'strong' && 'Full artistic interpretation - may modify subject appearance'}
+              </p>
+            </div>
+          )}
 
           {/* Prompt Display */}
           <div className="space-y-2">

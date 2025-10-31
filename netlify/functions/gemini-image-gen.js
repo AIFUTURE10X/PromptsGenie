@@ -52,9 +52,9 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
   }
 
   // Vertex AI Imagen endpoint
-  // Try Imagen 3 first, fallback to Imagen 2 if timeout issues
-  // Note: Free tier Netlify has 10s timeout - Imagen 3 needs ~15-25s, Imagen 2 needs ~5-8s
-  const useImagen3 = process.env.USE_IMAGEN_3 === 'true';
+  // Using Imagen 3 for better quality and anatomy handling
+  // Note: Imagen 3 needs ~15-25s, may require Netlify Pro for 26s timeout
+  const useImagen3 = process.env.USE_IMAGEN_3 !== 'false'; // Default to true, can disable with USE_IMAGEN_3=false
   const modelVersion = useImagen3 ? 'imagen-3.0-generate-001' : 'imagegeneration@006';
   const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${modelVersion}:predict`;
 
@@ -81,18 +81,21 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
       parameters: {
         sampleCount: 1,
         aspectRatio: aspectRatioMap[aspectRatio] || '1:1',
-        safetyFilterLevel: 'block_some',
-        personGeneration: 'allow_adult'
+        safetyFilterLevel: 'block_only_high', // Less restrictive for anatomy accuracy
+        personGeneration: 'allow_adult',
+        languageCode: 'en', // Explicit language specification
+        addWatermark: false // No watermark on generated images
       }
     } : {
-      // Imagen 2 format
+      // Imagen 2 format (fallback)
       instances: [{
         prompt: prompt,
       }],
       parameters: {
         sampleCount: 1,
         aspectRatio: aspectRatioMap[aspectRatio] || '1:1',
-        safetyFilterLevel: 'block_some'
+        safetyFilterLevel: 'block_only_high', // Less restrictive for anatomy accuracy
+        languageCode: 'en' // Explicit language specification
       }
     };
 

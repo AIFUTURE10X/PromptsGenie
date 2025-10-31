@@ -119,9 +119,18 @@ exports.handler = async (event, context) => {
           temperature: 0.3
         },
         Quality: {
-          instruction: 'Describe the subject in 30-50 words: physical appearance, clothing with colors, pose, expression, distinctive features.',
-          maxOutputTokens: 600,
-          temperature: 0.3
+          instruction: `Analyze the subject in extreme detail (80-120 words):
+- FACIAL STRUCTURE: face shape, eye shape/color/spacing/size, eyebrow shape, nose shape/size/bridge, lip shape/fullness, jawline definition, cheekbone prominence, chin shape, forehead size
+- SKIN: exact skin tone (use descriptive terms like porcelain, olive, deep brown, etc.), skin texture, complexion details, any visible marks or features
+- HAIR: precise color (including highlights/tones), texture (straight/wavy/curly/coily), style, length, volume, hairline
+- BODY: estimated height category (petite/average/tall), build type (slender/athletic/curvy/stocky), shoulder width, body proportions, posture and stance
+- CLOTHING: detailed description with exact colors, patterns, fit, style, fabric appearance
+- EXPRESSION: facial expression and emotional state
+- POSE: body position and positioning
+- DISTINCTIVE FEATURES: any unique characteristics, accessories, or identifying details
+Focus on MEASURABLE, SPECIFIC details that preserve the subject's exact appearance and identity.`,
+          maxOutputTokens: 1000,
+          temperature: 0.4
         }
       },
       scene: {
