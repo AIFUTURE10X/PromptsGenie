@@ -107,24 +107,40 @@ const ImageUploadComponent = ({ onImageSelect, selectedImage, onClear, label }: 
             <Card className="relative overflow-hidden group">
               <CardContent className="p-0">
                 <div className="relative">
-                  <img
-                    src={`data:image/jpeg;base64,${selectedImage}`}
-                    alt="Selected image"
-                    loading="lazy"
-                    decoding="async"
-                    className="w-full h-auto max-h-96 object-contain bg-black/5 cursor-pointer transition-opacity group-hover:opacity-90"
+                  <div
+                    className="cursor-pointer"
                     onClick={() => setIsLightboxOpen(true)}
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                    <div className="bg-black/50 backdrop-blur-sm rounded-full p-3">
-                      <Maximize2 className="w-6 h-6 text-white" />
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setIsLightboxOpen(true);
+                      }
+                    }}
+                    aria-label="Click to view image in full screen"
+                  >
+                    <img
+                      src={`data:image/jpeg;base64,${selectedImage}`}
+                      alt="Selected image"
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-auto max-h-96 object-contain bg-black/5 transition-opacity group-hover:opacity-90"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                      <div className="bg-black/50 backdrop-blur-sm rounded-full p-3">
+                        <Maximize2 className="w-6 h-6 text-white" />
+                      </div>
                     </div>
                   </div>
                   <Button
                     variant="destructive"
                     size="icon"
-                    className="absolute top-2 right-2 shadow-lg"
-                    onClick={onClear}
+                    className="absolute top-2 right-2 shadow-lg z-10"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onClear();
+                    }}
                     aria-label="Remove image"
                   >
                     <X className="w-4 h-4" />
