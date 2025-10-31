@@ -1,11 +1,22 @@
 const { GoogleAuth } = require('google-auth-library');
 
 async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1', seed) {
+  // Enhanced diagnostics - Check all GOOGLE env vars
+  console.log('🔍 DEBUG: All GOOGLE environment variables:',
+    Object.keys(process.env).filter(k => k.startsWith('GOOGLE')));
+
   // Vertex AI Imagen 3 endpoint
   const projectId = process.env.GOOGLE_CLOUD_PROJECT_ID;
   const location = process.env.GOOGLE_CLOUD_LOCATION || 'us-central1';
 
+  console.log('🔍 DEBUG: GOOGLE_CLOUD_PROJECT_ID raw value:', projectId);
+  console.log('🔍 DEBUG: Variable type:', typeof projectId);
+  console.log('🔍 DEBUG: Variable length:', projectId ? projectId.length : 0);
+  console.log('🔍 DEBUG: Truthiness check:', !!projectId);
+
   if (!projectId) {
+    console.error('❌ CRITICAL: GOOGLE_CLOUD_PROJECT_ID is missing!');
+    console.error('Available env vars:', Object.keys(process.env).length);
     throw new Error('GOOGLE_CLOUD_PROJECT_ID environment variable is required for Vertex AI');
   }
 
