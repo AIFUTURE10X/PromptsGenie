@@ -42,8 +42,14 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
     throw new Error(`Authentication failed: ${authError.message}`);
   }
 
-  // Vertex AI Imagen 3 endpoint
-  const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/imagen-3.0-generate-001:predict`;
+  // Vertex AI Imagen endpoint
+  // Try Imagen 3 first, fallback to Imagen 2 if timeout issues
+  // Note: Free tier Netlify has 10s timeout - Imagen 3 needs ~15-25s, Imagen 2 needs ~5-8s
+  const useImagen3 = process.env.USE_IMAGEN_3 === 'true';
+  const modelVersion = useImagen3 ? 'imagen-3.0-generate-001' : 'imagegeneration@006';
+  const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${modelVersion}:predict`;
+
+  console.log(`🎨 Using model: ${modelVersion} (Imagen ${useImagen3 ? '3' : '2'})`);
 
   // Map aspect ratios to Imagen format
   const aspectRatioMap = {
@@ -58,7 +64,8 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
   const imagePromises = [];
 
   for (let i = 0; i < count; i++) {
-    const requestBody = {
+    // Imagen 2 and Imagen 3 have slightly different request formats
+    const requestBody = useImagen3 ? {
       instances: [{
         prompt: prompt,
       }],
@@ -67,6 +74,16 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
         aspectRatio: aspectRatioMap[aspectRatio] || '1:1',
         safetyFilterLevel: 'block_some',
         personGeneration: 'allow_adult'
+      }
+    } : {
+      // Imagen 2 format
+      instances: [{
+        prompt: prompt,
+      }],
+      parameters: {
+        sampleCount: 1,
+        aspectRatio: aspectRatioMap[aspectRatio] || '1:1',
+        safetyFilterLevel: 'block_some'
       }
     };
 
@@ -104,12 +121,24 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
       console.log(`✅ Image ${i + 1} generated successfully`);
 
       // Extract image data from Vertex AI response
+      // Imagen 3 uses 'bytesBase64Encoded', Imagen 2 uses 'bytesBase64Encoded' or 'image'
       if (result.predictions && result.predictions[0]) {
+        const prediction = result.predictions[0];
+        const imageData = prediction.bytesBase64Encoded || prediction.image;
+
+        if (!imageData) {
+          console.error('No image data in response:', JSON.stringify(result).substring(0, 200));
+          throw new Error('No image data returned from API');
+        }
+
         images.push({
           index: i,
-          imageData: result.predictions[0].bytesBase64Encoded || result.predictions[0].image,
-          mimeType: result.predictions[0].mimeType || 'image/png'
+          imageData: imageData,
+          mimeType: prediction.mimeType || 'image/png'
         });
+      } else {
+        console.error('Invalid response structure:', JSON.stringify(result).substring(0, 200));
+        throw new Error('Invalid response from Vertex AI');
       }
     }
 
