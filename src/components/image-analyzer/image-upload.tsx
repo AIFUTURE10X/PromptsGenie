@@ -11,9 +11,10 @@ interface ImageUploadProps {
   onImageSelect: (imageData: string, file: File) => void;
   selectedImage: string | null;
   onClear: () => void;
+  label?: string;
 }
 
-export function ImageUpload({ onImageSelect, selectedImage, onClear }: ImageUploadProps) {
+export function ImageUpload({ onImageSelect, selectedImage, onClear, label }: ImageUploadProps) {
   const [error, setError] = useState<string | null>(null);
 
   const onDrop = useCallback(
@@ -82,7 +83,7 @@ export function ImageUpload({ onImageSelect, selectedImage, onClear }: ImageUplo
                   <Upload className="w-8 h-8 text-primary" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">
-                  {isDragActive ? 'Drop your image here' : 'Upload an image'}
+                  {isDragActive ? 'Drop your image here' : (label || 'Upload an image')}
                 </h3>
                 <p className="text-sm text-muted-foreground text-center mb-4">
                   Drag and drop or click to select an image
