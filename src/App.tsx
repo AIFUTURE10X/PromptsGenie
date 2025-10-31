@@ -325,11 +325,11 @@ function App() {
 
         // Fast mode: Short and concise (20-40 words)
         const instructionFast =
-          "Describe the main subject/character in 20-40 words. Include: appearance, clothing, pose, and key features. Be specific and concise.";
+          "Describe the main subject/character in 20-40 words. Include: appearance, clothing, pose, expression. Be specific.";
 
-        // Quality mode: Comprehensive and detailed (80-120 words)
+        // Quality mode: Detailed description (50-80 words) - Shortened to avoid MAX_TOKENS
         const instructionQuality =
-          "Create a comprehensive, detailed description of the main subject/character in 80-120 words. Include: 1) Physical characteristics (hair color/style, eye color, skin tone, facial features, body type, approximate age), 2) Clothing and accessories (style, colors, materials, fit, details), 3) Pose and body language (stance, gesture, positioning), 4) Facial expression and mood, 5) Any distinctive features or details that define this character, 6) Visible context or surroundings. Be thorough and specific about everything you can see.";
+          "Describe the main subject/character in detail (50-80 words). Include: physical traits (hair, eyes, face, body, age), clothing style and colors, pose and expression, distinctive features, and visible surroundings. Be specific and comprehensive.";
 
         const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
 
@@ -383,11 +383,11 @@ function App() {
 
         // Fast mode: Short and concise (15-30 words)
         const instructionFast =
-          "Describe the scene/environment in 15-30 words. Include: location/setting, lighting, and atmosphere. Examples: 'dark forest with fog and moonlight', 'modern city skyline at golden hour'. Be specific and concise.";
+          "Describe the scene/environment in 15-30 words. Include: location, lighting, atmosphere. Be specific.";
 
-        // Quality mode: Comprehensive and detailed (60-100 words)
+        // Quality mode: Detailed description (40-60 words) - Shortened to avoid MAX_TOKENS
         const instructionQuality =
-          "Create a comprehensive, detailed description of the scene/environment in 60-100 words. Include: 1) Location and setting (indoor/outdoor, type of place), 2) Architecture or landscape features (buildings, natural elements, structures), 3) Lighting (direction, quality, color temperature, time of day), 4) Atmospheric conditions (weather, fog, clarity, mood), 5) Background elements (objects, vegetation, decorative details), 6) Color palette and overall mood. Be thorough and paint a complete picture of the environment.";
+          "Describe the scene/environment in detail (40-60 words). Include: location/setting, architecture or landscape, lighting direction and quality, atmospheric conditions, background elements, and color mood. Be comprehensive.";
 
         const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
 
@@ -441,11 +441,11 @@ function App() {
 
         // Fast mode: Very short style identification (3-8 words)
         const instructionFast =
-          "Identify the artistic style in 3-8 words. Examples: 'anime style', 'photorealistic 3D render', 'watercolor painting', 'digital concept art'. Be concise.";
+          "Identify the artistic style in 3-8 words. Examples: 'anime style', 'photorealistic', 'watercolor'. Be concise.";
 
-        // Quality mode: Detailed style analysis (30-60 words)
+        // Quality mode: Detailed style analysis (20-40 words) - Shortened to avoid MAX_TOKENS
         const instructionQuality =
-          "Analyze and describe the artistic style in 30-60 words. Include: 1) Core artistic approach (anime, realistic, abstract, etc.), 2) Medium or technique (digital, oil painting, watercolor, 3D render, pencil), 3) Visual characteristics (color palette, line work, shading style, texture), 4) Art movement or influence if apparent (impressionist, cyberpunk, art nouveau). Be specific and descriptive about the visual style elements.";
+          "Describe the artistic style in detail (20-40 words). Include: artistic approach, medium/technique, visual characteristics (colors, lines, shading), and any art movement influence. Be specific.";
         const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
 
         const analyzedStyle = await generateWithImagesREST({ apiKey, model, text: instruction, imageDataUrls, generationConfig: genCfg });
