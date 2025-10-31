@@ -375,20 +375,21 @@ function App() {
         const imageDataUrls = await getImageDataUrls(sceneImages, speedMode);
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
         const model = envModel || "gemini-2.5-flash";  // Use 2.5-flash as default
-        // Use low temperature like the working Style analyzer
+        // Use low temperature and reduced tokens for concise scene descriptions
         const genCfg = speedMode === 'Quality'
-          ? { maxOutputTokens: 500, temperature: 0.3 }
-          : { maxOutputTokens: 400, temperature: 0.3 };
+          ? { maxOutputTokens: 200, temperature: 0.3 }  // Reduced for concise output
+          : { maxOutputTokens: 100, temperature: 0.3 };  // Even more concise for fast mode
 
         const instructionFast =
-          "Analyze this image and describe the scene/environment in a clear, concise prompt. Focus on: location, setting, background, atmosphere, lighting, and key environmental details. Keep it under 50 words and be specific about what you see.";
+          "Describe the scene/environment in 10-20 words. Examples: 'dark forest with fog', 'modern city skyline at sunset', 'cozy bedroom with warm lighting', 'beach with palm trees', 'mountain landscape'. Focus on the main setting and atmosphere.";
 
         const instructionQuality =
-          "Analyze this image and create a detailed prompt describing the scene/environment. Include: location and setting, architecture or landscape features, atmospheric conditions, lighting quality and direction, background elements, weather if visible, and overall mood. Be comprehensive but focused on actual visible details.";
+          "Describe the scene/environment in 20-40 words. Include setting, lighting, atmosphere, and key background elements. Examples: 'medieval castle courtyard with stone walls, torches lighting the area, misty evening atmosphere', 'futuristic cityscape with neon lights, rain-slicked streets, cyberpunk atmosphere'. Be specific but concise.";
 
         const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
 
-        console.log("🏞️ Analyzing scene with simple, focused approach");
+        console.log("🏞️ Analyzing scene with simple prompt and examples");
+        console.log("📝 Scene instruction:", instruction.substring(0, 150) + "...");
         const analyzedScene = await generateWithImagesREST({ apiKey, model, text: instruction, imageDataUrls, generationConfig: genCfg });
 
         // Validate the response
