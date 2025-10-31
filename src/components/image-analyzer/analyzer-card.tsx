@@ -80,7 +80,7 @@ export function AnalyzerCard({
             </div>
             <div className="flex-1">
               <CardTitle className="text-base">{title}</CardTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+              <p className="text-xs text-black mt-0.5">{description}</p>
             </div>
           </div>
         </CardHeader>
@@ -88,14 +88,14 @@ export function AnalyzerCard({
         <CardContent className="flex-1 pt-2">
           <div className="h-full flex items-center justify-center">
             {!imageData ? (
-              <div className="text-center text-muted-foreground">
+              <div className="text-center text-black">
                 <Sparkles className="w-8 h-8 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">Upload an image to analyze</p>
               </div>
             ) : isPending ? (
               <div className="text-center">
                 <Loader2 className="w-8 h-8 mx-auto mb-2 animate-spin text-white" />
-                <p className="text-sm text-muted-foreground">Analyzing...</p>
+                <p className="text-sm text-black">Analyzing...</p>
               </div>
             ) : isError ? (
               <div className="text-center w-full">
@@ -137,7 +137,7 @@ export function AnalyzerCard({
                   </Button>
                 </div>
                 {speedMode === 'Quality' && (
-                  <p className="text-xs text-muted-foreground mt-2 text-center">
+                  <p className="text-xs text-black mt-2 text-center">
                     Quality analysis complete
                   </p>
                 )}
@@ -152,15 +152,15 @@ export function AnalyzerCard({
               </motion.div>
             ) : !autoAnalyze && imageData ? (
               <div className="text-center">
-                <Sparkles className="w-8 h-8 mx-auto mb-3 text-white/70" />
-                <p className="text-sm text-muted-foreground mb-3">Ready to analyze</p>
+                <Sparkles className="w-8 h-8 mx-auto mb-3 text-black/70" />
+                <p className="text-sm text-black mb-3">Ready to analyze</p>
                 <Button onClick={handleManualAnalyze} variant="default" size="lg">
                   <Sparkles className="w-4 h-4 mr-2" />
                   Analyze Now
                 </Button>
               </div>
             ) : (
-              <div className="text-center text-muted-foreground">
+              <div className="text-center text-black">
                 <p className="text-sm">No result available</p>
               </div>
             )}
