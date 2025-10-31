@@ -170,8 +170,8 @@ export function ImageAnalyzer() {
 
         {/* RIGHT COLUMN: Results */}
         <div className="space-y-4 px-4 lg:pl-0 lg:pr-4">
-          {/* Analyzer Cards - Horizontal Row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Analyzer Cards + Combined Prompt - Horizontal Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <AnalyzerCard
               type="subject"
               title="Subject Analysis"
@@ -202,58 +202,59 @@ export function ImageAnalyzer() {
               icon={<Palette className="w-5 h-5 text-primary" />}
               onPromptChange={setStylePrompt}
             />
-          </div>
 
-          {/* Combined Prompt Card */}
-          <AnimatePresence>
-            {combinedPrompt && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Card className="bg-[#F77000] backdrop-blur-sm border-[#F77000]">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="text-xl text-white">Combined Prompt</CardTitle>
-                        <p className="text-sm text-white/80 mt-1">
-                          All three analyses combined into one prompt
-                        </p>
+            {/* Combined Prompt Card */}
+            <AnimatePresence>
+              {combinedPrompt && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.3 }}
+                  className="h-full"
+                >
+                  <Card className="h-full bg-[#F77000] backdrop-blur-sm border-[#F77000]">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="text-lg text-white">Combined Prompt</CardTitle>
+                          <p className="text-xs text-white/80 mt-1">
+                            All three analyses combined
+                          </p>
+                        </div>
+                        <Button
+                          onClick={handleCopyCombined}
+                          variant="secondary"
+                          size="sm"
+                          className="flex items-center gap-2"
+                        >
+                          {copiedCombined ? (
+                            <>
+                              <Check className="w-4 h-4" />
+                              Copied!
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-4 h-4" />
+                              Copy All
+                            </>
+                          )}
+                        </Button>
                       </div>
-                      <Button
-                        onClick={handleCopyCombined}
-                        variant="secondary"
-                        size="sm"
-                        className="flex items-center gap-2"
-                      >
-                        {copiedCombined ? (
-                          <>
-                            <Check className="w-4 h-4" />
-                            Copied!
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-4 h-4" />
-                            Copy All
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <textarea
-                      readOnly
-                      value={combinedPrompt}
-                      className="w-full min-h-32 p-4 rounded-lg bg-black/20 border border-black/30 text-white resize-y focus:outline-none focus:ring-2 focus:ring-white/50"
-                      rows={4}
-                    />
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                    </CardHeader>
+                    <CardContent>
+                      <textarea
+                        readOnly
+                        value={combinedPrompt}
+                        className="w-full h-32 p-4 rounded-lg bg-black/20 border border-black/30 text-white resize-none focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
+                        rows={4}
+                      />
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </div>
