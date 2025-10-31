@@ -46,6 +46,13 @@
   status = 200
   force = true
 
+# Image generation endpoint using Gemini Imagen 3.0
+[[redirects]]
+  from = "/api/gemini/image-gen"
+  to = "/.netlify/functions/gemini-image-gen"
+  status = 200
+  force = true
+
 [[redirects]]
   from = "/api/storyboards/plan"
   to = "/.netlify/functions/storyboards-plan"

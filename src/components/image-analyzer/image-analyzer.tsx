@@ -5,6 +5,7 @@ import { ImageUpload } from './image-upload';
 import { AnalyzerCard } from './analyzer-card';
 import { Button } from '../ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
+import { ImageGenerator } from '../image-generator/image-generator';
 import type { SpeedMode } from '../../lib/schemas';
 
 interface ImageAnalyzerProps {
@@ -223,6 +224,9 @@ export function ImageAnalyzer({
               )}
             </AnimatePresence>
           </div>
+
+          {/* Image Generator Section - Full Width Below Analyzer Cards */}
+          <ImageGenerator prompt={combinedPrompt} />
         </div>
       </div>
     </div>
