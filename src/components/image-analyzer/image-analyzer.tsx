@@ -105,60 +105,64 @@ export function ImageAnalyzer() {
       {/* 2-Column Layout: Images (Left) | Results (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6">
         {/* LEFT COLUMN: Image Uploads */}
-        <div className="space-y-4 px-4 lg:pl-0 lg:pr-0">
-          {/* Subject Image Upload */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold uppercase text-blue-400">Subject</h3>
-              <User className="w-4 h-4 text-blue-400" />
-            </div>
-            <ImageUpload
-              onImageSelect={handleSubjectImageSelect}
-              selectedImage={subjectImage}
-              onClear={() => {
-                setSubjectImage(null);
-                setSubjectFile(null);
-                setSubjectPrompt(null);
-              }}
-              label="Upload Subject"
-            />
-          </div>
+        <div className="px-4 lg:pl-0 lg:pr-0">
+          <Card className="bg-gradient-to-br from-card to-card/80 backdrop-blur-sm">
+            <CardContent className="p-4 space-y-4">
+              {/* Subject Image Upload */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-semibold uppercase text-blue-400">Subject</h3>
+                  <User className="w-4 h-4 text-blue-400" />
+                </div>
+                <ImageUpload
+                  onImageSelect={handleSubjectImageSelect}
+                  selectedImage={subjectImage}
+                  onClear={() => {
+                    setSubjectImage(null);
+                    setSubjectFile(null);
+                    setSubjectPrompt(null);
+                  }}
+                  label="Upload Subject"
+                />
+              </div>
 
-          {/* Scene Image Upload */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold uppercase text-purple-400">Scene</h3>
-              <ImageIcon className="w-4 h-4 text-purple-400" />
-            </div>
-            <ImageUpload
-              onImageSelect={handleSceneImageSelect}
-              selectedImage={sceneImage}
-              onClear={() => {
-                setSceneImage(null);
-                setSceneFile(null);
-                setScenePrompt(null);
-              }}
-              label="Upload Scene"
-            />
-          </div>
+              {/* Scene Image Upload */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-semibold uppercase text-purple-400">Scene</h3>
+                  <ImageIcon className="w-4 h-4 text-purple-400" />
+                </div>
+                <ImageUpload
+                  onImageSelect={handleSceneImageSelect}
+                  selectedImage={sceneImage}
+                  onClear={() => {
+                    setSceneImage(null);
+                    setSceneFile(null);
+                    setScenePrompt(null);
+                  }}
+                  label="Upload Scene"
+                />
+              </div>
 
-          {/* Style Image Upload */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold uppercase text-pink-400">Style</h3>
-              <Palette className="w-4 h-4 text-pink-400" />
-            </div>
-            <ImageUpload
-              onImageSelect={handleStyleImageSelect}
-              selectedImage={styleImage}
-              onClear={() => {
-                setStyleImage(null);
-                setStyleFile(null);
-                setStylePrompt(null);
-              }}
-              label="Upload Style"
-            />
-          </div>
+              {/* Style Image Upload */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-semibold uppercase text-pink-400">Style</h3>
+                  <Palette className="w-4 h-4 text-pink-400" />
+                </div>
+                <ImageUpload
+                  onImageSelect={handleStyleImageSelect}
+                  selectedImage={styleImage}
+                  onClear={() => {
+                    setStyleImage(null);
+                    setStyleFile(null);
+                    setStylePrompt(null);
+                  }}
+                  label="Upload Style"
+                />
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* RIGHT COLUMN: Results */}
