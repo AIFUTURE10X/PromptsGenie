@@ -8,6 +8,7 @@ import BackgroundCanvas from "./components/BackgroundCanvas";
 import BrandHeader from "./components/BrandHeader";
 import { composePrompt, applyRewriteStyle } from "./lib/utils";
 import StoryboardPanel from "./components/StoryboardPanel";
+import { ImageAnalyzer } from "./components/image-analyzer/image-analyzer";
 
 // Local type to coordinate speed across components
 type SpeedMode = 'Fast' | 'Quality';
@@ -24,7 +25,7 @@ function App() {
   const [lastSource, setLastSource] = useState<"edge" | "gemini-mm" | "gemini-text" | "subject" | "scene" | "style" | undefined>(undefined);
 
   // New state for UI mode management
-  const [currentMode, setCurrentMode] = useState<'prompt' | 'storyboard'>('prompt');
+  const [currentMode, setCurrentMode] = useState<'prompt' | 'storyboard' | 'analyzer'>('prompt');
 
   // Missing state variables that are referenced but not declared
   const [useStyle, setUseStyle] = useState(true);
@@ -996,6 +997,16 @@ function App() {
               Prompt Generator
             </button>
             <button
+              onClick={() => setCurrentMode('analyzer')}
+              className={`px-6 py-2 rounded-md font-medium transition-all ${
+                currentMode === 'analyzer'
+                  ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-lg'
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+              }`}
+            >
+              Image Analyzer
+            </button>
+            <button
               onClick={() => setCurrentMode('storyboard')}
               className={`px-6 py-2 rounded-md font-medium transition-all ${
                 currentMode === 'storyboard'
@@ -1090,10 +1101,15 @@ function App() {
               )}
             </div>
           </div>
+        ) : currentMode === 'analyzer' ? (
+          /* Image Analyzer Mode */
+          <div className="min-h-screen">
+            <ImageAnalyzer />
+          </div>
         ) : (
           /* Storyboard Mode */
           <div className="min-h-storyboard bg-gray-900/50 border border-gray-700 rounded-xl">
-            <StoryboardPanel 
+            <StoryboardPanel
               initialPrompt={prompt}
               onBackToPrompts={() => setCurrentMode('prompt')}
             />

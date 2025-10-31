@@ -107,9 +107,129 @@ exports.handler = async (event, context) => {
 
   try {
     console.log('🔧 Received image analysis request');
-    const { prompt, imageDataUrls, model, generationConfig } = JSON.parse(event.body);
+    const requestBody = JSON.parse(event.body);
 
-    console.log('🔧 Request params:', {
+    // Configuration for each analyzer type (for new image analyzer component)
+    const ANALYZER_CONFIG = {
+      subject: {
+        Fast: {
+          instruction: 'Describe the subject in 20-40 words: appearance, clothing, pose, expression.',
+          maxOutputTokens: 400,
+          temperature: 0.3
+        },
+        Quality: {
+          instruction: 'Describe the subject in 30-50 words: physical appearance, clothing with colors, pose, expression, distinctive features.',
+          maxOutputTokens: 600,
+          temperature: 0.3
+        }
+      },
+      scene: {
+        Fast: {
+          instruction: 'Describe the scene in 15-30 words: location, lighting, atmosphere.',
+          maxOutputTokens: 400,
+          temperature: 0.3
+        },
+        Quality: {
+          instruction: 'Describe the scene in 25-40 words: location, architecture/landscape, lighting, atmosphere, key elements.',
+          maxOutputTokens: 600,
+          temperature: 0.3
+        }
+      },
+      style: {
+        Fast: {
+          instruction: "Identify the style in 3-8 words. Example: 'anime style', 'photorealistic'.",
+          maxOutputTokens: 400,
+          temperature: 0.3
+        },
+        Quality: {
+          instruction: 'Describe the style in 15-25 words: artistic approach, medium, visual characteristics.',
+          maxOutputTokens: 500,
+          temperature: 0.3
+        }
+      }
+    };
+
+    // Check if this is a new format request (with analyzerType and speedMode)
+    if (requestBody.imageData && requestBody.analyzerType && requestBody.speedMode) {
+      const { imageData, analyzerType, speedMode } = requestBody;
+
+      console.log(`🔍 ${analyzerType.toUpperCase()} ANALYZER:`);
+      console.log(`   Speed mode: ${speedMode}`);
+
+      // Get configuration for this analyzer
+      const config = ANALYZER_CONFIG[analyzerType][speedMode];
+      console.log(`   Instruction: ${config.instruction}`);
+
+      const imageDataUrl = `data:image/jpeg;base64,${imageData}`;
+
+      console.log('📤 Sending request to Gemini API...');
+      const result = await callGeminiWithImages(
+        config.instruction,
+        [imageDataUrl],
+        'gemini-2.0-flash-exp',
+        {
+          maxOutputTokens: config.maxOutputTokens,
+          temperature: config.temperature
+        }
+      );
+
+      // Extract text from response
+      const candidate = result.candidates?.[0];
+      if (!candidate) {
+        throw new Error('No response from Gemini API');
+      }
+
+      if (candidate.finishReason === 'MAX_TOKENS' && !candidate.content?.parts) {
+        throw new Error('MAX_TOKENS: The API hit token limit before generating any content.');
+      }
+
+      const parts = candidate.content?.parts;
+      if (!parts || !Array.isArray(parts)) {
+        throw new Error('Invalid API response: content.parts is missing');
+      }
+
+      let prompt = '';
+      for (const part of parts) {
+        if (typeof part === 'string') {
+          prompt += part;
+        } else if (part.text) {
+          prompt += part.text;
+        } else if (part.Text) {
+          prompt += part.Text;
+        } else if (part.content) {
+          prompt += part.content;
+        }
+      }
+
+      prompt = prompt.trim();
+
+      if (!prompt) {
+        throw new Error('Failed to extract text from response');
+      }
+
+      console.log(`✅ Successfully generated ${analyzerType} prompt:`, prompt);
+
+      return {
+        statusCode: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({
+          success: true,
+          prompt,
+          details: {
+            finishReason: candidate.finishReason,
+            safetyRatings: candidate.safetyRatings
+          }
+        })
+      };
+    }
+
+    // Legacy format support (for existing features)
+    const { prompt, imageDataUrls, model, generationConfig } = requestBody;
+
+    console.log('🔧 Request params (legacy format):', {
       promptLength: prompt?.length,
       imageCount: imageDataUrls?.length,
       model,
@@ -148,7 +268,10 @@ exports.handler = async (event, context) => {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       },
-      body: JSON.stringify({ error: error.message })
+      body: JSON.stringify({
+        success: false,
+        error: error.message
+      })
     };
   }
 };
