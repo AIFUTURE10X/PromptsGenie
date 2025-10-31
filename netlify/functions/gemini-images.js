@@ -1,5 +1,6 @@
-async function callGeminiWithImages(prompt, imageDataUrls, model = 'gemini-2.5-flash', generationConfig = null) {
-  const endpoint = `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${process.env.GOOGLE_API_KEY}`;
+async function callGeminiWithImages(prompt, imageDataUrls, model = 'gemini-2.0-flash-exp', generationConfig = null) {
+  // Use v1beta API instead of v1 for better model support
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GOOGLE_API_KEY}`;
 
   console.log('🔧 Gemini Image API Call:', {
     model,
@@ -19,8 +20,8 @@ async function callGeminiWithImages(prompt, imageDataUrls, model = 'gemini-2.5-f
       const [header, base64] = dataUrl.split(',');
       const mimeType = header.replace('data:', '').replace(';base64', '');
       return {
-        inlineData: {
-          mimeType,
+        inline_data: {
+          mime_type: mimeType,
           data: base64,
         },
       };
@@ -166,7 +167,7 @@ exports.handler = async (event, context) => {
       const result = await callGeminiWithImages(
         config.instruction,
         [imageDataUrl],
-        'gemini-1.5-flash',
+        'gemini-2.0-flash-exp',
         {
           maxOutputTokens: config.maxOutputTokens,
           temperature: config.temperature
