@@ -545,7 +545,7 @@ function StoryboardPanel({ initialPrompt = "", onBackToPrompts }: StoryboardPane
   };
 
   return (
-    <div className="w-full h-full flex flex-col lg:flex-row gap-6 p-6 min-h-[600px]">
+    <div className="w-full h-full flex flex-col lg:flex-row gap-6 p-6 min-h-storyboard">
       {/* Left Column - Storyboard Gallery (responsive width) */}
       <motion.div
         initial={{ opacity: 0, x: -50 }}

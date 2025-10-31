@@ -232,15 +232,19 @@ All colors MUST be HSL.
     animation: slow-spin 8s linear infinite;
   }
 
-  /* Improved mobile responsiveness for storyboard */
+  /* Custom responsive min-height utility */
+  .min-h-storyboard {
+    min-height: 600px;
+  }
+
   @media (max-width: 1024px) {
-    .min-h-[600px] {
+    .min-h-storyboard {
       min-height: 400px;
     }
   }
 
   @media (max-width: 640px) {
-    .min-h-[600px] {
+    .min-h-storyboard {
       min-height: 300px;
     }
   }

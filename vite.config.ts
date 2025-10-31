@@ -26,14 +26,41 @@ export default defineConfig(({ mode }) => ({
   build: {
     outDir: 'dist',
     sourcemap: false,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          ui: ['@radix-ui/react-collapsible', '@radix-ui/react-popover', '@radix-ui/react-slot'],
-        },
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: mode === 'production',
+        drop_debugger: true,
+        pure_funcs: mode === 'production' ? ['console.log', 'console.info', 'console.debug'] : [],
       },
     },
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          // Split vendor chunks more efficiently
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'react-vendor';
+            }
+            if (id.includes('@radix-ui')) {
+              return 'ui-vendor';
+            }
+            return 'vendor';
+          }
+          // Split by feature
+          if (id.includes('components')) {
+            return 'components';
+          }
+          if (id.includes('lib') || id.includes('helpers')) {
+            return 'utils';
+          }
+        },
+        chunkFileNames: 'assets/js/[name]-[hash].js',
+        entryFileNames: 'assets/js/[name]-[hash].js',
+        assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
+      },
+    },
+    chunkSizeWarningLimit: 1000,
   },
   envPrefix: 'VITE_',
   define: {

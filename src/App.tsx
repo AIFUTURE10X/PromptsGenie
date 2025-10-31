@@ -1090,7 +1090,7 @@ function App() {
           </div>
         ) : (
           /* Storyboard Mode */
-          <div className="min-h-[600px] bg-gray-900/50 border border-gray-700 rounded-xl">
+          <div className="min-h-storyboard bg-gray-900/50 border border-gray-700 rounded-xl">
             <StoryboardPanel 
               initialPrompt={prompt}
               onBackToPrompts={() => setCurrentMode('prompt')}
