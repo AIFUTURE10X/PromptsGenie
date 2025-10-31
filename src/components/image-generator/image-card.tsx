@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Download, Copy, Check, Loader2 } from 'lucide-react';
+import { Download, Copy, Check, Loader2, Trash2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import GLightbox from 'glightbox';
 import 'glightbox/dist/css/glightbox.min.css';
@@ -11,9 +11,10 @@ interface ImageCardProps {
   aspectRatio: string;
   isGenerating: boolean;
   index: number;
+  onDelete?: () => void;
 }
 
-export function ImageCard({ imageData, mimeType, aspectRatio, isGenerating, index }: ImageCardProps) {
+export function ImageCard({ imageData, mimeType, aspectRatio, isGenerating, index, onDelete }: ImageCardProps) {
   const [copied, setCopied] = useState(false);
   const lightboxRef = useRef<any>(null);
 
@@ -54,6 +55,12 @@ export function ImageCard({ imageData, mimeType, aspectRatio, isGenerating, inde
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
       console.error('Failed to copy image:', error);
+    }
+  };
+
+  const handleDelete = () => {
+    if (onDelete) {
+      onDelete();
     }
   };
 
@@ -146,6 +153,15 @@ export function ImageCard({ imageData, mimeType, aspectRatio, isGenerating, inde
                 title="Copy to clipboard"
               >
                 {copied ? <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600" /> : <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+              </Button>
+              <Button
+                onClick={handleDelete}
+                size="icon"
+                variant="destructive"
+                className="bg-red-600/90 hover:bg-red-600"
+                title="Delete image"
+              >
+                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </Button>
             </div>
           </div>

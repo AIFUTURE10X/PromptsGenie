@@ -117,6 +117,10 @@ export function ImageGenerator({ prompt }: ImageGeneratorProps) {
     setError(null);
   };
 
+  const handleDeleteImage = (index: number) => {
+    setGeneratedImages(prevImages => prevImages.filter(img => img.index !== index));
+  };
+
   const handleToggleEnhancement = () => {
     setUseEnhancement(!useEnhancement);
     if (!useEnhancement && !enhancedPrompt && prompt) {
@@ -329,6 +333,7 @@ export function ImageGenerator({ prompt }: ImageGeneratorProps) {
                 imageCount={imageCount}
                 aspectRatio={aspectRatio}
                 isGenerating={isGenerating}
+                onDeleteImage={handleDeleteImage}
               />
             </div>
           )}

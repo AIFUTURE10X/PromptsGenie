@@ -11,9 +11,10 @@ interface ImageGridProps {
   imageCount: number;
   aspectRatio: string;
   isGenerating: boolean;
+  onDeleteImage?: (index: number) => void;
 }
 
-export function ImageGrid({ images, imageCount, aspectRatio, isGenerating }: ImageGridProps) {
+export function ImageGrid({ images, imageCount, aspectRatio, isGenerating, onDeleteImage }: ImageGridProps) {
   // Create array of slots based on selected count
   const slots = Array.from({ length: imageCount }, (_, i) => i);
 
@@ -29,6 +30,7 @@ export function ImageGrid({ images, imageCount, aspectRatio, isGenerating }: Ima
             aspectRatio={aspectRatio}
             isGenerating={isGenerating && !image}
             index={slotIndex}
+            onDelete={() => onDeleteImage?.(slotIndex)}
           />
         );
       })}
