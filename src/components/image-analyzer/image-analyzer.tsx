@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { Zap, Sparkles, User, ImageIcon, Palette, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { Zap, Sparkles, User, ImageIcon, Palette, Copy, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ImageUpload } from './image-upload';
 import { AnalyzerCard } from './analyzer-card';
 import { Button } from '../ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '../ui/collapsible';
 import { ImageGenerator } from '../image-generator/image-generator';
 import type { SpeedMode } from '../../lib/schemas';
 
@@ -45,11 +44,6 @@ export function ImageAnalyzer({
   // Combined prompt copy state
   const [copiedCombined, setCopiedCombined] = useState(false);
 
-  // Collapsible states for upload sections
-  const [subjectOpen, setSubjectOpen] = useState(true);
-  const [sceneOpen, setSceneOpen] = useState(true);
-  const [styleOpen, setStyleOpen] = useState(true);
-
   // Combine prompts
   const combinedPrompt = [subjectPrompt, scenePrompt, stylePrompt]
     .filter(Boolean)
@@ -88,62 +82,40 @@ export function ImageAnalyzer({
           <Card className="bg-[#F77000] backdrop-blur-sm border-[#F77000]">
             <CardContent className="p-3 sm:p-4 space-y-3 sm:space-y-4">
               {/* Subject Image Upload */}
-              <Collapsible open={subjectOpen} onOpenChange={setSubjectOpen}>
-                <CollapsibleTrigger className="w-full group">
-                  <div className="flex items-center justify-between p-2 rounded-lg hover:bg-black/10 transition-colors cursor-pointer">
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                      <h3 className="text-xs sm:text-sm font-semibold uppercase text-white">Subject</h3>
-                    </div>
-                    {subjectOpen ? (
-                      <ChevronUp className="w-4 h-4 text-white transition-transform" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4 text-white transition-transform" />
-                    )}
-                  </div>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="pt-2">
-                  <ImageUpload
-                    onImageSelect={handleSubjectImageSelect}
-                    selectedImage={subjectImage}
-                    onClear={() => {
-                      setSubjectImage(null);
-                      setSubjectFile(null);
-                      setSubjectPrompt(null);
-                    }}
-                    label="Upload Subject"
-                  />
-                </CollapsibleContent>
-              </Collapsible>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xs sm:text-sm font-semibold uppercase text-white">Subject</h3>
+                  <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+                </div>
+                <ImageUpload
+                  onImageSelect={handleSubjectImageSelect}
+                  selectedImage={subjectImage}
+                  onClear={() => {
+                    setSubjectImage(null);
+                    setSubjectFile(null);
+                    setSubjectPrompt(null);
+                  }}
+                  label="Upload Subject"
+                />
+              </div>
 
               {/* Scene Image Upload */}
-              <Collapsible open={sceneOpen} onOpenChange={setSceneOpen}>
-                <CollapsibleTrigger className="w-full group">
-                  <div className="flex items-center justify-between p-2 rounded-lg hover:bg-black/10 transition-colors cursor-pointer">
-                    <div className="flex items-center gap-2">
-                      <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                      <h3 className="text-xs sm:text-sm font-semibold uppercase text-white">Scene</h3>
-                    </div>
-                    {sceneOpen ? (
-                      <ChevronUp className="w-4 h-4 text-white transition-transform" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4 text-white transition-transform" />
-                    )}
-                  </div>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="pt-2">
-                  <ImageUpload
-                    onImageSelect={handleSceneImageSelect}
-                    selectedImage={sceneImage}
-                    onClear={() => {
-                      setSceneImage(null);
-                      setSceneFile(null);
-                      setScenePrompt(null);
-                    }}
-                    label="Upload Scene"
-                  />
-                </CollapsibleContent>
-              </Collapsible>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xs sm:text-sm font-semibold uppercase text-white">Scene</h3>
+                  <ImageIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+                </div>
+                <ImageUpload
+                  onImageSelect={handleSceneImageSelect}
+                  selectedImage={sceneImage}
+                  onClear={() => {
+                    setSceneImage(null);
+                    setSceneFile(null);
+                    setScenePrompt(null);
+                  }}
+                  label="Upload Scene"
+                />
+              </div>
 
               {/* Style Image Upload */}
               <div>
