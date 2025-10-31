@@ -71,11 +71,11 @@ export function AnalyzerCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="h-full bg-gradient-to-br from-[#F74B00]/30 to-[#F74B00]/20 backdrop-blur-sm border-[#F74B00]/50">
+      <Card className="h-full bg-[#F77000] backdrop-blur-sm border-[#F77000]">
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-[#F74B00]/20">
-              {icon || <Sparkles className="w-5 h-5 text-[#F74B00]" />}
+            <div className="p-2 rounded-lg bg-black/20">
+              {icon || <Sparkles className="w-5 h-5 text-white" />}
             </div>
             <div className="flex-1">
               <CardTitle className="text-lg">{title}</CardTitle>
@@ -93,7 +93,7 @@ export function AnalyzerCard({
               </div>
             ) : isPending ? (
               <div className="text-center">
-                <Loader2 className="w-8 h-8 mx-auto mb-2 animate-spin text-[#F74B00]" />
+                <Loader2 className="w-8 h-8 mx-auto mb-2 animate-spin text-white" />
                 <p className="text-sm text-muted-foreground">Analyzing...</p>
               </div>
             ) : isError ? (
@@ -117,7 +117,7 @@ export function AnalyzerCard({
                 animate={{ opacity: 1, scale: 1 }}
                 className="w-full"
               >
-                <div className="relative p-4 rounded-lg bg-[#F74B00]/10 border border-[#F74B00]/30">
+                <div className="relative p-4 rounded-lg bg-black/20 border border-black/30">
                   <p className="text-sm leading-relaxed text-foreground/90 pr-8">
                     {data.prompt}
                   </p>
@@ -151,7 +151,7 @@ export function AnalyzerCard({
               </motion.div>
             ) : !autoAnalyze && imageData ? (
               <div className="text-center">
-                <Sparkles className="w-8 h-8 mx-auto mb-3 text-[#F74B00]/50" />
+                <Sparkles className="w-8 h-8 mx-auto mb-3 text-white/70" />
                 <p className="text-sm text-muted-foreground mb-3">Ready to analyze</p>
                 <Button onClick={handleManualAnalyze} variant="default" size="lg">
                   <Sparkles className="w-4 h-4 mr-2" />
