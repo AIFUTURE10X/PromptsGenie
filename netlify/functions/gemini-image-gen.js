@@ -1,15 +1,13 @@
+const { GoogleAuth } = require('google-auth-library');
+
 async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1', seed) {
   // Vertex AI Imagen 3 endpoint
   const projectId = process.env.GOOGLE_CLOUD_PROJECT_ID;
   const location = process.env.GOOGLE_CLOUD_LOCATION || 'us-central1';
-  const apiKey = process.env.GOOGLE_API_KEY;
 
   if (!projectId) {
     throw new Error('GOOGLE_CLOUD_PROJECT_ID environment variable is required for Vertex AI');
   }
-
-  // Vertex AI Imagen 3 endpoint
-  const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/imagen-3.0-generate-001:predict`;
 
   console.log('🎨 Vertex AI Image Generation Request:', {
     prompt: prompt.substring(0, 100) + '...',
@@ -19,6 +17,33 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
     projectId,
     location
   });
+
+  // Initialize Google Auth with service account credentials
+  let accessToken;
+  try {
+    const credentialsJSON = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
+
+    if (!credentialsJSON) {
+      throw new Error('GOOGLE_APPLICATION_CREDENTIALS_JSON environment variable is required');
+    }
+
+    const auth = new GoogleAuth({
+      credentials: JSON.parse(credentialsJSON),
+      scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+    });
+
+    const client = await auth.getClient();
+    const token = await client.getAccessToken();
+    accessToken = token.token;
+
+    console.log('✅ Successfully obtained OAuth access token');
+  } catch (authError) {
+    console.error('❌ Authentication failed:', authError.message);
+    throw new Error(`Authentication failed: ${authError.message}`);
+  }
+
+  // Vertex AI Imagen 3 endpoint
+  const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/imagen-3.0-generate-001:predict`;
 
   // Map aspect ratios to Imagen format
   const aspectRatioMap = {
@@ -55,7 +80,7 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
+          'Authorization': `Bearer ${accessToken}`,
         },
         body: JSON.stringify(requestBody)
       })
