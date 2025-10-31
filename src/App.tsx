@@ -323,12 +323,13 @@ function App() {
           ? { maxOutputTokens: 500, temperature: 0.3 }
           : { maxOutputTokens: 400, temperature: 0.3 };
 
-        // Simple, focused prompt like the working Style analyzer
+        // Fast mode: Short and concise (20-40 words)
         const instructionFast =
-          "Analyze this image and describe the main subject/character in a clear, concise prompt. Focus on: physical appearance, clothing, pose, expression, and key identifying features. Keep it under 50 words and be specific about what you see.";
+          "Describe the main subject/character in 20-40 words. Include: appearance, clothing, pose, and key features. Be specific and concise.";
 
+        // Quality mode: Comprehensive and detailed (80-120 words)
         const instructionQuality =
-          "Analyze this image and create a detailed prompt describing the main subject/character. Include: physical characteristics (hair, eyes, body type, age), clothing and accessories, pose and expression, distinctive features, and any visible context. Be comprehensive but focused on actual visible details.";
+          "Create a comprehensive, detailed description of the main subject/character in 80-120 words. Include: 1) Physical characteristics (hair color/style, eye color, skin tone, facial features, body type, approximate age), 2) Clothing and accessories (style, colors, materials, fit, details), 3) Pose and body language (stance, gesture, positioning), 4) Facial expression and mood, 5) Any distinctive features or details that define this character, 6) Visible context or surroundings. Be thorough and specific about everything you can see.";
 
         const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
 
@@ -380,11 +381,13 @@ function App() {
           ? { maxOutputTokens: 500, temperature: 0.3 }
           : { maxOutputTokens: 400, temperature: 0.3 };
 
+        // Fast mode: Short and concise (15-30 words)
         const instructionFast =
-          "Describe the scene/environment in 10-20 words. Examples: 'dark forest with fog', 'modern city skyline at sunset', 'cozy bedroom with warm lighting', 'beach with palm trees', 'mountain landscape'. Focus on the main setting and atmosphere.";
+          "Describe the scene/environment in 15-30 words. Include: location/setting, lighting, and atmosphere. Examples: 'dark forest with fog and moonlight', 'modern city skyline at golden hour'. Be specific and concise.";
 
+        // Quality mode: Comprehensive and detailed (60-100 words)
         const instructionQuality =
-          "Describe the scene/environment in 20-40 words. Include setting, lighting, atmosphere, and key background elements. Examples: 'medieval castle courtyard with stone walls, torches lighting the area, misty evening atmosphere', 'futuristic cityscape with neon lights, rain-slicked streets, cyberpunk atmosphere'. Be specific but concise.";
+          "Create a comprehensive, detailed description of the scene/environment in 60-100 words. Include: 1) Location and setting (indoor/outdoor, type of place), 2) Architecture or landscape features (buildings, natural elements, structures), 3) Lighting (direction, quality, color temperature, time of day), 4) Atmospheric conditions (weather, fog, clarity, mood), 5) Background elements (objects, vegetation, decorative details), 6) Color palette and overall mood. Be thorough and paint a complete picture of the environment.";
 
         const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
 
@@ -436,10 +439,13 @@ function App() {
           ? { maxOutputTokens: 500, temperature: 0.3 }
           : { maxOutputTokens: 400, temperature: 0.3 };
 
+        // Fast mode: Very short style identification (3-8 words)
         const instructionFast =
-          "Identify the core artistic style of this image in 2-4 words. Examples: 'anime style', 'photorealistic', 'watercolor painting', 'digital art', 'oil painting', 'comic book style', 'sketch', 'pixel art', etc. Be concise and focus only on the fundamental artistic approach.";
+          "Identify the artistic style in 3-8 words. Examples: 'anime style', 'photorealistic 3D render', 'watercolor painting', 'digital concept art'. Be concise.";
+
+        // Quality mode: Detailed style analysis (30-60 words)
         const instructionQuality =
-          "Identify the core artistic style of this image in 2-6 words. Examples: 'anime style', 'photorealistic photography', 'watercolor painting', 'digital concept art', 'oil painting', 'comic book illustration', 'pencil sketch', 'pixel art', 'impressionist painting', etc. Be concise and focus only on the fundamental artistic approach and medium.";
+          "Analyze and describe the artistic style in 30-60 words. Include: 1) Core artistic approach (anime, realistic, abstract, etc.), 2) Medium or technique (digital, oil painting, watercolor, 3D render, pencil), 3) Visual characteristics (color palette, line work, shading style, texture), 4) Art movement or influence if apparent (impressionist, cyberpunk, art nouveau). Be specific and descriptive about the visual style elements.";
         const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
 
         const analyzedStyle = await generateWithImagesREST({ apiKey, model, text: instruction, imageDataUrls, generationConfig: genCfg });
@@ -700,7 +706,7 @@ function App() {
       const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
 
       console.log("🎨 About to call generateWithImagesREST for style analysis");
-      const analyzedStyle = await generateWithImagesREST({ apiKey, model, text: instruction, imageDataUrls, generationConfig: genCfg });
+      const analyzedStyle = await generateWithImagesREST({ apiKey, model: mmModel, text: instruction, imageDataUrls, generationConfig: genCfg });
       console.log("🎨 Style analysis result:", analyzedStyle);
       console.log("🎨 Setting style analysis to:", analyzedStyle);
       setStyleAnalysis(analyzedStyle);
