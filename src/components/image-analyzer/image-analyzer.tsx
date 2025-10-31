@@ -24,6 +24,7 @@ export function ImageAnalyzer() {
   const [styleFile, setStyleFile] = useState<File | null>(null);
 
   const [speedMode, setSpeedMode] = useState<SpeedMode>('Fast');
+  const [autoAnalyze, setAutoAnalyze] = useState(true);
   const [subjectPrompt, setSubjectPrompt] = useState<string | null>(null);
   const [scenePrompt, setScenePrompt] = useState<string | null>(null);
   const [stylePrompt, setStylePrompt] = useState<string | null>(null);
@@ -85,6 +86,10 @@ export function ImageAnalyzer() {
 
   const toggleSpeedMode = () => {
     setSpeedMode((prev) => (prev === 'Fast' ? 'Quality' : 'Fast'));
+  };
+
+  const toggleAutoAnalyze = () => {
+    setAutoAnalyze((prev) => !prev);
   };
 
   // Combine all prompts into one text
@@ -160,6 +165,36 @@ export function ImageAnalyzer() {
                   <>
                     <ImageIcon className="w-5 h-5 mr-2" />
                     Separate Images
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {/* Auto-Analyze Toggle */}
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-4 border-t border-blue-500/20">
+              <div className="flex-1 text-center md:text-left">
+                <h2 className="text-xl font-semibold mb-2 text-white">Auto-Analyze</h2>
+                <p className="text-sm text-blue-100">
+                  {autoAnalyze
+                    ? 'Images are analyzed automatically when uploaded'
+                    : 'Manual control - click Analyze button when ready'}
+                </p>
+              </div>
+              <Button
+                onClick={toggleAutoAnalyze}
+                size="lg"
+                variant={autoAnalyze ? 'default' : 'secondary'}
+                className="min-w-40"
+              >
+                {autoAnalyze ? (
+                  <>
+                    <Zap className="w-5 h-5 mr-2" />
+                    Auto ON
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5 mr-2" />
+                    Manual
                   </>
                 )}
               </Button>
@@ -257,6 +292,7 @@ export function ImageAnalyzer() {
           description="Analyzes the main subject, appearance, and pose"
           imageData={getSubjectImageData()}
           speedMode={speedMode}
+          autoAnalyze={autoAnalyze}
           icon={<User className="w-5 h-5 text-primary" />}
           onPromptChange={setSubjectPrompt}
         />
@@ -266,6 +302,7 @@ export function ImageAnalyzer() {
           description="Analyzes the environment, lighting, and atmosphere"
           imageData={getSceneImageData()}
           speedMode={speedMode}
+          autoAnalyze={autoAnalyze}
           icon={<ImageIcon className="w-5 h-5 text-primary" />}
           onPromptChange={setScenePrompt}
         />
@@ -275,6 +312,7 @@ export function ImageAnalyzer() {
           description="Identifies artistic style and visual characteristics"
           imageData={getStyleImageData()}
           speedMode={speedMode}
+          autoAnalyze={autoAnalyze}
           icon={<Palette className="w-5 h-5 text-primary" />}
           onPromptChange={setStylePrompt}
         />

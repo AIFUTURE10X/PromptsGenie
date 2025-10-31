@@ -12,6 +12,7 @@ interface AnalyzerCardProps {
   description: string;
   imageData: string | null;
   speedMode: SpeedMode;
+  autoAnalyze: boolean;
   icon?: React.ReactNode;
   onPromptChange?: (prompt: string | null) => void;
 }
@@ -22,6 +23,7 @@ export function AnalyzerCard({
   description,
   imageData,
   speedMode,
+  autoAnalyze,
   icon,
   onPromptChange,
 }: AnalyzerCardProps) {
@@ -31,15 +33,15 @@ export function AnalyzerCard({
     speedMode,
   });
 
-  // Auto-analyze when image or speed mode changes
+  // Auto-analyze when image or speed mode changes (only if autoAnalyze is true)
   useEffect(() => {
-    if (imageData) {
+    if (imageData && autoAnalyze) {
       console.log(`🔄 Auto-analyzing ${type} with ${speedMode} mode...`);
       mutate(imageData);
-    } else {
+    } else if (!imageData) {
       reset();
     }
-  }, [imageData, speedMode, type, mutate, reset]);
+  }, [imageData, speedMode, type, autoAnalyze, mutate, reset]);
 
   // Notify parent when prompt changes
   useEffect(() => {
@@ -53,6 +55,13 @@ export function AnalyzerCard({
       await navigator.clipboard.writeText(data.prompt);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleManualAnalyze = () => {
+    if (imageData) {
+      console.log(`🖱️ Manual analyze triggered for ${type} with ${speedMode} mode...`);
+      mutate(imageData);
     }
   };
 
@@ -88,13 +97,19 @@ export function AnalyzerCard({
                 <p className="text-sm text-muted-foreground">Analyzing...</p>
               </div>
             ) : isError ? (
-              <div className="text-center">
-                <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+              <div className="text-center w-full">
+                <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 mb-3">
                   <p className="text-sm text-destructive font-medium mb-1">Analysis Failed</p>
                   <p className="text-xs text-destructive/80">
                     {error?.message || 'Unknown error occurred'}
                   </p>
                 </div>
+                {!autoAnalyze && (
+                  <Button onClick={handleManualAnalyze} variant="outline" size="sm">
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Retry Analysis
+                  </Button>
+                )}
               </div>
             ) : data?.success && data.prompt ? (
               <motion.div
@@ -125,7 +140,24 @@ export function AnalyzerCard({
                     Quality analysis complete
                   </p>
                 )}
+                {!autoAnalyze && (
+                  <div className="mt-3 text-center">
+                    <Button onClick={handleManualAnalyze} variant="outline" size="sm">
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Re-analyze
+                    </Button>
+                  </div>
+                )}
               </motion.div>
+            ) : !autoAnalyze && imageData ? (
+              <div className="text-center">
+                <Sparkles className="w-8 h-8 mx-auto mb-3 text-primary/50" />
+                <p className="text-sm text-muted-foreground mb-3">Ready to analyze</p>
+                <Button onClick={handleManualAnalyze} variant="default" size="lg">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Analyze Now
+                </Button>
+              </div>
             ) : (
               <div className="text-center text-muted-foreground">
                 <p className="text-sm">No result available</p>
