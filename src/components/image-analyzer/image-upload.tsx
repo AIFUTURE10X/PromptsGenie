@@ -1,9 +1,10 @@
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, Maximize2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
+import { ImageLightbox } from '../ui/image-lightbox';
 import { fileToBase64 } from '../../lib/utils';
 import { imageFileSchema } from '../../lib/schemas';
 
@@ -16,6 +17,7 @@ interface ImageUploadProps {
 
 export function ImageUpload({ onImageSelect, selectedImage, onClear, label }: ImageUploadProps) {
   const [error, setError] = useState<string | null>(null);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
@@ -102,14 +104,20 @@ export function ImageUpload({ onImageSelect, selectedImage, onClear, label }: Im
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3 }}
           >
-            <Card className="relative overflow-hidden">
+            <Card className="relative overflow-hidden group">
               <CardContent className="p-0">
                 <div className="relative">
                   <img
                     src={`data:image/jpeg;base64,${selectedImage}`}
                     alt="Selected"
-                    className="w-full h-auto max-h-96 object-contain bg-black/5"
+                    className="w-full h-auto max-h-96 object-contain bg-black/5 cursor-pointer transition-opacity group-hover:opacity-90"
+                    onClick={() => setIsLightboxOpen(true)}
                   />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    <div className="bg-black/50 backdrop-blur-sm rounded-full p-3">
+                      <Maximize2 className="w-6 h-6 text-white" />
+                    </div>
+                  </div>
                   <Button
                     variant="destructive"
                     size="icon"
@@ -122,6 +130,14 @@ export function ImageUpload({ onImageSelect, selectedImage, onClear, label }: Im
                 </div>
               </CardContent>
             </Card>
+
+            {/* Lightbox */}
+            <ImageLightbox
+              src={`data:image/jpeg;base64,${selectedImage}`}
+              alt="Selected image"
+              isOpen={isLightboxOpen}
+              onClose={() => setIsLightboxOpen(false)}
+            />
           </motion.div>
         )}
       </AnimatePresence>
