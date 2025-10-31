@@ -69,8 +69,8 @@ export function ImageUpload({ onImageSelect, selectedImage, onClear, label }: Im
               {...getRootProps()}
               className={`cursor-pointer transition-all duration-200 ${
                 isDragActive
-                  ? 'border-[#F74B00] bg-[#F74B00]/5 scale-[1.02]'
-                  : 'border-dashed hover:border-[#F74B00]/50 hover:bg-accent/50'
+                  ? 'border-[#F74B00] bg-[#F74B00]/20 scale-[1.02]'
+                  : 'border-dashed hover:border-[#F74B00]/50 hover:bg-[#F74B00]/10'
               }`}
             >
               <CardContent className="flex flex-col items-center justify-center py-12 px-6">

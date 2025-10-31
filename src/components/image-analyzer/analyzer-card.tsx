@@ -71,10 +71,10 @@ export function AnalyzerCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="h-full bg-gradient-to-br from-[#F74B00]/10 to-[#F74B00]/5 backdrop-blur-sm border-[#F74B00]/30">
+      <Card className="h-full bg-gradient-to-br from-[#F74B00]/30 to-[#F74B00]/20 backdrop-blur-sm border-[#F74B00]/50">
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-[#F74B00]/10">
+            <div className="p-2 rounded-lg bg-[#F74B00]/20">
               {icon || <Sparkles className="w-5 h-5 text-[#F74B00]" />}
             </div>
             <div className="flex-1">
@@ -117,7 +117,7 @@ export function AnalyzerCard({
                 animate={{ opacity: 1, scale: 1 }}
                 className="w-full"
               >
-                <div className="relative p-4 rounded-lg bg-[#F74B00]/5 border border-[#F74B00]/10">
+                <div className="relative p-4 rounded-lg bg-[#F74B00]/10 border border-[#F74B00]/30">
                   <p className="text-sm leading-relaxed text-foreground/90 pr-8">
                     {data.prompt}
                   </p>
