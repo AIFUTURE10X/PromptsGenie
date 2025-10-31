@@ -63,9 +63,9 @@ export function ImageAnalyzer() {
   };
 
   return (
-    <div className="w-full max-w-full px-4">
+    <div className="w-full">
       {/* Compact Settings Bar */}
-      <div className="mb-6 flex flex-wrap items-center justify-end gap-3">
+      <div className="mb-6 flex flex-wrap items-center justify-end gap-3 px-4">
         <Button
           onClick={toggleSpeedMode}
           size="sm"
@@ -105,7 +105,7 @@ export function ImageAnalyzer() {
       {/* 2-Column Layout: Images (Left) | Results (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6">
         {/* LEFT COLUMN: Image Uploads */}
-        <div className="space-y-4">
+        <div className="space-y-4 px-4 lg:pl-4 lg:pr-0">
           {/* Subject Image Upload */}
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -162,7 +162,7 @@ export function ImageAnalyzer() {
         </div>
 
         {/* RIGHT COLUMN: Results */}
-        <div className="space-y-4">
+        <div className="space-y-4 px-4 lg:pl-0 lg:pr-4">
           {/* Analyzer Cards */}
           <AnalyzerCard
             type="subject"
