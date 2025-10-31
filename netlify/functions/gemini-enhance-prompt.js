@@ -1,4 +1,4 @@
-async function enhancePromptWithGemini(originalPrompt) {
+async function enhancePromptWithGemini(originalPrompt, subjectPrompt, scenePrompt, stylePrompt) {
   const apiKey = process.env.GOOGLE_API_KEY;
 
   if (!apiKey) {
@@ -9,7 +9,41 @@ async function enhancePromptWithGemini(originalPrompt) {
   const model = 'gemini-2.0-flash-exp';
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-  const enhancementInstruction = `You are an expert prompt engineer for AI image generation. Your task is to enhance the following prompt to produce better, more detailed images from text-to-image models like Imagen.
+  // Build structured instruction based on available components
+  let enhancementInstruction;
+
+  if (subjectPrompt || scenePrompt || stylePrompt) {
+    // We have structured components - use advanced enhancement
+    const components = [];
+    if (subjectPrompt) components.push(`SUBJECT (highest priority - preserve exactly): ${subjectPrompt}`);
+    if (scenePrompt) components.push(`SCENE (context): ${scenePrompt}`);
+    if (stylePrompt) components.push(`STYLE (apply without distorting subject): ${stylePrompt}`);
+
+    enhancementInstruction = `You are an expert prompt engineer for AI image generation (Imagen 3). Create an enhanced prompt from these components:
+
+${components.join('\n')}
+
+CRITICAL RULES:
+1. **SUBJECT INTEGRITY**: The subject's anatomical features, proportions, and identity MUST remain accurate and undistorted
+2. **HIERARCHY**: Subject > Scene > Style. Style should enhance, never distort the subject
+3. **SEPARATION**: Keep subject description first and primary, then blend scene context, then apply style as a visual treatment
+4. **ANATOMICAL ACCURACY**: Explicitly preserve facial features, body proportions, and realistic anatomy
+5. **STYLE APPLICATION**: Apply style to lighting, color palette, artistic medium, and atmosphere - NOT to subject anatomy
+
+Enhance the prompt by:
+- Making subject details more specific and visually descriptive (without changing core features)
+- Adding environmental context from scene
+- Applying style as a rendering technique (e.g., "rendered in [style]", "with [style] aesthetic")
+- Including quality modifiers (highly detailed, professional quality, 8k resolution)
+- Specifying composition and framing
+- Adding appropriate lighting that complements both scene and style
+
+Structure the enhanced prompt as: [Subject details] in [Scene context], [Style treatment], [Quality/composition modifiers]
+
+Keep it concise (100-200 words max). Return ONLY the enhanced prompt, nothing else.`;
+  } else {
+    // Fallback to simple enhancement if no structure provided
+    enhancementInstruction = `You are an expert prompt engineer for AI image generation. Your task is to enhance the following prompt to produce better, more detailed images from text-to-image models like Imagen.
 
 Original prompt: "${originalPrompt}"
 
@@ -23,6 +57,7 @@ Please enhance this prompt by:
 Keep the enhanced prompt concise but descriptive (100-200 words max). Maintain the original intent and subject. Focus on visual elements that will produce stunning images.
 
 Return ONLY the enhanced prompt, nothing else.`;
+  }
 
   console.log('🎨 Enhancing prompt with Gemini Flash 2.5');
   console.log('Original:', originalPrompt.substring(0, 100) + '...');
@@ -117,7 +152,7 @@ exports.handler = async (event, context) => {
   try {
     console.log('🎨 Received prompt enhancement request');
     const requestBody = JSON.parse(event.body);
-    const { prompt } = requestBody;
+    const { prompt, subjectPrompt, scenePrompt, stylePrompt } = requestBody;
 
     if (!prompt || prompt.trim().length === 0) {
       return {
@@ -134,7 +169,13 @@ exports.handler = async (event, context) => {
     }
 
     console.log('📤 Enhancing prompt...');
-    const enhancedPrompt = await enhancePromptWithGemini(prompt);
+    if (subjectPrompt || scenePrompt || stylePrompt) {
+      console.log('📋 Using structured prompt components:');
+      if (subjectPrompt) console.log('  - Subject:', subjectPrompt.substring(0, 50) + '...');
+      if (scenePrompt) console.log('  - Scene:', scenePrompt.substring(0, 50) + '...');
+      if (stylePrompt) console.log('  - Style:', stylePrompt.substring(0, 50) + '...');
+    }
+    const enhancedPrompt = await enhancePromptWithGemini(prompt, subjectPrompt, scenePrompt, stylePrompt);
     console.log(`✅ Successfully enhanced prompt`);
 
     return {

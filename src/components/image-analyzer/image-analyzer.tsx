@@ -287,7 +287,12 @@ export function ImageAnalyzer({
           </div>
 
           {/* Image Generator Section - Full Width Below Analyzer Cards */}
-          <ImageGenerator prompt={combinedPrompt} />
+          <ImageGenerator
+            prompt={combinedPrompt}
+            subjectPrompt={subjectPrompt}
+            scenePrompt={scenePrompt}
+            stylePrompt={stylePrompt}
+          />
         </div>
       </div>
     </div>

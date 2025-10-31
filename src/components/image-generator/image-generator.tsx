@@ -14,9 +14,12 @@ interface GeneratedImage {
 
 interface ImageGeneratorProps {
   prompt: string;
+  subjectPrompt?: string | null;
+  scenePrompt?: string | null;
+  stylePrompt?: string | null;
 }
 
-export function ImageGenerator({ prompt }: ImageGeneratorProps) {
+export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt }: ImageGeneratorProps) {
   const [imageCount, setImageCount] = useState(2);
   const [aspectRatio, setAspectRatio] = useState('1:1');
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
@@ -51,7 +54,12 @@ export function ImageGenerator({ prompt }: ImageGeneratorProps) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt })
+        body: JSON.stringify({
+          prompt,
+          subjectPrompt: subjectPrompt || null,
+          scenePrompt: scenePrompt || null,
+          stylePrompt: stylePrompt || null
+        })
       });
 
       const data = await response.json();
