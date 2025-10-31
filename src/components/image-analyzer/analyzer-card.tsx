@@ -70,8 +70,9 @@ export function AnalyzerCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
+      className="h-full"
     >
-      <Card className="h-full bg-[#F77000] backdrop-blur-sm border-[#F77000]">
+      <Card className="h-full flex flex-col bg-[#F77000] backdrop-blur-sm border-[#F77000]">
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-black/20">
@@ -84,8 +85,8 @@ export function AnalyzerCard({
           </div>
         </CardHeader>
 
-        <CardContent>
-          <div className="min-h-32 flex items-center justify-center">
+        <CardContent className="flex-1">
+          <div className="h-full flex items-center justify-center">
             {!imageData ? (
               <div className="text-center text-muted-foreground">
                 <Sparkles className="w-8 h-8 mx-auto mb-2 opacity-50" />

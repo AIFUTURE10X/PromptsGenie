@@ -171,7 +171,7 @@ export function ImageAnalyzer() {
         {/* RIGHT COLUMN: Results */}
         <div className="space-y-4 px-4 lg:pl-0 lg:pr-4">
           {/* Analyzer Cards + Combined Prompt - Horizontal Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
             <AnalyzerCard
               type="subject"
               title="Subject Analysis"
@@ -213,7 +213,7 @@ export function ImageAnalyzer() {
                   transition={{ duration: 0.3 }}
                   className="h-full"
                 >
-                  <Card className="h-full bg-[#F77000] backdrop-blur-sm border-[#F77000]">
+                  <Card className="h-full flex flex-col bg-[#F77000] backdrop-blur-sm border-[#F77000]">
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <div>
@@ -242,12 +242,11 @@ export function ImageAnalyzer() {
                         </Button>
                       </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="flex-1 flex flex-col">
                       <textarea
                         readOnly
                         value={combinedPrompt}
-                        className="w-full min-h-32 p-4 rounded-lg bg-black/20 border border-black/30 text-white resize-y focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
-                        rows={4}
+                        className="w-full flex-1 p-4 rounded-lg bg-black/20 border border-black/30 text-white resize-none focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
                       />
                     </CardContent>
                   </Card>
