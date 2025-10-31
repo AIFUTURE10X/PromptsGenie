@@ -331,11 +331,11 @@ function App() {
 
         // Fast mode: Short and concise (20-40 words)
         const instructionFast =
-          "Describe the main subject/character in 20-40 words. Include: appearance, clothing, pose, expression. Be specific.";
+          "Describe the subject in 20-40 words: appearance, clothing, pose, expression.";
 
-        // Quality mode: Detailed but concise (40-60 words) - optimized to avoid MAX_TOKENS
+        // Quality mode: More detailed (30-50 words) - MINIMIZED to avoid MAX_TOKENS
         const instructionQuality =
-          "Describe the main subject/character in detail (40-60 words). Include: physical traits (hair, eyes, face, skin, body type, age), complete clothing description with colors and style, accessories, exact pose and body language, facial expression and mood, distinctive features. Be specific and comprehensive.";
+          "Describe the subject in 30-50 words: physical appearance, clothing with colors, pose, expression, distinctive features.";
 
         const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
 
@@ -393,11 +393,11 @@ function App() {
 
         // Fast mode: Short and concise (15-30 words)
         const instructionFast =
-          "Describe the scene/environment in 15-30 words. Include: location, lighting, atmosphere. Be specific.";
+          "Describe the scene in 15-30 words: location, lighting, atmosphere.";
 
-        // Quality mode: Detailed but concise (35-50 words) - optimized to avoid MAX_TOKENS
+        // Quality mode: More detailed (25-40 words) - MINIMIZED to avoid MAX_TOKENS
         const instructionQuality =
-          "Describe the scene/environment in detail (35-50 words). Include: location and setting type, architecture or landscape features, lighting direction and quality, atmospheric conditions, key background elements, color palette and mood. Be comprehensive and specific.";
+          "Describe the scene in 25-40 words: location, architecture/landscape, lighting, atmosphere, key elements.";
 
         const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
 
@@ -455,11 +455,11 @@ function App() {
 
         // Fast mode: Very short style identification (3-8 words)
         const instructionFast =
-          "Identify the artistic style in 3-8 words. Examples: 'anime style', 'photorealistic', 'watercolor'. Be concise.";
+          "Identify the style in 3-8 words. Example: 'anime style', 'photorealistic'.";
 
-        // Quality mode: Detailed analysis (25-40 words) - optimized to avoid MAX_TOKENS
+        // Quality mode: More detailed (15-25 words) - MINIMIZED to avoid MAX_TOKENS
         const instructionQuality =
-          "Describe the artistic style in detail (25-40 words). Include: core artistic approach, medium and technique, visual characteristics (colors, line quality, shading style), and any art movement influence. Be specific and analytical.";
+          "Describe the style in 15-25 words: artistic approach, medium, visual characteristics.";
         const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
 
         console.log("🎨 STYLE ANALYZER:");
