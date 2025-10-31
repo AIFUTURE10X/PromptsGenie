@@ -317,7 +317,7 @@ function App() {
       try {
         const imageDataUrls = await getImageDataUrls(subjectImages, speedMode);
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
-        const model = envModel || "gemini-2.0-flash";
+        const model = envModel || "gemini-2.5-flash";  // Use 2.5-flash as default
         // Use low temperature like the working Style analyzer
         const genCfg = speedMode === 'Quality'
           ? { maxOutputTokens: 500, temperature: 0.3 }
@@ -334,7 +334,15 @@ function App() {
 
         console.log("🔍 Analyzing subject with simple, focused approach");
         const analyzedSubject = await generateWithImagesREST({ apiKey, model, text: instruction, imageDataUrls, generationConfig: genCfg });
+
+        // Validate the response
+        if (!analyzedSubject || analyzedSubject.length === 0) {
+          console.error("❌ Subject analysis returned empty response");
+          throw new Error("Subject analysis failed - no text generated");
+        }
+
         if (!cancelled) {
+          console.log("✅ Subject analysis successful:", analyzedSubject.substring(0, 100) + "...");
           setSubjectAnalysis(analyzedSubject);
         }
       } catch (e2) {
@@ -366,7 +374,7 @@ function App() {
       try {
         const imageDataUrls = await getImageDataUrls(sceneImages, speedMode);
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
-        const model = envModel || "gemini-2.0-flash";
+        const model = envModel || "gemini-2.5-flash";  // Use 2.5-flash as default
         // Use low temperature like the working Style analyzer
         const genCfg = speedMode === 'Quality'
           ? { maxOutputTokens: 500, temperature: 0.3 }
@@ -382,7 +390,15 @@ function App() {
 
         console.log("🏞️ Analyzing scene with simple, focused approach");
         const analyzedScene = await generateWithImagesREST({ apiKey, model, text: instruction, imageDataUrls, generationConfig: genCfg });
+
+        // Validate the response
+        if (!analyzedScene || analyzedScene.length === 0) {
+          console.error("❌ Scene analysis returned empty response");
+          throw new Error("Scene analysis failed - no text generated");
+        }
+
         if (!cancelled) {
+          console.log("✅ Scene analysis successful:", analyzedScene.substring(0, 100) + "...");
           setSceneAnalysis(analyzedScene);
         }
       } catch (e2) {
@@ -414,7 +430,7 @@ function App() {
       try {
         const imageDataUrls = await getImageDataUrls(styleImages, speedMode);
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
-        const model = envModel || "gemini-2.0-flash";
+        const model = envModel || "gemini-2.5-flash";  // Use 2.5-flash as default
         const genCfg = speedMode === 'Quality'
           ? { maxOutputTokens: 500, temperature: 0.3 }
           : { maxOutputTokens: 400, temperature: 0.3 };
@@ -426,7 +442,15 @@ function App() {
         const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
 
         const analyzedStyle = await generateWithImagesREST({ apiKey, model, text: instruction, imageDataUrls, generationConfig: genCfg });
+
+        // Validate the response
+        if (!analyzedStyle || analyzedStyle.length === 0) {
+          console.error("❌ Style analysis returned empty response");
+          throw new Error("Style analysis failed - no text generated");
+        }
+
         if (!cancelled) {
+          console.log("✅ Style analysis successful:", analyzedStyle);
           setStyleAnalysis(analyzedStyle);
         }
       } catch (e2) {
