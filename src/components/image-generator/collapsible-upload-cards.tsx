@@ -139,13 +139,17 @@ export function CollapsibleUploadCards({
               initial={false}
               animate={{
                 height: isExpanded ? 'auto' : '60px',
-                scaleX: isExpanded ? 1 : 0.98,
+                width: isExpanded ? '100%' : '95%',
+                x: isExpanded ? 0 : 20,
               }}
               transition={{
                 duration: 0.3,
                 ease: 'easeInOut',
               }}
-              style={{ originX: 1 }} // Right side origin for right-to-left effect
+              style={{
+                transformOrigin: 'right center',
+                marginLeft: 'auto',
+              }}
               className="overflow-hidden"
             >
               <Card className="bg-[#F77000] border-2 border-dashed border-black">
