@@ -36,24 +36,9 @@ export default defineConfig(({ mode }) => ({
     },
     rollupOptions: {
       output: {
-        manualChunks: (id) => {
-          // Split vendor chunks more efficiently
-          if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'react-vendor';
-            }
-            if (id.includes('@radix-ui')) {
-              return 'ui-vendor';
-            }
-            return 'vendor';
-          }
-          // Split by feature
-          if (id.includes('components')) {
-            return 'components';
-          }
-          if (id.includes('lib') || id.includes('helpers')) {
-            return 'utils';
-          }
+        manualChunks: {
+          // Keep React together in one chunk - critical for proper loading order
+          'react-vendor': ['react', 'react-dom', 'react/jsx-runtime'],
         },
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
