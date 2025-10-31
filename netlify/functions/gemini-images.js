@@ -140,9 +140,18 @@ Focus on MEASURABLE, SPECIFIC details that preserve the subject's exact appearan
           temperature: 0.3
         },
         Quality: {
-          instruction: 'Describe the scene in 25-40 words: location, architecture/landscape, lighting, atmosphere, key elements.',
-          maxOutputTokens: 600,
-          temperature: 0.3
+          instruction: `Analyze the scene in comprehensive detail (60-100 words):
+- LOCATION & SETTING: exact type of environment (indoor/outdoor, specific location type like office, park, street, etc.), spatial layout and depth
+- ARCHITECTURE/LANDSCAPE: building structures, natural features, terrain, background elements, foreground objects
+- LIGHTING: light source direction (front/back/side lit), quality (soft/harsh/diffused), color temperature (warm/cool/neutral), time of day indicators, shadows and highlights
+- ATMOSPHERIC CONDITIONS: weather, sky appearance, air quality (clear/hazy/foggy), environmental mood
+- KEY ELEMENTS: prominent objects, furniture, vegetation, props, structural features
+- SPATIAL RELATIONSHIPS: positioning of elements, distance and depth cues, perspective and scale
+- COLOR PALETTE: dominant colors in the environment, color harmonies, saturation levels
+- ENVIRONMENTAL DETAILS: textures, materials, surfaces, patterns in the surroundings
+Focus on PRECISE, SPECIFIC details that would allow exact scene recreation.`,
+          maxOutputTokens: 800,
+          temperature: 0.4
         }
       },
       style: {

@@ -15,37 +15,46 @@ async function enhancePromptWithGemini(originalPrompt, subjectPrompt, scenePromp
   if (subjectPrompt || scenePrompt || stylePrompt) {
     // We have structured components - use advanced enhancement
     const components = [];
-    if (subjectPrompt) components.push(`SUBJECT (highest priority - preserve exactly): ${subjectPrompt}`);
-    if (scenePrompt) components.push(`SCENE (context): ${scenePrompt}`);
+    if (subjectPrompt) components.push(`SUBJECT (critical priority - preserve exactly): ${subjectPrompt}`);
+    if (scenePrompt) components.push(`SCENE (critical priority - recreate exactly): ${scenePrompt}`);
     if (stylePrompt) {
       // Add style intensity guidance
       const intensityNote = {
         subtle: ' (apply as SUBTLE aesthetic hints only - photorealistic base required)',
-        moderate: ' (balance style with realism - render subject realistically in style)',
+        moderate: ' (balance style with realism - render subject and scene realistically in style)',
         strong: ' (full artistic interpretation allowed - style takes priority)'
       }[styleIntensity] || '';
-      components.push(`STYLE (apply without distorting subject${intensityNote}): ${stylePrompt}`);
+      components.push(`STYLE (apply without distorting subject or scene${intensityNote}): ${stylePrompt}`);
     }
 
     enhancementInstruction = `You are an expert prompt engineer for AI image generation (Imagen 3). Create an enhanced prompt from these components:
 
 ${components.join('\n')}
 
-CRITICAL RULES - ANATOMY PRESERVATION:
+CRITICAL RULES - SUBJECT & SCENE PRESERVATION:
 1. **SUBJECT INTEGRITY**: The subject's anatomical features, proportions, and identity MUST remain EXACTLY as described - no alterations, no artistic interpretation
-2. **HIERARCHY**: Subject > Scene > Style. Style should enhance the presentation, NEVER modify the subject's physical appearance
-3. **SEPARATION**: Keep subject description first and complete, then blend scene context, then apply style ONLY to rendering technique
-4. **ANATOMICAL ACCURACY**: Explicitly preserve facial features, body proportions, realistic human anatomy. Add phrases like "maintaining exact facial proportions", "preserving realistic human anatomy", "keeping subject identity unchanged"
-5. **STYLE APPLICATION**: Apply style ONLY to: lighting, color palette, artistic medium/rendering, atmosphere, background treatment - NEVER to subject anatomy, facial features, or body proportions
+2. **SCENE ACCURACY**: The scene/environment MUST be recreated EXACTLY as described - location, lighting, spatial layout, atmospheric conditions, and all environmental details are mandatory
+3. **HIERARCHY**: Subject = Scene > Style. Style should enhance the presentation, NEVER modify the subject's physical appearance OR the scene's environmental characteristics
+4. **SEPARATION**: Keep subject description complete, integrate scene details as critical environment, then apply style ONLY to rendering technique
+5. **ANATOMICAL & ENVIRONMENTAL ACCURACY**: Preserve facial features, body proportions, realistic human anatomy AND preserve lighting direction, spatial relationships, environmental elements exactly as specified
+6. **STYLE APPLICATION**: Apply style ONLY to: artistic medium/rendering technique, color grading, visual treatment - NEVER to subject anatomy OR scene composition/layout
 
-MANDATORY ANATOMY PRESERVATION PHRASES:
+MANDATORY PRESERVATION PHRASES:
+SUBJECT:
 - Include "maintaining exact facial proportions and features"
 - Include "preserving realistic human anatomy and body structure"
 - Include "keeping subject's physical appearance unchanged"
 - Add "photorealistic rendering of subject" before any artistic style modifiers
 
+SCENE:
+- Include "recreating the exact lighting conditions and direction"
+- Include "preserving the spatial layout and environmental composition"
+- Include "maintaining the specified location and atmospheric conditions"
+- Add "accurate environmental details as described" to ensure scene fidelity
+
 AVOID (Negative Prompt Simulation):
-Never allow: distorted anatomy, unrealistic proportions, exaggerated facial features, anime-style eyes (unless explicitly requested), stylized body shapes, altered facial structure, morphed features
+SUBJECT: distorted anatomy, unrealistic proportions, exaggerated facial features, anime-style eyes (unless explicitly requested), stylized body shapes, altered facial structure, morphed features
+SCENE: wrong lighting direction, altered spatial relationships, changed environmental layout, incorrect atmospheric conditions, missing key scene elements, modified location type
 
 STYLE INTENSITY RULES (currently set to: ${styleIntensity.toUpperCase()}):
 ${styleIntensity === 'subtle' ? `- Add "photorealistic rendering with subtle [style] aesthetic"
@@ -61,13 +70,14 @@ ${styleIntensity === 'subtle' ? `- Add "photorealistic rendering with subtle [st
 
 Enhance the prompt by:
 - Making subject details more specific and visually descriptive (without changing any core features)
-- Adding environmental context from scene
+- Making scene details more specific and spatially accurate (without changing environmental characteristics)
+- Ensuring lighting, atmosphere, and spatial layout from scene are explicitly stated
 - Applying style as appropriate for ${styleIntensity} intensity level
 - Including quality modifiers (highly detailed, professional quality, 8k resolution, sharp focus)
-- Specifying composition and framing
-- Adding appropriate lighting that complements both scene and style
+- Specifying composition that honors the scene's spatial relationships
+- Integrating all scene elements (location, lighting, atmosphere) as mandatory requirements
 
-Structure the enhanced prompt as: [Subject details with anatomy preservation phrases] in [Scene context], [Style treatment based on intensity], [Quality/composition modifiers]
+Structure the enhanced prompt as: [Subject details with preservation phrases] positioned in [Complete scene environment with lighting/spatial/atmospheric details], [Style treatment applied only to rendering technique], [Quality/composition modifiers]
 
 Keep it concise (120-200 words max). Return ONLY the enhanced prompt, nothing else.`;
   } else {
