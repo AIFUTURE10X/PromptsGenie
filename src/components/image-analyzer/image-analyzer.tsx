@@ -67,48 +67,47 @@ export function ImageAnalyzer() {
 
   return (
     <div className="w-full">
-      {/* Compact Settings Bar */}
-      <div className="mb-6 flex flex-wrap items-center justify-end gap-3 px-4 lg:pr-0">
-        <Button
-          onClick={toggleSpeedMode}
-          size="sm"
-          variant={speedMode === 'Quality' ? 'default' : 'secondary'}
-        >
-          {speedMode === 'Fast' ? (
-            <>
-              <Zap className="w-4 h-4 mr-2" />
-              Fast
-            </>
-          ) : (
-            <>
-              <Sparkles className="w-4 h-4 mr-2" />
-              Quality
-            </>
-          )}
-        </Button>
-        <Button
-          onClick={toggleAutoAnalyze}
-          size="sm"
-          variant={autoAnalyze ? 'default' : 'secondary'}
-        >
-          {autoAnalyze ? (
-            <>
-              <Zap className="w-4 h-4 mr-2" />
-              Auto
-            </>
-          ) : (
-            <>
-              <Sparkles className="w-4 h-4 mr-2" />
-              Manual
-            </>
-          )}
-        </Button>
-      </div>
-
       {/* 2-Column Layout: Images (Left) | Results (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6">
         {/* LEFT COLUMN: Image Uploads */}
         <div className="px-4 lg:pl-0 lg:pr-0">
+          {/* Settings Buttons */}
+          <div className="mb-4 flex flex-wrap items-center gap-3">
+            <Button
+              onClick={toggleSpeedMode}
+              size="sm"
+              variant={speedMode === 'Quality' ? 'default' : 'secondary'}
+            >
+              {speedMode === 'Fast' ? (
+                <>
+                  <Zap className="w-4 h-4 mr-2" />
+                  Fast
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Quality
+                </>
+              )}
+            </Button>
+            <Button
+              onClick={toggleAutoAnalyze}
+              size="sm"
+              variant={autoAnalyze ? 'default' : 'secondary'}
+            >
+              {autoAnalyze ? (
+                <>
+                  <Zap className="w-4 h-4 mr-2" />
+                  Auto
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Manual
+                </>
+              )}
+            </Button>
+          </div>
           <Card className="bg-[#F77000] backdrop-blur-sm border-[#F77000]">
             <CardContent className="p-4 space-y-4">
               {/* Subject Image Upload */}
