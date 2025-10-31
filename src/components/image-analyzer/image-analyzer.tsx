@@ -111,8 +111,8 @@ export function ImageAnalyzer() {
               {/* Subject Image Upload */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-semibold uppercase text-blue-400">Subject</h3>
-                  <User className="w-4 h-4 text-blue-400" />
+                  <h3 className="text-sm font-semibold uppercase text-white">Subject</h3>
+                  <User className="w-4 h-4 text-white" />
                 </div>
                 <ImageUpload
                   onImageSelect={handleSubjectImageSelect}
@@ -129,8 +129,8 @@ export function ImageAnalyzer() {
               {/* Scene Image Upload */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-semibold uppercase text-purple-400">Scene</h3>
-                  <ImageIcon className="w-4 h-4 text-purple-400" />
+                  <h3 className="text-sm font-semibold uppercase text-white">Scene</h3>
+                  <ImageIcon className="w-4 h-4 text-white" />
                 </div>
                 <ImageUpload
                   onImageSelect={handleSceneImageSelect}
@@ -147,8 +147,8 @@ export function ImageAnalyzer() {
               {/* Style Image Upload */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-semibold uppercase text-pink-400">Style</h3>
-                  <Palette className="w-4 h-4 text-pink-400" />
+                  <h3 className="text-sm font-semibold uppercase text-white">Style</h3>
+                  <Palette className="w-4 h-4 text-white" />
                 </div>
                 <ImageUpload
                   onImageSelect={handleStyleImageSelect}
