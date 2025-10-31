@@ -66,194 +66,192 @@ export function ImageAnalyzer() {
   };
 
   return (
-    <div className="w-full">
-      {/* 2-Column Layout: Images (Left) | Results (Right) */}
-      <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6">
-        {/* LEFT COLUMN: Image Uploads */}
-        <div className="px-4 lg:pl-0 lg:pr-0">
-          {/* Settings Buttons */}
-          <div className="mb-4 flex flex-wrap items-center gap-3">
-            <Button
-              onClick={toggleSpeedMode}
-              size="sm"
-              variant={speedMode === 'Quality' ? 'default' : 'secondary'}
-            >
-              {speedMode === 'Fast' ? (
-                <>
-                  <Zap className="w-4 h-4 mr-2" />
-                  Fast
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Quality
-                </>
-              )}
-            </Button>
-            <Button
-              onClick={toggleAutoAnalyze}
-              size="sm"
-              variant={autoAnalyze ? 'default' : 'secondary'}
-            >
-              {autoAnalyze ? (
-                <>
-                  <Zap className="w-4 h-4 mr-2" />
-                  Auto
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Manual
-                </>
-              )}
-            </Button>
-          </div>
+    <div className="w-full px-4">
+      {/* Settings Buttons */}
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        <Button
+          onClick={toggleSpeedMode}
+          size="sm"
+          variant={speedMode === 'Quality' ? 'default' : 'secondary'}
+        >
+          {speedMode === 'Fast' ? (
+            <>
+              <Zap className="w-4 h-4 mr-2" />
+              Fast
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-4 h-4 mr-2" />
+              Quality
+            </>
+          )}
+        </Button>
+        <Button
+          onClick={toggleAutoAnalyze}
+          size="sm"
+          variant={autoAnalyze ? 'default' : 'secondary'}
+        >
+          {autoAnalyze ? (
+            <>
+              <Zap className="w-4 h-4 mr-2" />
+              Auto
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-4 h-4 mr-2" />
+              Manual
+            </>
+          )}
+        </Button>
+      </div>
+
+      <div className="space-y-4">
+        {/* Subject Row: Upload + Analysis */}
+        <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-4">
           <Card className="bg-[#F77000] backdrop-blur-sm border-[#F77000]">
-            <CardContent className="p-4 space-y-4">
-              {/* Subject Image Upload */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-semibold uppercase text-white">Subject</h3>
-                  <User className="w-4 h-4 text-white" />
-                </div>
-                <ImageUpload
-                  onImageSelect={handleSubjectImageSelect}
-                  selectedImage={subjectImage}
-                  onClear={() => {
-                    setSubjectImage(null);
-                    setSubjectFile(null);
-                    setSubjectPrompt(null);
-                  }}
-                  label="Upload Subject"
-                />
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-semibold uppercase text-white">Subject</h3>
+                <User className="w-4 h-4 text-white" />
               </div>
-
-              {/* Scene Image Upload */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-semibold uppercase text-white">Scene</h3>
-                  <ImageIcon className="w-4 h-4 text-white" />
-                </div>
-                <ImageUpload
-                  onImageSelect={handleSceneImageSelect}
-                  selectedImage={sceneImage}
-                  onClear={() => {
-                    setSceneImage(null);
-                    setSceneFile(null);
-                    setScenePrompt(null);
-                  }}
-                  label="Upload Scene"
-                />
-              </div>
-
-              {/* Style Image Upload */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-semibold uppercase text-white">Style</h3>
-                  <Palette className="w-4 h-4 text-white" />
-                </div>
-                <ImageUpload
-                  onImageSelect={handleStyleImageSelect}
-                  selectedImage={styleImage}
-                  onClear={() => {
-                    setStyleImage(null);
-                    setStyleFile(null);
-                    setStylePrompt(null);
-                  }}
-                  label="Upload Style"
-                />
-              </div>
+              <ImageUpload
+                onImageSelect={handleSubjectImageSelect}
+                selectedImage={subjectImage}
+                onClear={() => {
+                  setSubjectImage(null);
+                  setSubjectFile(null);
+                  setSubjectPrompt(null);
+                }}
+                label="Upload Subject"
+              />
             </CardContent>
           </Card>
+          <AnalyzerCard
+            type="subject"
+            title="Subject Analysis"
+            description="Analyzes the main subject, appearance, and pose"
+            imageData={subjectImage}
+            speedMode={speedMode}
+            autoAnalyze={autoAnalyze}
+            icon={<User className="w-5 h-5 text-primary" />}
+            onPromptChange={setSubjectPrompt}
+          />
         </div>
 
-        {/* RIGHT COLUMN: Results */}
-        <div className="space-y-4 px-4 lg:pl-0 lg:pr-4">
-          {/* Analyzer Cards + Combined Prompt - Horizontal Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
-            <AnalyzerCard
-              type="subject"
-              title="Subject Analysis"
-              description="Analyzes the main subject, appearance, and pose"
-              imageData={subjectImage}
-              speedMode={speedMode}
-              autoAnalyze={autoAnalyze}
-              icon={<User className="w-5 h-5 text-primary" />}
-              onPromptChange={setSubjectPrompt}
-            />
-            <AnalyzerCard
-              type="scene"
-              title="Scene Analysis"
-              description="Analyzes the environment, lighting, and atmosphere"
-              imageData={sceneImage}
-              speedMode={speedMode}
-              autoAnalyze={autoAnalyze}
-              icon={<ImageIcon className="w-5 h-5 text-primary" />}
-              onPromptChange={setScenePrompt}
-            />
-            <AnalyzerCard
-              type="style"
-              title="Style Analysis"
-              description="Identifies artistic style and visual characteristics"
-              imageData={styleImage}
-              speedMode={speedMode}
-              autoAnalyze={autoAnalyze}
-              icon={<Palette className="w-5 h-5 text-primary" />}
-              onPromptChange={setStylePrompt}
-            />
-
-            {/* Combined Prompt Card */}
-            <AnimatePresence>
-              {combinedPrompt && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.3 }}
-                  className="h-full"
-                >
-                  <Card className="h-full flex flex-col bg-[#F77000] backdrop-blur-sm border-[#F77000]">
-                    <CardHeader className="pb-2">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <CardTitle className="text-base text-white">Combined Prompt</CardTitle>
-                          <p className="text-xs text-white/80 mt-0.5">
-                            All three analyses combined
-                          </p>
-                        </div>
-                        <Button
-                          onClick={handleCopyCombined}
-                          variant="secondary"
-                          size="sm"
-                          className="flex items-center gap-1.5"
-                        >
-                          {copiedCombined ? (
-                            <>
-                              <Check className="w-3.5 h-3.5" />
-                              Copied!
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-3.5 h-3.5" />
-                              Copy All
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="flex-1 flex flex-col pt-2">
-                      <textarea
-                        readOnly
-                        value={combinedPrompt}
-                        className="w-full flex-1 p-2.5 rounded-lg bg-black/20 border border-black/30 text-white resize-none focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
-                      />
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+        {/* Scene Row: Upload + Analysis */}
+        <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-4">
+          <Card className="bg-[#F77000] backdrop-blur-sm border-[#F77000]">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-semibold uppercase text-white">Scene</h3>
+                <ImageIcon className="w-4 h-4 text-white" />
+              </div>
+              <ImageUpload
+                onImageSelect={handleSceneImageSelect}
+                selectedImage={sceneImage}
+                onClear={() => {
+                  setSceneImage(null);
+                  setSceneFile(null);
+                  setScenePrompt(null);
+                }}
+                label="Upload Scene"
+              />
+            </CardContent>
+          </Card>
+          <AnalyzerCard
+            type="scene"
+            title="Scene Analysis"
+            description="Analyzes the environment, lighting, and atmosphere"
+            imageData={sceneImage}
+            speedMode={speedMode}
+            autoAnalyze={autoAnalyze}
+            icon={<ImageIcon className="w-5 h-5 text-primary" />}
+            onPromptChange={setScenePrompt}
+          />
         </div>
+
+        {/* Style Row: Upload + Analysis */}
+        <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-4">
+          <Card className="bg-[#F77000] backdrop-blur-sm border-[#F77000]">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-semibold uppercase text-white">Style</h3>
+                <Palette className="w-4 h-4 text-white" />
+              </div>
+              <ImageUpload
+                onImageSelect={handleStyleImageSelect}
+                selectedImage={styleImage}
+                onClear={() => {
+                  setStyleImage(null);
+                  setStyleFile(null);
+                  setStylePrompt(null);
+                }}
+                label="Upload Style"
+              />
+            </CardContent>
+          </Card>
+          <AnalyzerCard
+            type="style"
+            title="Style Analysis"
+            description="Identifies artistic style and visual characteristics"
+            imageData={styleImage}
+            speedMode={speedMode}
+            autoAnalyze={autoAnalyze}
+            icon={<Palette className="w-5 h-5 text-primary" />}
+            onPromptChange={setStylePrompt}
+          />
+        </div>
+
+        {/* Combined Prompt Card - Full Width */}
+        <AnimatePresence>
+          {combinedPrompt && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Card className="bg-[#F77000] backdrop-blur-sm border-[#F77000]">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-base text-white">Combined Prompt</CardTitle>
+                      <p className="text-xs text-white/80 mt-0.5">
+                        All three analyses combined
+                      </p>
+                    </div>
+                    <Button
+                      onClick={handleCopyCombined}
+                      variant="secondary"
+                      size="sm"
+                      className="flex items-center gap-1.5"
+                    >
+                      {copiedCombined ? (
+                        <>
+                          <Check className="w-3.5 h-3.5" />
+                          Copied!
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          Copy All
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-2">
+                  <textarea
+                    readOnly
+                    value={combinedPrompt}
+                    className="w-full min-h-32 p-2.5 rounded-lg bg-black/20 border border-black/30 text-white resize-y focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
+                    rows={4}
+                  />
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
