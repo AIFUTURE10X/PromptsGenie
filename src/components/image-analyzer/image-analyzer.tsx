@@ -106,7 +106,7 @@ export function ImageAnalyzer() {
       <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6">
         {/* LEFT COLUMN: Image Uploads */}
         <div className="px-4 lg:pl-0 lg:pr-0">
-          <Card className="bg-gradient-to-br from-card to-card/80 backdrop-blur-sm">
+          <Card className="bg-gradient-to-br from-[#ea663a]/10 to-[#ea663a]/5 backdrop-blur-sm border-[#ea663a]/30">
             <CardContent className="p-4 space-y-4">
               {/* Subject Image Upload */}
               <div>
@@ -210,7 +210,7 @@ export function ImageAnalyzer() {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <Card className="bg-gradient-to-br from-green-500/10 to-blue-500/10 backdrop-blur-sm border-green-500/20">
+                <Card className="bg-gradient-to-br from-[#ea663a]/10 to-[#ea663a]/5 backdrop-blur-sm border-[#ea663a]/30">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div>
