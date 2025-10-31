@@ -995,8 +995,8 @@ function App() {
         <BrandHeader logoSrc="Genie.png" />
         
         {/* Mode Toggle Navigation */}
-        <div className="flex justify-between items-center mt-4 mb-6">
-          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-1 flex gap-1 mx-auto">
+        <div className="flex justify-center items-center mt-4 mb-6 gap-3">
+          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-1 flex gap-1">
             <button
               onClick={() => setCurrentMode('analyzer')}
               className={`px-6 py-2 rounded-md font-medium transition-all ${
@@ -1019,9 +1019,9 @@ function App() {
             </button>
           </div>
 
-          {/* Settings Buttons - Only visible in Analyzer mode - Right Side */}
+          {/* Settings Buttons - Only visible in Analyzer mode - Left Side */}
           {currentMode === 'analyzer' && (
-            <div className="flex gap-2 absolute right-4">
+            <div className="flex gap-2">
               <button
                 onClick={toggleSpeedMode}
                 className={`px-4 py-2 rounded-md font-medium text-sm border transition-all flex items-center gap-2 ${
