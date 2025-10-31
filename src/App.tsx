@@ -318,32 +318,25 @@ function App() {
         const imageDataUrls = await getImageDataUrls(subjectImages, speedMode);
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
         const model = envModel || "gemini-2.0-flash";
+        // Use low temperature like the working Style analyzer
         const genCfg = speedMode === 'Quality'
-          ? { maxOutputTokens: 384, temperature: 0.95 }
-          : { maxOutputTokens: 160, temperature: 0.7 };
+          ? { maxOutputTokens: 500, temperature: 0.3 }
+          : { maxOutputTokens: 400, temperature: 0.3 };
 
-        // STEP 1: My own style detection logic
-      console.log("🎨 Step 1: Running style detection analysis");
-      const styleDetectionPrompt = "Analyze this image and identify the MOST SPECIFIC artistic style. Examine ALL visual indicators with extreme detail: KAWAII (oversized sparkly eyes with multiple highlights, rounded soft features, pastel pink/blue/lavender color palette, chipmunk-like cheeks, soft gradient shading, heart-shaped blush marks, tiny button nose, glossy textures), STUDIO GHIBLI ANIME (soft watercolor-like backgrounds with organic textures, detailed hand-painted natural environments, gentle cel-shading with warm undertones, golden hour lighting with soft shadows, visible brush-like textures, muted earth tones, atmospheric perspective, hand-crafted quality), MODERN ANIME (razor-sharp cel-shading with hard shadow edges, highly saturated neon-bright colors, clean vector-perfect line art, mathematically precise proportions, digital gradient effects, lens flares, perfect symmetry, HD digital quality), CLASSIC ANIME (traditional 80s-90s hand-drawn animation cells, softer muted colors with slight grain, visible pencil construction lines, analog video quality, retro color palettes, slightly imperfect line weights, nostalgic film grain), SHOUJO ANIME (abundant sparkles and light effects, floating flower petals, romantic soft-focus backgrounds, delicate pastel color schemes, ethereal lighting, dreamy atmosphere, ornate decorative elements, feminine aesthetic), SHOUNEN ANIME (dynamic action-oriented poses with motion blur, bold high-contrast colors, intense dramatic expressions, speed lines and impact effects, muscular proportions, explosive energy effects, dramatic lighting with strong shadows), CHIBI (extremely super-deformed proportions with 1:3 head-to-body ratio, oversized round head, tiny stick-like limbs, simple dot eyes, minimal detail, cute rounded shapes, soft pastel colors), 3D RENDER (perfect CGI surfaces with subsurface scattering, realistic material properties, volumetric lighting with god rays, ray-traced reflections, ambient occlusion shadows, digital particle effects, flawless geometry), REALISTIC PHOTOGRAPHY (natural photographic grain, authentic depth of field blur, real-world lighting conditions, skin pores and texture details, fabric weave patterns, environmental reflections, camera lens distortion), HYPERREALISTIC ART (impossibly detailed hand-painted surfaces, photo-perfect but slightly idealized, visible paint texture under magnification, enhanced colors beyond photography, artistic interpretation of reality), CARTOON (bold black outline borders, flat solid color fills, simplified geometric shapes, exaggerated proportions, primary color schemes, rubber-hose animation style, squash-and-stretch deformation), DISNEY STYLE (rounded organic shapes, large expressive eyes with multiple eyelid folds, smooth gradient shading, warm color palettes, appealing character proportions, soft lighting), PIXAR STYLE (3D cartoon with soft subsurface lighting, appealing stylized proportions, warm color temperature, soft shadows, tactile material textures, family-friendly aesthetic), PIXEL ART (visible square pixels in grid formation, limited color palette, dithering patterns, retro 8-bit/16-bit constraints, blocky aliased edges, nostalgic gaming aesthetic), DIGITAL PAINTING (visible brush stroke textures, color blending effects, digital smudging, layered transparency, artistic brush patterns, painterly color mixing), CONCEPT ART (highly detailed environmental storytelling, dramatic atmospheric lighting, professional matte painting quality, cinematic composition, mood-driven color schemes, film/game production value), WATERCOLOR (transparent color washes with bleeding edges, visible paper grain texture, color pooling effects, soft wet-on-wet blending, traditional media imperfections, organic flow patterns), OIL PAINTING (thick impasto brush strokes, visible canvas weave, rich color saturation, traditional artistic techniques, paint texture buildup, classical fine art quality), PENCIL SKETCH (graphite shading gradients, paper tooth texture, construction lines, artistic hatching patterns, monochromatic values, hand-drawn imperfections), INK DRAWING (bold black line work, crosshatching shading techniques, pen nib variations, stark contrast, traditional illustration methods), COMIC BOOK STYLE (bold black outlines, Ben-Day dot halftone patterns, dramatic chiaroscuro lighting, speech bubble integration, panel-based composition, pop art influence), MANGA STYLE (black and white with screentone patterns, dynamic panel layouts, speed lines, dramatic close-ups, Japanese visual storytelling), MINIMALIST (geometric simplification, limited color palette, negative space usage, clean modern design, essential elements only), ABSTRACT (non-representational forms, color field exploration, geometric or organic abstraction, emotional color usage, artistic interpretation over realism), SURREAL (dreamlike impossible physics, Dalí-esque melting forms, unexpected object combinations, subconscious imagery, reality distortion), GOTHIC (dark romantic themes, ornate Victorian details, dramatic chiaroscuro lighting, religious iconography, medieval influences, macabre elements), STEAMPUNK (brass and copper mechanical details, Victorian-era clothing, steam-powered machinery, clockwork mechanisms, industrial aesthetic, retro-futuristic technology), CYBERPUNK (neon lighting in dark urban environments, holographic displays, cybernetic implants, rain-slicked streets, dystopian atmosphere, electric blue/pink color schemes), FANTASY ART (magical particle effects, mythical creature anatomy, epic landscape vistas, enchanted lighting, medieval/renaissance influences, otherworldly elements), SCI-FI ART (sleek futuristic technology, space environments, alien architectural forms, advanced materials, cosmic lighting effects, speculative design). Respond with ONLY the most specific detected style name. Analyze every visual detail meticulously.";
-      
-      const styleGenCfg = { maxOutputTokens: 400, temperature: 0.3 };
-      const detectedStyle = await generateWithImagesREST({ apiKey, model, text: styleDetectionPrompt, imageDataUrls, generationConfig: styleGenCfg });
-      console.log("🎨 Detected style:", detectedStyle);
+        // Simple, focused prompt like the working Style analyzer
+        const instructionFast =
+          "Analyze this image and describe the main subject/character in a clear, concise prompt. Focus on: physical appearance, clothing, pose, expression, and key identifying features. Keep it under 50 words and be specific about what you see.";
 
-      // STEP 2: Character analysis with detected style context
-      console.log("🔍 Step 2: Running character analysis with detected style context");
-      const instructionFast =
-        `You are analyzing a character in a ${detectedStyle} artistic style. Create a concise prompt that describes this character specifically within the ${detectedStyle} style context. Include: character design elements typical of ${detectedStyle}, proportions and features characteristic of this style, color palette and materials appropriate to ${detectedStyle}, pose and expression fitting this artistic approach, clothing/accessories in the ${detectedStyle} aesthetic. Format: '${detectedStyle} character with [specific character details]'. Focus on elements that define this character within the ${detectedStyle} style.`;
-      
-      const instructionQuality =
-        `You are analyzing a character in a ${detectedStyle} artistic style. Create a comprehensive prompt that captures this character specifically within the ${detectedStyle} style context. Analyze: 1) Character design elements typical of ${detectedStyle} (proportions, features, styling), 2) Physical characteristics as they appear in ${detectedStyle} (facial features, body type, age appearance), 3) Color scheme and materials characteristic of ${detectedStyle} (surface finish, lighting, textures), 4) Pose and expression fitting the ${detectedStyle} aesthetic (body language, facial expression, gesture), 5) Clothing and accessories in the ${detectedStyle} style (design, fit, details, materials), 6) Distinctive features that define this character's identity within ${detectedStyle}. Format: '${detectedStyle} featuring [comprehensive character description]'. Be specific about how each element reflects the ${detectedStyle} artistic approach.`;
-      
-      const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
+        const instructionQuality =
+          "Analyze this image and create a detailed prompt describing the main subject/character. Include: physical characteristics (hair, eyes, body type, age), clothing and accessories, pose and expression, distinctive features, and any visible context. Be comprehensive but focused on actual visible details.";
 
-      const analyzedSubject = await generateWithImagesREST({ apiKey, model, text: instruction, imageDataUrls, generationConfig: genCfg });
-      if (!cancelled) {
-        setSubjectAnalysis(analyzedSubject);
-      }
+        const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
+
+        console.log("🔍 Analyzing subject with simple, focused approach");
+        const analyzedSubject = await generateWithImagesREST({ apiKey, model, text: instruction, imageDataUrls, generationConfig: genCfg });
+        if (!cancelled) {
+          setSubjectAnalysis(analyzedSubject);
+        }
       } catch (e2) {
         console.error("Auto-analyze subject failed", e2);
       } finally {
@@ -374,16 +367,20 @@ function App() {
         const imageDataUrls = await getImageDataUrls(sceneImages, speedMode);
         const envModel = import.meta.env.VITE_GEMINI_MODEL_IMAGES || import.meta.env.VITE_GEMINI_MODEL_IMAGE;
         const model = envModel || "gemini-2.0-flash";
+        // Use low temperature like the working Style analyzer
         const genCfg = speedMode === 'Quality'
-          ? { maxOutputTokens: 384, temperature: 0.95 }
-          : { maxOutputTokens: 160, temperature: 0.7 };
+          ? { maxOutputTokens: 500, temperature: 0.3 }
+          : { maxOutputTokens: 400, temperature: 0.3 };
 
         const instructionFast =
-          "You are a professional prompt engineer. Analyze the input image and produce a single, vivid, 1–2 sentence prompt suitable for image generation models. Focus specifically on the scene/environment, including setting, location, background, atmosphere, lighting, and environmental details. Don't invent details not visible.";
+          "Analyze this image and describe the scene/environment in a clear, concise prompt. Focus on: location, setting, background, atmosphere, lighting, and key environmental details. Keep it under 50 words and be specific about what you see.";
+
         const instructionQuality =
-          "Analyze these images in detail and create a comprehensive, descriptive prompt based on what you see. Focus specifically on the scene/environment - expand important details (setting, location, background, architecture, landscape, atmosphere, lighting, weather, environmental context). Return only the improved prompt.";
+          "Analyze this image and create a detailed prompt describing the scene/environment. Include: location and setting, architecture or landscape features, atmospheric conditions, lighting quality and direction, background elements, weather if visible, and overall mood. Be comprehensive but focused on actual visible details.";
+
         const instruction = speedMode === 'Quality' ? instructionQuality : instructionFast;
 
+        console.log("🏞️ Analyzing scene with simple, focused approach");
         const analyzedScene = await generateWithImagesREST({ apiKey, model, text: instruction, imageDataUrls, generationConfig: genCfg });
         if (!cancelled) {
           setSceneAnalysis(analyzedScene);
