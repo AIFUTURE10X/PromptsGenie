@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { Zap, Sparkles, User, ImageIcon, Palette, Copy, Check } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Zap, Sparkles, User, ImageIcon, Palette } from 'lucide-react';
 import { ImageUpload } from './image-upload';
 import { AnalyzerCard } from './analyzer-card';
 import { Button } from '../ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Card, CardContent } from '../ui/card';
 import type { SpeedMode } from '../../lib/schemas';
 
 export function ImageAnalyzer() {
@@ -24,7 +23,6 @@ export function ImageAnalyzer() {
   const [subjectPrompt, setSubjectPrompt] = useState<string | null>(null);
   const [scenePrompt, setScenePrompt] = useState<string | null>(null);
   const [stylePrompt, setStylePrompt] = useState<string | null>(null);
-  const [copiedCombined, setCopiedCombined] = useState(false);
 
   // Image handlers
   const handleSubjectImageSelect = (imageData: string, file: File) => {
@@ -48,18 +46,6 @@ export function ImageAnalyzer() {
 
   const toggleAutoAnalyze = () => {
     setAutoAnalyze((prev) => !prev);
-  };
-
-  // Combine all prompts into one text
-  const combinedPrompt =
-    [subjectPrompt, scenePrompt, stylePrompt].filter(Boolean).join(' ') || '';
-
-  const handleCopyCombined = async () => {
-    if (combinedPrompt) {
-      await navigator.clipboard.writeText(combinedPrompt);
-      setCopiedCombined(true);
-      setTimeout(() => setCopiedCombined(false), 2000);
-    }
   };
 
   return (
@@ -200,86 +186,6 @@ export function ImageAnalyzer() {
               onPromptChange={setStylePrompt}
             />
           </div>
-
-          {/* Combined Prompts Section */}
-          <AnimatePresence>
-            {combinedPrompt && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Card className="bg-[#F77000] backdrop-blur-sm border-[#F77000]">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="text-xl text-white">Combined Prompt</CardTitle>
-                        <p className="text-sm text-green-100 mt-1">
-                          All three analyses combined into one prompt
-                        </p>
-                      </div>
-                      <Button
-                        onClick={handleCopyCombined}
-                        variant="secondary"
-                        size="sm"
-                        className="ml-4"
-                      >
-                        {copiedCombined ? (
-                          <>
-                            <Check className="w-4 h-4 mr-2" />
-                            Copied!
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-4 h-4 mr-2" />
-                            Copy All
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <textarea
-                      readOnly
-                      value={combinedPrompt}
-                      className="w-full min-h-32 p-4 rounded-lg bg-background/50 border border-primary/20 text-foreground resize-y focus:outline-none focus:ring-2 focus:ring-primary/50"
-                      rows={4}
-                    />
-                    <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                      {subjectPrompt && (
-                        <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                          <div className="flex items-center gap-2 mb-2">
-                            <User className="w-4 h-4 text-blue-400" />
-                            <span className="font-medium text-blue-300">Subject</span>
-                          </div>
-                          <p className="text-xs text-blue-100/80">{subjectPrompt}</p>
-                        </div>
-                      )}
-                      {scenePrompt && (
-                        <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
-                          <div className="flex items-center gap-2 mb-2">
-                            <ImageIcon className="w-4 h-4 text-purple-400" />
-                            <span className="font-medium text-purple-300">Scene</span>
-                          </div>
-                          <p className="text-xs text-purple-100/80">{scenePrompt}</p>
-                        </div>
-                      )}
-                      {stylePrompt && (
-                        <div className="p-3 rounded-lg bg-pink-500/10 border border-pink-500/20">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Palette className="w-4 h-4 text-pink-400" />
-                            <span className="font-medium text-pink-300">Style</span>
-                          </div>
-                          <p className="text-xs text-pink-100/80">{stylePrompt}</p>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
       </div>
     </div>
