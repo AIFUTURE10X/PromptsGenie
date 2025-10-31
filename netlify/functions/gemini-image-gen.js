@@ -38,8 +38,24 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
       throw new Error('GOOGLE_APPLICATION_CREDENTIALS_JSON environment variable is required');
     }
 
+    console.log('🔍 DEBUG: Credentials JSON length:', credentialsJSON.length);
+    console.log('🔍 DEBUG: First 100 chars:', credentialsJSON.substring(0, 100));
+    console.log('🔍 DEBUG: Around position 765:', credentialsJSON.substring(760, 770));
+    console.log('🔍 DEBUG: Last 50 chars:', credentialsJSON.substring(credentialsJSON.length - 50));
+
+    let credentials;
+    try {
+      credentials = JSON.parse(credentialsJSON);
+      console.log('✅ JSON parsed successfully');
+      console.log('🔍 Parsed keys:', Object.keys(credentials));
+    } catch (parseError) {
+      console.error('❌ JSON parse failed:', parseError.message);
+      console.error('🔍 Character at error position:', credentialsJSON.charAt(parseError.message.match(/\d+/)?.[0] || 0));
+      throw new Error(`Invalid JSON in GOOGLE_APPLICATION_CREDENTIALS_JSON: ${parseError.message}`);
+    }
+
     const auth = new GoogleAuth({
-      credentials: JSON.parse(credentialsJSON),
+      credentials: credentials,
       scopes: ['https://www.googleapis.com/auth/cloud-platform'],
     });
 
