@@ -16,7 +16,6 @@ interface ImageCardProps {
 export function ImageCard({ imageData, mimeType, aspectRatio, isGenerating, index }: ImageCardProps) {
   const [copied, setCopied] = useState(false);
   const lightboxRef = useRef<any>(null);
-  const imageId = `image-${index}`;
 
   // Map aspect ratio strings to Tailwind aspect ratio classes
   const getAspectRatioClass = (ratio: string) => {
@@ -66,20 +65,25 @@ export function ImageCard({ imageData, mimeType, aspectRatio, isGenerating, inde
         lightboxRef.current.destroy();
       }
 
-      // Initialize new GLightbox instance
-      lightboxRef.current = GLightbox({
-        selector: `[data-glightbox="${imageId}"]`,
-        touchNavigation: true,
-        loop: false,
-        autoplayVideos: false,
-        zoomable: true,
-        draggable: true,
-        closeButton: true,
-        closeOnOutsideClick: true,
-        svg: {
-          close: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
-        },
-      });
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        // Initialize new GLightbox instance with correct selector
+        lightboxRef.current = GLightbox({
+          selector: '.glightbox-image',
+          touchNavigation: true,
+          loop: false,
+          autoplayVideos: false,
+          zoomable: true,
+          draggable: true,
+          closeButton: true,
+          closeOnOutsideClick: true,
+          svg: {
+            close: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
+          },
+        });
+      }, 50);
+
+      return () => clearTimeout(timer);
     }
 
     // Cleanup on unmount
@@ -89,7 +93,7 @@ export function ImageCard({ imageData, mimeType, aspectRatio, isGenerating, inde
         lightboxRef.current = null;
       }
     };
-  }, [imageData, isGenerating, imageId]);
+  }, [imageData, isGenerating]);
 
   return (
     <motion.div
@@ -105,36 +109,47 @@ export function ImageCard({ imageData, mimeType, aspectRatio, isGenerating, inde
         </div>
       ) : imageData ? (
         <>
-          <img
-            src={`data:${mimeType || 'image/png'};base64,${imageData}`}
-            alt={`Generated image ${index + 1}`}
-            className="w-full h-full object-contain cursor-pointer"
-            loading="lazy"
-            data-glightbox={imageId}
-            data-title={`Generated Image ${index + 1} (${aspectRatio})`}
-            data-description={`Click and drag to pan, scroll to zoom`}
-          />
-          <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-            <Button
-              onClick={handleDownload}
-              size="icon"
-              variant="secondary"
-              className="bg-white/90 hover:bg-white"
-              title="Download image"
-            >
-              <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            </Button>
-            <Button
-              onClick={handleCopy}
-              size="icon"
-              variant="secondary"
-              className="bg-white/90 hover:bg-white"
-              title="Copy to clipboard"
-            >
-              {copied ? <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600" /> : <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-            </Button>
+          {/* Wrap image in anchor tag for GLightbox */}
+          <a
+            href={`data:${mimeType || 'image/png'};base64,${imageData}`}
+            className="glightbox-image w-full h-full flex items-center justify-center"
+            data-glightbox={`title: Generated Image ${index + 1}; description: ${aspectRatio} aspect ratio - Click and drag to pan, scroll to zoom`}
+            data-gallery="generated-images"
+          >
+            <img
+              src={`data:${mimeType || 'image/png'};base64,${imageData}`}
+              alt={`Generated image ${index + 1}`}
+              className="w-full h-full object-contain cursor-pointer"
+              loading="lazy"
+            />
+          </a>
+
+          {/* Hover overlay with buttons */}
+          <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2 pointer-events-none">
+            <div className="pointer-events-auto flex gap-2">
+              <Button
+                onClick={handleDownload}
+                size="icon"
+                variant="secondary"
+                className="bg-white/90 hover:bg-white"
+                title="Download image"
+              >
+                <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              </Button>
+              <Button
+                onClick={handleCopy}
+                size="icon"
+                variant="secondary"
+                className="bg-white/90 hover:bg-white"
+                title="Copy to clipboard"
+              >
+                {copied ? <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600" /> : <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+              </Button>
+            </div>
           </div>
-          <div className="absolute top-1 right-1 sm:top-2 sm:right-2 bg-black/70 text-white text-xs px-1.5 py-0.5 sm:px-2 sm:py-1 rounded">
+
+          {/* Aspect ratio badge */}
+          <div className="absolute top-1 right-1 sm:top-2 sm:right-2 bg-black/70 text-white text-xs px-1.5 py-0.5 sm:px-2 sm:py-1 rounded pointer-events-none">
             {aspectRatio}
           </div>
         </>
