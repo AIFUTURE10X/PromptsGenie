@@ -1,6 +1,6 @@
 const { GoogleAuth } = require('google-auth-library');
 
-async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1', seed) {
+async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1', seed, forceImagen2 = false) {
   // Vertex AI Imagen endpoint configuration
   const projectId = process.env.GOOGLE_CLOUD_PROJECT_ID;
   const location = process.env.GOOGLE_CLOUD_LOCATION || 'us-central1';
@@ -16,7 +16,8 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
     aspectRatio,
     seed,
     projectId,
-    location
+    location,
+    forceImagen2
   });
 
   // Initialize Google Auth with service account credentials
@@ -52,13 +53,13 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
   }
 
   // Vertex AI Imagen endpoint
-  // Using Imagen 3 for better quality and anatomy handling
+  // Try Imagen 3 for better quality, fallback to Imagen 2 if quota exceeded or forced
   // Note: Imagen 3 needs ~15-25s, may require Netlify Pro for 26s timeout
-  const useImagen3 = process.env.USE_IMAGEN_3 !== 'false'; // Default to true, can disable with USE_IMAGEN_3=false
+  const useImagen3 = !forceImagen2 && process.env.USE_IMAGEN_3 !== 'false'; // Default to true unless forced or disabled
   const modelVersion = useImagen3 ? 'imagen-3.0-generate-001' : 'imagegeneration@006';
   const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${modelVersion}:predict`;
 
-  console.log(`🎨 Using model: ${modelVersion} (Imagen ${useImagen3 ? '3' : '2'})`);
+  console.log(`🎨 Using model: ${modelVersion} (Imagen ${useImagen3 ? '3' : '2'}${forceImagen2 ? ' - FALLBACK MODE' : ''})`);
 
   // Map aspect ratios to Imagen format
   const aspectRatioMap = {
@@ -220,8 +221,36 @@ exports.handler = async (event, context) => {
     }
 
     console.log('📤 Generating images...');
-    const images = await generateImagesWithVertexAI(prompt, count, aspectRatio, seed);
-    console.log(`✅ Successfully generated ${images.length} images`);
+    let images;
+    let usedFallback = false;
+
+    try {
+      images = await generateImagesWithVertexAI(prompt, count, aspectRatio, seed, false);
+      console.log(`✅ Successfully generated ${images.length} images with Imagen 3`);
+    } catch (imagen3Error) {
+      // Check if this is a quota error (429)
+      const isQuotaError = imagen3Error.message && (
+        imagen3Error.message.includes('429') ||
+        imagen3Error.message.includes('RESOURCE_EXHAUSTED') ||
+        imagen3Error.message.includes('Quota exceeded')
+      );
+
+      if (isQuotaError) {
+        console.warn('⚠️ Imagen 3 quota exceeded, falling back to Imagen 2...');
+        // Retry with Imagen 2
+        try {
+          images = await generateImagesWithVertexAI(prompt, count, aspectRatio, seed, true);
+          usedFallback = true;
+          console.log(`✅ Successfully generated ${images.length} images with Imagen 2 (fallback)`);
+        } catch (imagen2Error) {
+          console.error('❌ Imagen 2 fallback also failed:', imagen2Error);
+          throw imagen2Error;
+        }
+      } else {
+        // Not a quota error, throw the original error
+        throw imagen3Error;
+      }
+    }
 
     return {
       statusCode: 200,
@@ -234,11 +263,28 @@ exports.handler = async (event, context) => {
         images,
         count: images.length,
         aspectRatio,
-        prompt: prompt.substring(0, 200) // Return truncated prompt for reference
+        prompt: prompt.substring(0, 200), // Return truncated prompt for reference
+        modelUsed: usedFallback ? 'Imagen 2 (fallback due to Imagen 3 quota)' : 'Imagen 3',
+        fallbackUsed: usedFallback
       })
     };
   } catch (error) {
     console.error('❌ Image generation error:', error);
+
+    // Provide user-friendly error messages
+    let userMessage = error.message || 'Failed to generate images';
+
+    // Check for specific error types and provide helpful messages
+    if (error.message && error.message.includes('RESOURCE_EXHAUSTED')) {
+      userMessage = 'Image generation quota exceeded. Both Imagen 3 and Imagen 2 quotas have been exhausted. Please try again later or request a quota increase from Google Cloud.';
+    } else if (error.message && error.message.includes('429')) {
+      userMessage = 'Rate limit exceeded. Please wait a moment and try again.';
+    } else if (error.message && error.message.includes('Authentication failed')) {
+      userMessage = 'Authentication error. Please check your Google Cloud credentials.';
+    } else if (error.message && error.message.includes('timeout')) {
+      userMessage = 'Image generation timed out. This may happen with Imagen 3 on free-tier hosting. Try again or contact support.';
+    }
+
     return {
       statusCode: 500,
       headers: {
@@ -247,7 +293,8 @@ exports.handler = async (event, context) => {
       },
       body: JSON.stringify({
         success: false,
-        error: error.message || 'Failed to generate images'
+        error: userMessage,
+        technicalError: error.message // Include technical details for debugging
       })
     };
   }

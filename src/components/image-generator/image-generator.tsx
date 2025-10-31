@@ -26,6 +26,7 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [seed, setSeed] = useState<number | undefined>(undefined);
+  const [modelInfo, setModelInfo] = useState<string | null>(null);
 
   // Prompt enhancement states
   const [useEnhancement, setUseEnhancement] = useState(true);
@@ -92,6 +93,7 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
     setIsGenerating(true);
     setError(null);
     setGeneratedImages([]);
+    setModelInfo(null);
 
     try {
       const response = await fetch('/.netlify/functions/gemini-image-gen', {
@@ -114,6 +116,13 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
       }
 
       setGeneratedImages(data.images);
+
+      // Display model info if fallback was used
+      if (data.fallbackUsed) {
+        setModelInfo('⚠️ Using Imagen 2 (Imagen 3 quota exceeded)');
+      } else if (data.modelUsed) {
+        setModelInfo(`✓ Generated with ${data.modelUsed}`);
+      }
     } catch (err) {
       console.error('Image generation error:', err);
       setError(err instanceof Error ? err.message : 'Failed to generate images');
@@ -356,6 +365,21 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
               </>
             )}
           </Button>
+
+          {/* Model Info Display (Fallback notification) */}
+          {modelInfo && !error && (
+            <div className={`p-3 rounded-lg ${
+              modelInfo.includes('⚠️')
+                ? 'bg-yellow-500/20 border border-yellow-500/30'
+                : 'bg-green-500/20 border border-green-500/30'
+            }`}>
+              <p className={`text-xs sm:text-sm font-medium ${
+                modelInfo.includes('⚠️')
+                  ? 'text-yellow-100'
+                  : 'text-green-100'
+              }`}>{modelInfo}</p>
+            </div>
+          )}
 
           {/* Error Display */}
           {error && (
