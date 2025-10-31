@@ -166,7 +166,7 @@ exports.handler = async (event, context) => {
       const result = await callGeminiWithImages(
         config.instruction,
         [imageDataUrl],
-        'gemini-2.0-flash-exp',
+        'gemini-1.5-flash',
         {
           maxOutputTokens: config.maxOutputTokens,
           temperature: config.temperature
