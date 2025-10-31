@@ -166,7 +166,7 @@ export function ImageAnalyzer() {
         </div>
 
         {/* RIGHT COLUMN: Results */}
-        <div className="space-y-4 px-4 lg:pl-0 lg:pr-0">
+        <div className="space-y-4 px-4 lg:pl-0 lg:pr-4">
           {/* Analyzer Cards - Horizontal Row */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <AnalyzerCard
