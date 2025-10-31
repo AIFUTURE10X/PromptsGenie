@@ -71,7 +71,7 @@ export function AnalyzerCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="h-full bg-gradient-to-br from-[#ef531f]/10 to-[#ef531f]/5 backdrop-blur-sm border-[#ef531f]/30">
+      <Card className="h-full bg-gradient-to-br from-[#F74B00]/10 to-[#F74B00]/5 backdrop-blur-sm border-[#F74B00]/30">
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary/10">
