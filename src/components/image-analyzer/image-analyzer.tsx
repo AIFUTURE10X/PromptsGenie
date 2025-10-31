@@ -214,11 +214,11 @@ export function ImageAnalyzer() {
                   className="h-full"
                 >
                   <Card className="h-full flex flex-col bg-[#F77000] backdrop-blur-sm border-[#F77000]">
-                    <CardHeader>
+                    <CardHeader className="pb-2">
                       <div className="flex items-center justify-between">
                         <div>
-                          <CardTitle className="text-lg text-white">Combined Prompt</CardTitle>
-                          <p className="text-xs text-white/80 mt-1">
+                          <CardTitle className="text-base text-white">Combined Prompt</CardTitle>
+                          <p className="text-xs text-white/80 mt-0.5">
                             All three analyses combined
                           </p>
                         </div>
@@ -226,27 +226,27 @@ export function ImageAnalyzer() {
                           onClick={handleCopyCombined}
                           variant="secondary"
                           size="sm"
-                          className="flex items-center gap-2"
+                          className="flex items-center gap-1.5"
                         >
                           {copiedCombined ? (
                             <>
-                              <Check className="w-4 h-4" />
+                              <Check className="w-3.5 h-3.5" />
                               Copied!
                             </>
                           ) : (
                             <>
-                              <Copy className="w-4 h-4" />
+                              <Copy className="w-3.5 h-3.5" />
                               Copy All
                             </>
                           )}
                         </Button>
                       </div>
                     </CardHeader>
-                    <CardContent className="flex-1 flex flex-col">
+                    <CardContent className="flex-1 flex flex-col pt-2">
                       <textarea
                         readOnly
                         value={combinedPrompt}
-                        className="w-full flex-1 p-4 rounded-lg bg-black/20 border border-black/30 text-white resize-none focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
+                        className="w-full flex-1 p-2.5 rounded-lg bg-black/20 border border-black/30 text-white resize-none focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
                       />
                     </CardContent>
                   </Card>

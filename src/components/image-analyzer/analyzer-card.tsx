@@ -73,19 +73,19 @@ export function AnalyzerCard({
       className="h-full"
     >
       <Card className="h-full flex flex-col bg-[#F77000] backdrop-blur-sm border-[#F77000]">
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-black/20">
-              {icon || <Sparkles className="w-5 h-5 text-white" />}
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-black/20">
+              {icon || <Sparkles className="w-4 h-4 text-white" />}
             </div>
             <div className="flex-1">
-              <CardTitle className="text-lg">{title}</CardTitle>
-              <p className="text-xs text-muted-foreground mt-1">{description}</p>
+              <CardTitle className="text-base">{title}</CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
             </div>
           </div>
         </CardHeader>
 
-        <CardContent className="flex-1">
+        <CardContent className="flex-1 pt-2">
           <div className="h-full flex items-center justify-center">
             {!imageData ? (
               <div className="text-center text-muted-foreground">
@@ -118,21 +118,21 @@ export function AnalyzerCard({
                 animate={{ opacity: 1, scale: 1 }}
                 className="w-full"
               >
-                <div className="relative p-4 rounded-lg bg-black/20 border border-black/30">
-                  <p className="text-sm leading-relaxed text-foreground/90 pr-8">
+                <div className="relative p-2.5 rounded-lg bg-black/20 border border-black/30">
+                  <p className="text-sm leading-relaxed text-foreground/90 pr-7">
                     {data.prompt}
                   </p>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute top-2 right-2 h-8 w-8"
+                    className="absolute top-1 right-1 h-7 w-7"
                     onClick={handleCopy}
                     title="Copy to clipboard"
                   >
                     {copied ? (
-                      <Check className="w-4 h-4 text-green-500" />
+                      <Check className="w-3.5 h-3.5 text-green-500" />
                     ) : (
-                      <Copy className="w-4 h-4" />
+                      <Copy className="w-3.5 h-3.5" />
                     )}
                   </Button>
                 </div>
