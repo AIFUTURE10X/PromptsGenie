@@ -237,27 +237,32 @@ const ProDashboard: React.FC = () => {
   // Render specific tool if selected
   if (currentTool) {
     return (
-      <Suspense fallback={LoadingFallback}>
-        {currentTool === 'style-tile' && <StyleTileGenerator onBack={handleBackToDashboard} />}
-        {currentTool === 'color-story' && <ColorStoryBuilder onBack={handleBackToDashboard} />}
-        {currentTool === 'typography-specimen' && <TypographySpecimen onBack={handleBackToDashboard} />}
-        {currentTool === 'visual-style-guide' && <VisualStyleGuide onBack={handleBackToDashboard} />}
+      <>
+        <Suspense fallback={LoadingFallback}>
+          {currentTool === 'style-tile' && <StyleTileGenerator onBack={handleBackToDashboard} />}
+          {currentTool === 'color-story' && <ColorStoryBuilder onBack={handleBackToDashboard} />}
+          {currentTool === 'typography-specimen' && <TypographySpecimen onBack={handleBackToDashboard} />}
+          {currentTool === 'visual-style-guide' && <VisualStyleGuide onBack={handleBackToDashboard} />}
 
-        {currentTool === 'inspiration-collage' && <InspirationCollage onBack={handleBackToDashboard} />}
-        {currentTool === 'mood-board' && <MoodBoardCreator onBack={handleBackToDashboard} />}
-        {currentTool === 'concept-boards' && <ConceptBoards onBack={handleBackToDashboard} />}
-        {currentTool === 'wireframe-mood' && <WireframeMoodBoard onBack={handleBackToDashboard} />}
+          {currentTool === 'inspiration-collage' && <InspirationCollage onBack={handleBackToDashboard} />}
+          {currentTool === 'mood-board' && <MoodBoardCreator onBack={handleBackToDashboard} />}
+          {currentTool === 'concept-boards' && <ConceptBoards onBack={handleBackToDashboard} />}
+          {currentTool === 'wireframe-mood' && <WireframeMoodBoard onBack={handleBackToDashboard} />}
 
-        {currentTool === 'lookbook' && <LookbookCreator onBack={handleBackToDashboard} />}
-        {currentTool === 'reference-deck' && <ReferenceDeckBuilder onBack={handleBackToDashboard} />}
-        {currentTool === 'narrative-tone' && <NarrativeToneBoard onBack={handleBackToDashboard} />}
-        {currentTool === 'competitive-audit' && <CompetitiveVisualAudit onBack={handleBackToDashboard} />}
+          {currentTool === 'lookbook' && <LookbookCreator onBack={handleBackToDashboard} />}
+          {currentTool === 'reference-deck' && <ReferenceDeckBuilder onBack={handleBackToDashboard} />}
+          {currentTool === 'narrative-tone' && <NarrativeToneBoard onBack={handleBackToDashboard} />}
+          {currentTool === 'competitive-audit' && <CompetitiveVisualAudit onBack={handleBackToDashboard} />}
 
-        {currentTool === 'shot-list' && <ShotList onBack={handleBackToDashboard} />}
-        {currentTool === 'lighting-lookdev' && <LightingLookDev onBack={handleBackToDashboard} />}
-        {currentTool === 'texture-material' && <TextureMaterialBoard onBack={handleBackToDashboard} />}
-        {currentTool === 'storyboard-pro' && <StoryboardPro onBack={handleBackToDashboard} />}
-      </Suspense>
+          {currentTool === 'shot-list' && <ShotList onBack={handleBackToDashboard} />}
+          {currentTool === 'lighting-lookdev' && <LightingLookDev onBack={handleBackToDashboard} />}
+          {currentTool === 'texture-material' && <TextureMaterialBoard onBack={handleBackToDashboard} />}
+          {currentTool === 'storyboard-pro' && <StoryboardPro onBack={handleBackToDashboard} />}
+        </Suspense>
+
+        {/* AI Assistant - Available in all tools */}
+        <ProAIAssistant currentTool={currentTool} />
+      </>
     );
   }
 
