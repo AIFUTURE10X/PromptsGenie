@@ -231,9 +231,8 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
                   onChange={(e) => setImageCount(parseInt(e.target.value))}
                   className="px-3 py-2 rounded-md bg-white border border-black/30 text-black text-sm focus:outline-none focus:ring-2 focus:ring-black/50"
                 >
-                  {[1, 2, 3, 4].map((count) => (
-                    <option key={count} value={count}>{count} {count === 1 ? 'Image' : 'Images'}</option>
-                  ))}
+                  <option value={1}>1 Image</option>
+                  <option value={2}>2 Images</option>
                 </select>
               </div>
 
