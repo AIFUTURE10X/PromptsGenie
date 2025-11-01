@@ -100,7 +100,11 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
           const imageData = ref.imageData.includes(',')
             ? ref.imageData.split(',')[1]
             : ref.imageData;
-          refImage.bytesBase64Encoded = imageData;
+
+          // Image field should be an object containing bytesBase64Encoded
+          refImage.image = {
+            bytesBase64Encoded: imageData
+          };
 
           // Add optional fields based on reference type
           if (ref.referenceType === 'REFERENCE_TYPE_SUBJECT' && ref.subjectType) {
