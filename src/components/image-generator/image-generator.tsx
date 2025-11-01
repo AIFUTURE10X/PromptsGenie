@@ -19,9 +19,13 @@ interface ImageGeneratorProps {
   subjectPrompt?: string | null;
   scenePrompt?: string | null;
   stylePrompt?: string | null;
+  subjectImage?: string | null;
+  subjectImage2?: string | null;
+  sceneImage?: string | null;
+  styleImage?: string | null;
 }
 
-export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt }: ImageGeneratorProps) {
+export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt, subjectImage, subjectImage2, sceneImage, styleImage }: ImageGeneratorProps) {
   const [imageCount, setImageCount] = useState(2);
   const [aspectRatio, setAspectRatio] = useState('1:1');
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
@@ -146,6 +150,39 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
     setModelInfo(null);
 
     try {
+      // Prepare reference images for Imagen 3 customization
+      const referenceImages = [];
+
+      // Add subject image(s) as REFERENCE_TYPE_SUBJECT
+      if (subjectImage) {
+        referenceImages.push({
+          referenceId: 1,
+          referenceType: 'REFERENCE_TYPE_SUBJECT',
+          subjectType: 'SUBJECT_TYPE_PERSON',
+          imageData: subjectImage
+        });
+      }
+      if (subjectImage2) {
+        referenceImages.push({
+          referenceId: 1, // Same ID as first subject to group them together
+          referenceType: 'REFERENCE_TYPE_SUBJECT',
+          subjectType: 'SUBJECT_TYPE_PERSON',
+          imageData: subjectImage2
+        });
+      }
+
+      // Add style image as REFERENCE_TYPE_STYLE
+      if (styleImage) {
+        referenceImages.push({
+          referenceId: 2,
+          referenceType: 'REFERENCE_TYPE_STYLE',
+          styleDescription: stylePrompt || 'artistic style',
+          imageData: styleImage
+        });
+      }
+
+      // Note: Imagen 3 doesn't have REFERENCE_TYPE_SCENE, so we'll use scene info in the prompt only
+
       const response = await fetch('/.netlify/functions/gemini-image-gen', {
         method: 'POST',
         headers: {
@@ -155,7 +192,9 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
           prompt: finalPrompt,
           count: imageCount,
           aspectRatio,
-          seed
+          seed,
+          referenceImages: referenceImages.length > 0 ? referenceImages : undefined,
+          useCustomization: referenceImages.length > 0
         })
       });
 

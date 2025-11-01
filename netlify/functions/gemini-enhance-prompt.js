@@ -51,7 +51,7 @@ async function enhancePromptWithGemini(originalPrompt, subjectPrompt, scenePromp
       components.push(`STYLE (apply without distorting subject or scene${intensityNote}): ${stylePrompt}`);
     }
 
-    enhancementInstruction = `You are an expert prompt engineer for AI image generation (Imagen 3). Create an enhanced prompt from these components:
+    enhancementInstruction = `You are an expert prompt engineer for AI image generation (Imagen 3 with Reference Image Customization). Create an enhanced prompt from these components:
 
 ${components.join('\n')}
 
@@ -64,6 +64,17 @@ You MUST use the uploaded image analysis EXACTLY as provided. Minimize creative 
 - Keep enhancements minimal - focus on quality and technical terms only
 - This is for precise output matching the uploaded reference images
 ` : ''}
+
+**IMAGEN 3 REFERENCE IMAGE NOTATION:**
+${subjectPrompt ? `- The SUBJECT will be provided as a reference image with ID [1]. You MUST include "[1]" in the prompt when referring to the subject.` : ''}
+${stylePrompt ? `- The STYLE will be provided as a reference image with ID [2]. You MUST include "[2]" in the prompt when referring to the style.` : ''}
+${subjectPrompt && stylePrompt ? `- Example: "Create an image of [1] in the style of [2]..."` : ''}
+
+**CRITICAL: Reference Image Bracket Notation is MANDATORY:**
+- Always include [1] when mentioning the subject
+- Always include [2] when mentioning the style
+- This links the text prompt to the uploaded reference images in Imagen 3
+- Without brackets, Imagen 3 will ignore the reference images
 
 CRITICAL RULES - SCENE IS THE FOUNDATION:
 1. **SCENE COMES FIRST**: The scene/environment establishes the FOUNDATION and CONTEXT for everything else. It MUST be described FIRST and in complete detail.

@@ -473,6 +473,10 @@ export function ImageAnalyzer({
             subjectPrompt={combinedSubjectPrompt}
             scenePrompt={scenePrompt}
             stylePrompt={stylePrompt}
+            subjectImage={subjectImage}
+            subjectImage2={subjectImage2}
+            sceneImage={sceneImage}
+            styleImage={styleImage}
           />
         </div>
       </div>

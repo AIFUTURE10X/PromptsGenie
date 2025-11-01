@@ -1,6 +1,6 @@
 const { GoogleAuth } = require('google-auth-library');
 
-async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1', seed, forceImagen2 = false) {
+async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1', seed, forceImagen2 = false, referenceImages = []) {
   // Vertex AI Imagen endpoint configuration
   const projectId = process.env.GOOGLE_CLOUD_PROJECT_ID;
   const location = process.env.GOOGLE_CLOUD_LOCATION || 'us-central1';
@@ -56,10 +56,16 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
   // Try Imagen 3 for better quality, fallback to Imagen 2 if quota exceeded or forced
   // Note: Imagen 3 needs ~15-25s, may require Netlify Pro for 26s timeout
   const useImagen3 = !forceImagen2 && process.env.USE_IMAGEN_3 !== 'false'; // Default to true unless forced or disabled
-  const modelVersion = useImagen3 ? 'imagen-3.0-generate-001' : 'imagegeneration@006';
+  const useCustomization = referenceImages && referenceImages.length > 0;
+
+  // Use capability model when customization (reference images) is needed
+  const modelVersion = useImagen3
+    ? (useCustomization ? 'imagen-3.0-capability-001' : 'imagen-3.0-generate-001')
+    : 'imagegeneration@006';
+
   const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${modelVersion}:predict`;
 
-  console.log(`🎨 Using model: ${modelVersion} (Imagen ${useImagen3 ? '3' : '2'}${forceImagen2 ? ' - FALLBACK MODE' : ''})`);
+  console.log(`🎨 Using model: ${modelVersion} (Imagen ${useImagen3 ? '3' : '2'}${forceImagen2 ? ' - FALLBACK MODE' : ''}${useCustomization ? ' - WITH CUSTOMIZATION' : ''})`);
 
   // Map aspect ratios to Imagen format (only Imagen-supported ratios)
   const aspectRatioMap = {
@@ -74,30 +80,80 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
 
   for (let i = 0; i < count; i++) {
     // Imagen 2 and Imagen 3 have slightly different request formats
-    const requestBody = useImagen3 ? {
-      instances: [{
+    let requestBody;
+
+    if (useCustomization && useImagen3) {
+      // Imagen 3 Capability model format with reference images
+      const instance = {
         prompt: prompt,
-      }],
-      parameters: {
-        sampleCount: 1,
-        aspectRatio: aspectRatioMap[aspectRatio] || '1:1',
-        safetyFilterLevel: 'block_only_high', // Less restrictive for anatomy accuracy
-        personGeneration: 'allow_adult',
-        languageCode: 'en', // Explicit language specification
-        addWatermark: false // No watermark on generated images
+      };
+
+      // Add reference images to instance
+      if (referenceImages && referenceImages.length > 0) {
+        instance.referenceImages = referenceImages.map(ref => {
+          const refImage = {
+            referenceId: ref.referenceId,
+            referenceType: ref.referenceType,
+          };
+
+          // Add image data - remove data:image/... prefix if present
+          const imageData = ref.imageData.includes(',')
+            ? ref.imageData.split(',')[1]
+            : ref.imageData;
+          refImage.bytesBase64Encoded = imageData;
+
+          // Add optional fields based on reference type
+          if (ref.referenceType === 'REFERENCE_TYPE_SUBJECT' && ref.subjectType) {
+            refImage.subjectType = ref.subjectType;
+          }
+          if (ref.referenceType === 'REFERENCE_TYPE_STYLE' && ref.styleDescription) {
+            refImage.styleDescription = ref.styleDescription;
+          }
+
+          return refImage;
+        });
       }
-    } : {
+
+      requestBody = {
+        instances: [instance],
+        parameters: {
+          sampleCount: 1,
+          aspectRatio: aspectRatioMap[aspectRatio] || '1:1',
+          safetyFilterLevel: 'block_only_high',
+          personGeneration: 'allow_adult',
+          languageCode: 'en',
+          addWatermark: false
+        }
+      };
+    } else if (useImagen3) {
+      // Standard Imagen 3 generate model format (no customization)
+      requestBody = {
+        instances: [{
+          prompt: prompt,
+        }],
+        parameters: {
+          sampleCount: 1,
+          aspectRatio: aspectRatioMap[aspectRatio] || '1:1',
+          safetyFilterLevel: 'block_only_high',
+          personGeneration: 'allow_adult',
+          languageCode: 'en',
+          addWatermark: false
+        }
+      };
+    } else {
       // Imagen 2 format (fallback)
-      instances: [{
-        prompt: prompt,
-      }],
-      parameters: {
-        sampleCount: 1,
-        aspectRatio: aspectRatioMap[aspectRatio] || '1:1',
-        safetyFilterLevel: 'block_only_high', // Less restrictive for anatomy accuracy
-        languageCode: 'en' // Explicit language specification
-      }
-    };
+      requestBody = {
+        instances: [{
+          prompt: prompt,
+        }],
+        parameters: {
+          sampleCount: 1,
+          aspectRatio: aspectRatioMap[aspectRatio] || '1:1',
+          safetyFilterLevel: 'block_only_high',
+          languageCode: 'en'
+        }
+      };
+    }
 
     // Add seed if provided (for reproducibility)
     if (seed !== undefined && seed !== null) {
@@ -189,7 +245,14 @@ exports.handler = async (event, context) => {
   try {
     console.log('🎨 Received image generation request');
     const requestBody = JSON.parse(event.body);
-    const { prompt, count = 1, aspectRatio = '1:1', seed } = requestBody;
+    const { prompt, count = 1, aspectRatio = '1:1', seed, referenceImages = [] } = requestBody;
+
+    if (referenceImages && referenceImages.length > 0) {
+      console.log(`📸 Using ${referenceImages.length} reference image(s) for customization`);
+      referenceImages.forEach((ref, idx) => {
+        console.log(`  ${idx + 1}. ${ref.referenceType} (ID: ${ref.referenceId})`);
+      });
+    }
 
     if (!prompt || prompt.trim().length === 0) {
       return {
@@ -224,7 +287,7 @@ exports.handler = async (event, context) => {
     let usedFallback = false;
 
     try {
-      images = await generateImagesWithVertexAI(prompt, count, aspectRatio, seed, false);
+      images = await generateImagesWithVertexAI(prompt, count, aspectRatio, seed, false, referenceImages);
       console.log(`✅ Successfully generated ${images.length} images with Imagen 3`);
     } catch (imagen3Error) {
       // Check if this is a quota error (429)
@@ -236,9 +299,9 @@ exports.handler = async (event, context) => {
 
       if (isQuotaError) {
         console.warn('⚠️ Imagen 3 quota exceeded, falling back to Imagen 2...');
-        // Retry with Imagen 2
+        // Retry with Imagen 2 (note: Imagen 2 doesn't support customization)
         try {
-          images = await generateImagesWithVertexAI(prompt, count, aspectRatio, seed, true);
+          images = await generateImagesWithVertexAI(prompt, count, aspectRatio, seed, true, []);
           usedFallback = true;
           console.log(`✅ Successfully generated ${images.length} images with Imagen 2 (fallback)`);
         } catch (imagen2Error) {
