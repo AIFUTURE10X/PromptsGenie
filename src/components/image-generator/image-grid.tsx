@@ -4,6 +4,7 @@ interface GeneratedImage {
   index: number;
   imageData: string;
   mimeType: string;
+  prompt?: string;
 }
 
 interface ImageGridProps {
@@ -30,6 +31,7 @@ export function ImageGrid({ images, imageCount, aspectRatio, isGenerating, onDel
             aspectRatio={aspectRatio}
             isGenerating={isGenerating && !image}
             index={slotIndex}
+            prompt={image?.prompt}
             onDelete={() => onDeleteImage?.(slotIndex)}
           />
         );

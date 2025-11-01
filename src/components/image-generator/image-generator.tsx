@@ -10,6 +10,7 @@ interface GeneratedImage {
   index: number;
   imageData: string;
   mimeType: string;
+  prompt?: string;
 }
 
 interface ImageGeneratorProps {
@@ -115,7 +116,12 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
         throw new Error(data.error || 'Failed to generate images');
       }
 
-      setGeneratedImages(data.images);
+      // Add the prompt to each generated image
+      const imagesWithPrompt = data.images.map((img: GeneratedImage) => ({
+        ...img,
+        prompt: finalPrompt
+      }));
+      setGeneratedImages(imagesWithPrompt);
 
       // Display model info if fallback was used
       if (data.fallbackUsed) {

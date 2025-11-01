@@ -11,10 +11,11 @@ interface ImageCardProps {
   aspectRatio: string;
   isGenerating: boolean;
   index: number;
+  prompt?: string;
   onDelete?: () => void;
 }
 
-export function ImageCard({ imageData, mimeType, aspectRatio, isGenerating, index, onDelete }: ImageCardProps) {
+export function ImageCard({ imageData, mimeType, aspectRatio, isGenerating, index, prompt, onDelete }: ImageCardProps) {
   const [copied, setCopied] = useState(false);
   const lightboxRef = useRef<any>(null);
 
@@ -39,6 +40,78 @@ export function ImageCard({ imageData, mimeType, aspectRatio, isGenerating, inde
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleDownloadWithPrompt = async () => {
+    if (!imageData || !prompt) return;
+
+    try {
+      // Create an image element
+      const img = new Image();
+      img.src = `data:${mimeType || 'image/png'};base64,${imageData}`;
+
+      await new Promise((resolve) => {
+        img.onload = resolve;
+      });
+
+      // Create canvas with extra height for prompt
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const maxPromptHeight = 200;
+      const padding = 20;
+      const lineHeight = 20;
+
+      canvas.width = img.width;
+      canvas.height = img.height + maxPromptHeight;
+
+      // Draw the image
+      ctx.drawImage(img, 0, 0);
+
+      // Draw prompt background
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+      ctx.fillRect(0, img.height, canvas.width, maxPromptHeight);
+
+      // Draw prompt text
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '14px Arial, sans-serif';
+
+      // Word wrap the prompt
+      const words = prompt.split(' ');
+      let line = '';
+      let y = img.height + padding + lineHeight;
+      const maxWidth = canvas.width - (padding * 2);
+
+      words.forEach((word) => {
+        const testLine = line + word + ' ';
+        const metrics = ctx.measureText(testLine);
+
+        if (metrics.width > maxWidth && line !== '') {
+          ctx.fillText(line, padding, y);
+          line = word + ' ';
+          y += lineHeight;
+        } else {
+          line = testLine;
+        }
+      });
+      ctx.fillText(line, padding, y);
+
+      // Download the canvas
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `generated-image-${index + 1}-${aspectRatio.replace(':', 'x')}-with-prompt.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      });
+    } catch (error) {
+      console.error('Failed to download image with prompt:', error);
+    }
   };
 
   const handleCopy = async () => {
@@ -121,7 +194,7 @@ export function ImageCard({ imageData, mimeType, aspectRatio, isGenerating, inde
             className="glightbox-image w-full h-full flex items-center justify-center p-2"
             data-type="image"
             data-title={`Generated Image ${index + 1}`}
-            data-description={`${aspectRatio} aspect ratio`}
+            data-description={prompt ? `<div style="max-height: 200px; overflow-y: auto; padding: 10px; background: rgba(0,0,0,0.7); border-radius: 8px;"><strong>Aspect Ratio:</strong> ${aspectRatio}<br/><br/><strong>Prompt:</strong><br/>${prompt.replace(/\n/g, '<br/>')}</div>` : `${aspectRatio} aspect ratio`}
             data-gallery="generated-images"
           >
             <img
@@ -135,34 +208,51 @@ export function ImageCard({ imageData, mimeType, aspectRatio, isGenerating, inde
 
           {/* Hover overlay with buttons */}
           <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2 pointer-events-none">
-            <div className="pointer-events-auto flex gap-2">
-              <Button
-                onClick={handleDownload}
-                size="icon"
-                variant="secondary"
-                className="bg-white/90 hover:bg-white"
-                title="Download image"
-              >
-                <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              </Button>
-              <Button
-                onClick={handleCopy}
-                size="icon"
-                variant="secondary"
-                className="bg-white/90 hover:bg-white"
-                title="Copy to clipboard"
-              >
-                {copied ? <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600" /> : <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-              </Button>
-              <Button
-                onClick={handleDelete}
-                size="icon"
-                variant="destructive"
-                className="bg-red-600/90 hover:bg-red-600"
-                title="Delete image"
-              >
-                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              </Button>
+            <div className="pointer-events-auto flex flex-col gap-2">
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleDownload}
+                  size="sm"
+                  variant="secondary"
+                  className="bg-white/90 hover:bg-white text-xs"
+                  title="Download image only"
+                >
+                  <Download className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1" />
+                  <span className="hidden sm:inline">Image</span>
+                </Button>
+                {prompt && (
+                  <Button
+                    onClick={handleDownloadWithPrompt}
+                    size="sm"
+                    variant="secondary"
+                    className="bg-blue-500/90 hover:bg-blue-500 text-white text-xs"
+                    title="Download image with prompt"
+                  >
+                    <Download className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1" />
+                    <span className="hidden sm:inline">+ Prompt</span>
+                  </Button>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleCopy}
+                  size="icon"
+                  variant="secondary"
+                  className="bg-white/90 hover:bg-white"
+                  title="Copy to clipboard"
+                >
+                  {copied ? <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600" /> : <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                </Button>
+                <Button
+                  onClick={handleDelete}
+                  size="icon"
+                  variant="destructive"
+                  className="bg-red-600/90 hover:bg-red-600"
+                  title="Delete image"
+                >
+                  <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </Button>
+              </div>
             </div>
           </div>
 
