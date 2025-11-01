@@ -39,54 +39,37 @@ const analytics = {
   }
 };
 
-// Get Google Cloud access token using OAuth2 JWT flow (no external libraries needed)
+// Get Google Cloud access token using google-auth-library (same as main image generator)
 async function getAccessToken() {
   try {
-    // Parse service account credentials from environment variable
-    // WORKAROUND: Netlify strips quotes from JSON env vars (known bug)
+    const { GoogleAuth } = await import('google-auth-library');
+
     const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
-    
     if (!credentialsJson) {
       throw new Error('GOOGLE_APPLICATION_CREDENTIALS_JSON not configured');
     }
 
     let credentials;
     try {
-      // First try normal JSON parse
       credentials = JSON.parse(credentialsJson);
-    } catch (jsonError) {
-      // Fallback: Use eval for Netlify's quote-stripping bug
-      console.log('⚠️ JSON parse failed, using eval fallback');
+    } catch (e) {
       credentials = eval('(' + credentialsJson + ')');
     }
 
-    if (!credentials || !credentials.private_key || !credentials.client_email) {
-      throw new Error('Invalid credentials structure');
-    }
-
-    // Create JWT for OAuth2 token exchange
-    const { createJWT } = await import('./utils/jwt.js');
-    const jwt = createJWT(credentials);
-
-    // Exchange JWT for access token
-    const tokenEndpoint = 'https://oauth2.googleapis.com/token';
-    const response = await fetch(tokenEndpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-        assertion: jwt,
-      }),
+    const auth = new GoogleAuth({
+      credentials: credentials,
+      scopes: ['https://www.googleapis.com/auth/cloud-platform'],
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ OAuth2 token exchange failed:', errorText);
-      throw new Error(`Token exchange failed: ${response.status}`);
+    const client = await auth.getClient();
+    const token = await client.getAccessToken();
+
+    if (!token.token) {
+      throw new Error('Failed to get access token');
     }
 
-    const data = await response.json();
-    return data.access_token;
+    console.log('✅ Successfully obtained OAuth access token');
+    return token.token;
   } catch (error) {
     console.error('❌ Error getting access token:', error);
     throw new Error('Could not get access token: ' + error.message);
@@ -197,8 +180,8 @@ export const handler = async (event, context) => {
       };
     }
 
-    // Use single model for all frames (Imagen 3 - highest quality available)
-    const model = 'imagegeneration@006';
+    // Use Imagen 3 for highest quality (same as main image generator)
+    const model = 'imagen-3.0-generate-001';
 
     // Enhanced prompt with EXPLICIT character separation to prevent confusion
     // Process the description to make character actions more explicit
@@ -272,7 +255,14 @@ Style: Vibrant colors, photorealistic rendering, dramatic lighting, professional
     console.log(`🔍 Cache MISS for frame ${frameIndex + 1} - will generate new image`);
     console.log(`📊 Analytics: ${analytics.cacheHits} hits, ${analytics.cacheMisses} misses, ${analytics.hitRate}% hit rate`);
 
-    const endpoint = `https://us-central1-aiplatform.googleapis.com/v1/projects/${process.env.GOOGLE_PROJECT_ID}/locations/us-central1/publishers/google/models/${model}:predict`;
+    const projectId = process.env.GOOGLE_CLOUD_PROJECT_ID;
+    const location = process.env.GOOGLE_CLOUD_LOCATION || 'us-central1';
+
+    if (!projectId) {
+      throw new Error('GOOGLE_CLOUD_PROJECT_ID environment variable not set');
+    }
+
+    const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${model}:predict`;
 
     // Map aspect ratio to parameters
     const aspectRatioMap = {
@@ -283,7 +273,7 @@ Style: Vibrant colors, photorealistic rendering, dramatic lighting, professional
       '21:9': { aspectRatio: '16:9' } // 21:9 not supported, use 16:9
     };
 
-    // Request body with valid parameters for imagegeneration@006
+    // Request body with valid parameters for Imagen 3 (imagen-3.0-generate-001)
     const body = {
       instances: [
         {
@@ -292,8 +282,11 @@ Style: Vibrant colors, photorealistic rendering, dramatic lighting, professional
       ],
       parameters: {
         sampleCount: 1,
-        // Only use parameters that are confirmed to work with imagegeneration@006
-        ...(aspectRatio && aspectRatioMap[aspectRatio] ? aspectRatioMap[aspectRatio] : {}),
+        aspectRatio: aspectRatio && aspectRatioMap[aspectRatio] ? aspectRatioMap[aspectRatio].aspectRatio : '16:9',
+        safetyFilterLevel: 'block_only_high',
+        personGeneration: 'allow_adult',
+        languageCode: 'en',
+        addWatermark: false
       },
     };
 
