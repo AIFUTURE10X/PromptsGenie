@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { AspectRatioSelector } from './aspect-ratio-selector';
 import { ImageGrid } from './image-grid';
+import { EnhancementModal } from './enhancement-modal';
 
 interface GeneratedImage {
   index: number;
@@ -30,19 +31,15 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
   const [modelInfo, setModelInfo] = useState<string | null>(null);
 
   // Prompt enhancement states
-  const [useEnhancement, setUseEnhancement] = useState(true);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [enhancedPrompt, setEnhancedPrompt] = useState<string>('');
   const [isEditingEnhanced, setIsEditingEnhanced] = useState(false);
   const [styleIntensity, setStyleIntensity] = useState<'subtle' | 'moderate' | 'strong'>('moderate');
   const [preciseReference, setPreciseReference] = useState(false);
 
-  // Auto-enhance when prompt changes and enhancement is enabled
-  useEffect(() => {
-    if (prompt && useEnhancement && !enhancedPrompt) {
-      handleEnhancePrompt();
-    }
-  }, [prompt, useEnhancement]);
+  // Tab and modal states
+  const [activeTab, setActiveTab] = useState<'combined' | 'enhanced'>('combined');
+  const [showEnhancementModal, setShowEnhancementModal] = useState(false);
 
   const handleEnhancePrompt = async () => {
     if (!prompt || prompt.trim().length === 0) {
@@ -75,18 +72,40 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
       }
 
       setEnhancedPrompt(data.enhancedPrompt);
+      setActiveTab('enhanced'); // Switch to enhanced tab after successful enhancement
     } catch (err) {
       console.error('Prompt enhancement error:', err);
       setError(err instanceof Error ? err.message : 'Failed to enhance prompt');
-      // Fall back to original prompt if enhancement fails
-      setUseEnhancement(false);
     } finally {
       setIsEnhancing(false);
     }
   };
 
+  const handleGenerateClick = () => {
+    // Check user preference
+    const preference = localStorage.getItem('promptEnhancementPreference');
+
+    // If user is on combined tab and has no preference set, show modal
+    if (activeTab === 'combined' && !preference) {
+      setShowEnhancementModal(true);
+      return;
+    }
+
+    // If preference is to enhance and we're on combined tab, run enhancement first
+    if (activeTab === 'combined' && preference === 'enhanced' && !enhancedPrompt) {
+      handleEnhancePrompt().then(() => {
+        // After enhancement, generate will be called from the enhanced tab
+        handleGenerate();
+      });
+      return;
+    }
+
+    // Otherwise, generate with current tab's prompt
+    handleGenerate();
+  };
+
   const handleGenerate = async () => {
-    const finalPrompt = useEnhancement && enhancedPrompt ? enhancedPrompt : prompt;
+    const finalPrompt = activeTab === 'enhanced' ? enhancedPrompt : prompt;
 
     if (!finalPrompt || finalPrompt.trim().length === 0) {
       setError('Please provide a prompt from the image analyzer above');
@@ -148,19 +167,9 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
     setGeneratedImages(prevImages => prevImages.filter(img => img.index !== index));
   };
 
-  const handleToggleEnhancement = () => {
-    setUseEnhancement(!useEnhancement);
-    if (!useEnhancement && !enhancedPrompt && prompt) {
-      // Re-enhance when turning on
-      handleEnhancePrompt();
-    }
-  };
-
   if (!prompt) {
     return null; // Don't show generator if there's no prompt
   }
-
-  const displayPrompt = useEnhancement && enhancedPrompt ? enhancedPrompt : prompt;
 
   return (
     <motion.div
@@ -178,7 +187,7 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
                 Image Generator
               </CardTitle>
               <p className="text-xs sm:text-sm text-black mt-1">
-                {useEnhancement ? 'Gemini Flash 2.5 + Imagen 3' : 'Imagen 3'}
+                {activeTab === 'enhanced' ? 'Gemini Flash 2.5 + Imagen 3' : 'Imagen 3'}
               </p>
             </div>
             {generatedImages.length > 0 && (
@@ -196,29 +205,6 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
         </CardHeader>
 
         <CardContent className="space-y-4 px-3 sm:px-6">
-          {/* Prompt Enhancement Toggle */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 rounded-lg bg-black/10 border border-black/20">
-            <div className="flex items-start gap-3">
-              <Wand2 className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs sm:text-sm font-semibold text-white">Enhance Prompt with Gemini Flash 2.5</p>
-                <p className="text-xs text-white/80">AI improves your prompt for better images</p>
-              </div>
-            </div>
-            <button
-              onClick={handleToggleEnhancement}
-              className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${
-                useEnhancement ? 'bg-white' : 'bg-black/30'
-              }`}
-            >
-              <span
-                className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-black transition-transform ${
-                  useEnhancement ? 'translate-x-6' : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
-
           {/* Single Row Settings */}
           <div className="space-y-2">
             <label className="text-xs sm:text-sm font-semibold text-white uppercase">Settings</label>
@@ -323,81 +309,108 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
             </div>
           )}
 
-          {/* Prompt Display - Draggable */}
+          {/* Tabbed Prompt Display */}
           <div className="space-y-2">
-            <motion.div
-              drag
-              dragMomentum={false}
-              dragElastic={0}
-              whileDrag={{ scale: 1.02 }}
-              className="cursor-grab active:cursor-grabbing"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <GripVertical className="w-4 h-4 text-white/60" />
-                  <label className="text-xs sm:text-sm font-semibold text-white uppercase">
-                    {useEnhancement && enhancedPrompt ? 'Enhanced Prompt' : 'Current Prompt'}
-                  </label>
-                </div>
-                {useEnhancement && enhancedPrompt && (
-                  <button
-                    onClick={() => setIsEditingEnhanced(!isEditingEnhanced)}
-                    className="text-xs text-white/80 hover:text-white flex items-center gap-1"
-                  >
-                    <Edit3 className="w-3 h-3" />
-                    {isEditingEnhanced ? 'Done' : 'Edit'}
-                  </button>
-                )}
-              </div>
-
-              {isEnhancing ? (
-                <div className="p-3 rounded-lg bg-black/20 border border-black/30 flex items-center gap-2">
-                  <Wand2 className="w-4 h-4 text-white animate-spin flex-shrink-0" />
-                  <p className="text-xs sm:text-sm text-white">Enhancing prompt with Gemini Flash 2.5...</p>
-                </div>
-              ) : isEditingEnhanced && useEnhancement && enhancedPrompt ? (
-                <textarea
-                  value={enhancedPrompt}
-                  onChange={(e) => setEnhancedPrompt(e.target.value)}
-                  className="w-full p-2.5 sm:p-3 rounded-lg bg-black/20 border border-black/30 text-white resize-none focus:outline-none focus:ring-2 focus:ring-white/50 text-xs sm:text-sm"
-                  rows={4}
-                />
-              ) : (
-                <div className="p-2.5 sm:p-3 rounded-lg bg-black/20 border border-black/30">
-                  <p className="text-xs sm:text-sm text-white whitespace-pre-wrap break-words">{displayPrompt}</p>
-                </div>
+            {/* Tab Headers */}
+            <div className="flex items-center gap-2 border-b border-white/20 pb-2">
+              <GripVertical className="w-4 h-4 text-white/60" />
+              <button
+                onClick={() => setActiveTab('combined')}
+                className={`px-3 py-1.5 rounded-t-md text-xs sm:text-sm font-semibold transition-all ${
+                  activeTab === 'combined'
+                    ? 'bg-white text-black'
+                    : 'bg-black/20 text-white/60 hover:text-white hover:bg-black/30'
+                }`}
+              >
+                Combined Prompt
+                {activeTab === 'combined' && <span className="ml-2 text-xs">({prompt.split(' ').length} words)</span>}
+              </button>
+              {enhancedPrompt && (
+                <button
+                  onClick={() => setActiveTab('enhanced')}
+                  className={`px-3 py-1.5 rounded-t-md text-xs sm:text-sm font-semibold transition-all flex items-center gap-1 ${
+                    activeTab === 'enhanced'
+                      ? 'bg-white text-black'
+                      : 'bg-black/20 text-white/60 hover:text-white hover:bg-black/30'
+                  }`}
+                >
+                  ✨ Enhanced Prompt
+                  {activeTab === 'enhanced' && <span className="ml-1 text-xs">({enhancedPrompt.split(' ').length} words)</span>}
+                </button>
               )}
+            </div>
 
-              {/* Show original prompt if enhancement is active */}
-              {useEnhancement && enhancedPrompt && !isEditingEnhanced && (
-                <details className="text-xs">
-                  <summary className="cursor-pointer text-white/60 hover:text-white/80">
-                    Show original prompt
-                  </summary>
-                  <div className="mt-2 p-2 rounded bg-black/10 text-white/80 break-words">
-                    {prompt}
+            {/* Tab Content */}
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              {activeTab === 'combined' ? (
+                <div className="space-y-2">
+                  <div className="p-2.5 sm:p-3 rounded-lg bg-black/20 border border-black/30">
+                    <p className="text-xs sm:text-sm text-white whitespace-pre-wrap break-words">{prompt}</p>
                   </div>
-                </details>
+                  {!enhancedPrompt && !isEnhancing && (
+                    <Button
+                      onClick={handleEnhancePrompt}
+                      variant="secondary"
+                      size="sm"
+                      className="w-full flex items-center justify-center gap-2 text-xs sm:text-sm"
+                    >
+                      <Wand2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      Enhance with Gemini AI
+                    </Button>
+                  )}
+                  {isEnhancing && (
+                    <div className="p-3 rounded-lg bg-black/20 border border-black/30 flex items-center gap-2">
+                      <Wand2 className="w-4 h-4 text-white animate-spin flex-shrink-0" />
+                      <p className="text-xs sm:text-sm text-white">Enhancing prompt with Gemini Flash 2.5...</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs text-white/60">AI-enhanced with scene preservation & quality modifiers</p>
+                    <button
+                      onClick={() => setIsEditingEnhanced(!isEditingEnhanced)}
+                      className="text-xs text-white/80 hover:text-white flex items-center gap-1"
+                    >
+                      <Edit3 className="w-3 h-3" />
+                      {isEditingEnhanced ? 'Done' : 'Edit'}
+                    </button>
+                  </div>
+                  {isEditingEnhanced ? (
+                    <textarea
+                      value={enhancedPrompt}
+                      onChange={(e) => setEnhancedPrompt(e.target.value)}
+                      className="w-full p-2.5 sm:p-3 rounded-lg bg-black/20 border border-black/30 text-white resize-none focus:outline-none focus:ring-2 focus:ring-white/50 text-xs sm:text-sm"
+                      rows={6}
+                    />
+                  ) : (
+                    <div className="p-2.5 sm:p-3 rounded-lg bg-black/20 border border-black/30">
+                      <p className="text-xs sm:text-sm text-white whitespace-pre-wrap break-words">{enhancedPrompt}</p>
+                    </div>
+                  )}
+                  <Button
+                    onClick={handleEnhancePrompt}
+                    variant="secondary"
+                    size="sm"
+                    className="w-full flex items-center justify-center gap-2 text-xs sm:text-sm"
+                  >
+                    <Wand2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    Re-enhance Prompt
+                  </Button>
+                </div>
               )}
             </motion.div>
           </div>
 
-          {/* Re-enhance Button */}
-          {useEnhancement && !isEnhancing && (
-            <Button
-              onClick={handleEnhancePrompt}
-              variant="secondary"
-              size="sm"
-              className="w-full flex items-center justify-center gap-2 text-xs sm:text-sm"
-            >
-              <Wand2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              Re-enhance Prompt
-            </Button>
-          )}
-
           {/* Generate Button */}
           <Button
-            onClick={handleGenerate}
+            onClick={handleGenerateClick}
             disabled={isGenerating || isEnhancing || !prompt}
             className="w-full py-4 sm:py-6 text-base sm:text-lg font-bold"
             size="lg"
@@ -453,6 +466,16 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
           )}
         </CardContent>
       </Card>
+
+      {/* Enhancement Confirmation Modal */}
+      <EnhancementModal
+        isOpen={showEnhancementModal}
+        onClose={() => setShowEnhancementModal(false)}
+        onUseCombined={() => handleGenerate()}
+        onEnhanceFirst={() => {
+          handleEnhancePrompt().then(() => handleGenerate());
+        }}
+      />
     </motion.div>
   );
 }
