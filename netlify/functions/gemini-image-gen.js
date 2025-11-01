@@ -139,37 +139,42 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
               console.warn(`⚠️ Reference image ${ref.referenceId} has invalid base64 format. First 100 chars: ${imageData.substring(0, 100)}`);
             }
 
-            // Image field should be an object containing bytesBase64Encoded
-            refImage.image = {
+            // CORRECTED: Google expects "referenceImage" not "image"
+            refImage.referenceImage = {
               bytesBase64Encoded: imageData.trim()
             };
 
             console.log(`✅ Reference image ${ref.referenceId}: type=${ref.referenceType}, data_length=${imageData.length}`);
 
             // Add optional fields based on reference type
+            // CORRECTED: Google expects nested config objects, not flat fields
             if (ref.referenceType === 'REFERENCE_TYPE_SUBJECT' && ref.subjectType) {
-              refImage.subjectType = ref.subjectType;
+              refImage.subjectImageConfig = {
+                subjectType: ref.subjectType
+              };
             }
             if (ref.referenceType === 'REFERENCE_TYPE_STYLE' && ref.styleDescription) {
-              refImage.styleDescription = ref.styleDescription;
+              refImage.styleImageConfig = {
+                styleDescription: ref.styleDescription
+              };
             }
 
             return refImage;
           });
 
-        // CRITICAL: Final validation - ensure every reference image has an image field
-        const invalidRefs = instance.referenceImages.filter(ref => !ref.image || !ref.image.bytesBase64Encoded);
+        // CRITICAL: Final validation - ensure every reference image has a referenceImage field
+        const invalidRefs = instance.referenceImages.filter(ref => !ref.referenceImage || !ref.referenceImage.bytesBase64Encoded);
         if (invalidRefs.length > 0) {
-          console.error(`❌ CRITICAL: Found ${invalidRefs.length} reference images without image field!`);
+          console.error(`❌ CRITICAL: Found ${invalidRefs.length} reference images without referenceImage field!`);
           invalidRefs.forEach((ref, idx) => {
             console.error(`  Invalid ref ${idx}:`, {
               referenceId: ref.referenceId,
               referenceType: ref.referenceType,
-              hasImage: !!ref.image,
-              hasBytes: !!ref.image?.bytesBase64Encoded
+              hasReferenceImage: !!ref.referenceImage,
+              hasBytes: !!ref.referenceImage?.bytesBase64Encoded
             });
           });
-          throw new Error(`Reference images validation failed: ${invalidRefs.length} images missing image field`);
+          throw new Error(`Reference images validation failed: ${invalidRefs.length} images missing referenceImage field`);
         }
 
           // If all reference images were filtered out, don't include the field at all
@@ -234,13 +239,13 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
         requestBody.instances[0].referenceImages.forEach((ref, idx) => {
           console.log(`    [${idx}] referenceId: ${ref.referenceId}`);
           console.log(`    [${idx}] referenceType: ${ref.referenceType}`);
-          console.log(`    [${idx}] image field: ${ref.image ? 'EXISTS' : 'MISSING'}`);
-          if (ref.image) {
-            console.log(`    [${idx}] image.bytesBase64Encoded length: ${ref.image.bytesBase64Encoded?.length || 0}`);
-            console.log(`    [${idx}] image.bytesBase64Encoded preview: ${ref.image.bytesBase64Encoded?.substring(0, 50) || 'EMPTY'}...`);
+          console.log(`    [${idx}] referenceImage field: ${ref.referenceImage ? 'EXISTS' : 'MISSING'}`);
+          if (ref.referenceImage) {
+            console.log(`    [${idx}] referenceImage.bytesBase64Encoded length: ${ref.referenceImage.bytesBase64Encoded?.length || 0}`);
+            console.log(`    [${idx}] referenceImage.bytesBase64Encoded preview: ${ref.referenceImage.bytesBase64Encoded?.substring(0, 50) || 'EMPTY'}...`);
           }
-          if (ref.subjectType) console.log(`    [${idx}] subjectType: ${ref.subjectType}`);
-          if (ref.styleDescription) console.log(`    [${idx}] styleDescription: ${ref.styleDescription}`);
+          if (ref.subjectImageConfig) console.log(`    [${idx}] subjectImageConfig:`, ref.subjectImageConfig);
+          if (ref.styleImageConfig) console.log(`    [${idx}] styleImageConfig:`, ref.styleImageConfig);
         });
       }
       console.log('  - parameters:', JSON.stringify(requestBody.parameters));
@@ -286,17 +291,17 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
       console.log(`🛡️ FINAL VALIDATION: Checking ${requestBody.instances[0].referenceImages.length} reference images before API call`);
 
       const invalidReferences = requestBody.instances[0].referenceImages.filter(ref => {
-        const hasImageField = ref && ref.image && typeof ref.image === 'object';
-        const hasBytesField = hasImageField && ref.image.bytesBase64Encoded && typeof ref.image.bytesBase64Encoded === 'string';
-        const hasValidData = hasBytesField && ref.image.bytesBase64Encoded.length > 0;
+        const hasReferenceImageField = ref && ref.referenceImage && typeof ref.referenceImage === 'object';
+        const hasBytesField = hasReferenceImageField && ref.referenceImage.bytesBase64Encoded && typeof ref.referenceImage.bytesBase64Encoded === 'string';
+        const hasValidData = hasBytesField && ref.referenceImage.bytesBase64Encoded.length > 0;
 
         if (!hasValidData) {
           console.error(`❌ INVALID REFERENCE DETECTED:`, {
             referenceId: ref?.referenceId,
-            hasImageField,
+            hasReferenceImageField,
             hasBytesField,
             hasValidData,
-            bytesLength: ref?.image?.bytesBase64Encoded?.length || 0
+            bytesLength: ref?.referenceImage?.bytesBase64Encoded?.length || 0
           });
           return true; // This reference is invalid
         }
@@ -325,8 +330,8 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
       if (parsed.instances[0].referenceImages) {
         console.log(`🔍 Parsed JSON has ${parsed.instances[0].referenceImages.length} reference images`);
         parsed.instances[0].referenceImages.forEach((ref, idx) => {
-          if (!ref.image) {
-            console.error(`❌ SERIALIZATION ERROR: Reference ${idx} lost image field during JSON.stringify!`);
+          if (!ref.referenceImage) {
+            console.error(`❌ SERIALIZATION ERROR: Reference ${idx} lost referenceImage field during JSON.stringify!`);
           }
         });
       }
