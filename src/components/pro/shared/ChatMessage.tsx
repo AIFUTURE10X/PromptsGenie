@@ -81,6 +81,20 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
               : 'bg-gray-800 text-gray-100'
           }`}
         >
+          {/* Display uploaded images */}
+          {message.images && message.images.length > 0 && (
+            <div className="mb-2 grid grid-cols-2 gap-2">
+              {message.images.map((image, index) => (
+                <img
+                  key={index}
+                  src={image}
+                  alt={`Upload ${index + 1}`}
+                  className="w-full h-auto rounded-lg border border-white/20"
+                />
+              ))}
+            </div>
+          )}
+
           <div className="text-sm leading-relaxed whitespace-pre-wrap break-words">
             {formatContent(message.content)}
           </div>

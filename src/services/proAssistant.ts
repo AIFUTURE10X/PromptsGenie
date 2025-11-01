@@ -1,7 +1,7 @@
 // PromptsGenie Pro AI Assistant Service
 // Handles communication with Gemini for context-aware guidance
 
-import { generateWithGemini } from './promptApi';
+import { generateWithGemini, generateWithGeminiImages } from './promptApi';
 import {
   getBaseSystemPrompt,
   getContextPrompt,
@@ -15,10 +15,12 @@ export interface ChatMessage {
   content: string;
   timestamp: number;
   toolContext?: string;
+  images?: string[]; // Base64 encoded images
 }
 
 export interface SendMessageOptions {
   message: string;
+  images?: string[];
   context?: ChatContext;
   conversationHistory?: ChatMessage[];
 }
@@ -36,7 +38,7 @@ const MAX_HISTORY_LENGTH = 50; // Keep last 50 messages
  * Send a message to the AI assistant with context
  */
 export const sendMessage = async (options: SendMessageOptions): Promise<AssistantResponse> => {
-  const { message, context, conversationHistory = [] } = options;
+  const { message, images, context, conversationHistory = [] } = options;
 
   try {
     // Build the complete prompt
@@ -62,15 +64,28 @@ export const sendMessage = async (options: SendMessageOptions): Promise<Assistan
     }
 
     // Add the current user message
-    fullPrompt += `\n\n**User**: ${message}\n\n**Assistant**: `;
+    const userMessageText = images && images.length > 0
+      ? `${message}\n[User uploaded ${images.length} image${images.length > 1 ? 's' : ''}]`
+      : message;
+    fullPrompt += `\n\n**User**: ${userMessageText}\n\n**Assistant**: `;
 
-    // Call Gemini API
-    const response = await generateWithGemini(
-      fullPrompt,
-      'gemini-2.5-flash', // Use Gemini 2.5 Flash
-      true, // Allow fallback to gemini-1.5-pro
-      0.7 // Temperature for balanced creativity/accuracy
-    );
+    // Call Gemini API - use image model if images provided
+    let response: string;
+    if (images && images.length > 0) {
+      response = await generateWithGeminiImages(
+        fullPrompt,
+        images,
+        'gemini-2.5-flash', // Use Gemini 2.5 Flash for images
+        true // Allow fallback
+      );
+    } else {
+      response = await generateWithGemini(
+        fullPrompt,
+        'gemini-2.5-flash', // Use Gemini 2.5 Flash
+        true, // Allow fallback to gemini-1.5-pro
+        0.7 // Temperature for balanced creativity/accuracy
+      );
+    }
 
     if (!response || response.trim() === '') {
       throw new Error('Empty response from AI');
@@ -152,13 +167,14 @@ export const generateMessageId = (): string => {
 /**
  * Create a user message object
  */
-export const createUserMessage = (content: string, toolContext?: string): ChatMessage => {
+export const createUserMessage = (content: string, toolContext?: string, images?: string[]): ChatMessage => {
   return {
     id: generateMessageId(),
     role: 'user',
     content,
     timestamp: Date.now(),
     toolContext,
+    images,
   };
 };
 

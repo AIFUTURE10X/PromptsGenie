@@ -69,14 +69,14 @@ export const ProAIAssistant: React.FC<ProAIAssistantProps> = ({
     }
   }, [currentTool, isOpen]);
 
-  const handleSendMessage = async (content: string) => {
-    if (!content.trim() || isLoading) return;
+  const handleSendMessage = async (content: string, images?: string[]) => {
+    if ((!content.trim() && !images?.length) || isLoading) return;
 
     // Hide suggestions after first message
     setShowSuggestions(false);
 
     // Add user message
-    const userMsg = createUserMessage(content, currentTool);
+    const userMsg = createUserMessage(content, currentTool, images);
     setMessages((prev) => [...prev, userMsg]);
     setIsLoading(true);
 
@@ -84,6 +84,7 @@ export const ProAIAssistant: React.FC<ProAIAssistantProps> = ({
       // Send to AI
       const response = await sendMessage({
         message: content,
+        images,
         context: {
           currentTool,
           userInput,
