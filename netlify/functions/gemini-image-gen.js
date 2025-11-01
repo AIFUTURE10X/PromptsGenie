@@ -153,10 +153,6 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
                 subjectType: ref.subjectType
               };
             }
-            if (ref.referenceType === 'REFERENCE_TYPE_SCENE') {
-              // Scene references don't require additional config - just the referenceImage field
-              console.log(`  Scene reference added (no additional config needed)`);
-            }
             if (ref.referenceType === 'REFERENCE_TYPE_STYLE' && ref.styleDescription) {
               refImage.styleImageConfig = {
                 styleDescription: ref.styleDescription

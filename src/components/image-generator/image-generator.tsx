@@ -212,19 +212,10 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
         });
       }
 
-      // Add scene image as REFERENCE_TYPE_SCENE
-      if (sceneImage && sceneImage.trim().length > 0) {
-        referenceImages.push({
-          referenceId: 2,
-          referenceType: 'REFERENCE_TYPE_SCENE',
-          imageData: sceneImage
-        });
-      }
-
       // Add style image as REFERENCE_TYPE_STYLE
       if (styleImage && styleImage.trim().length > 0) {
         referenceImages.push({
-          referenceId: 3,
+          referenceId: 2,
           referenceType: 'REFERENCE_TYPE_STYLE',
           styleDescription: stylePrompt || 'artistic style',
           imageData: styleImage
@@ -235,6 +226,9 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
       referenceImages.forEach((ref, idx) => {
         console.log(`  ${idx + 1}. Type: ${ref.referenceType}, ID: ${ref.referenceId}, Data length: ${ref.imageData?.length || 0}`);
       });
+
+      // Note: Scene images are incorporated into the text prompt, not sent as reference images
+      // Imagen 3 API only supports REFERENCE_TYPE_SUBJECT and REFERENCE_TYPE_STYLE
 
       const response = await fetch('/.netlify/functions/gemini-image-gen', {
         method: 'POST',
