@@ -111,6 +111,15 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
   const expandStartWidthPrompt = useRef(0);
   const expandStartHeightPrompt = useRef(0);
 
+  // Auto-set aspect ratio to 1:1 when reference images are present
+  // (imagen-3.0-capability-001 model doesn't support aspect ratio customization)
+  useEffect(() => {
+    const hasReferenceImages = !!(subjectImage || subjectImage2 || sceneImage || styleImage);
+    if (hasReferenceImages && aspectRatio !== '1:1') {
+      setAspectRatio('1:1');
+    }
+  }, [subjectImage, subjectImage2, sceneImage, styleImage, aspectRatio]);
+
   const handleEnhancePrompt = async () => {
     if (!prompt || prompt.trim().length === 0) {
       return;
@@ -431,6 +440,7 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
                   value={aspectRatio}
                   onChange={(e) => setAspectRatio(e.target.value)}
                   className="px-3 py-2 rounded-md bg-white border border-black/30 text-black text-sm focus:outline-none focus:ring-2 focus:ring-black/50"
+                  disabled={!!(subjectImage || subjectImage2 || sceneImage || styleImage)}
                 >
                   <option value="1:1">1:1 Square</option>
                   <option value="16:9">16:9 Landscape</option>
@@ -438,6 +448,11 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
                   <option value="4:3">4:3 Classic</option>
                   <option value="3:4">3:4 Portrait</option>
                 </select>
+                {(subjectImage || subjectImage2 || sceneImage || styleImage) && (
+                  <p className="text-xs text-yellow-300 mt-1">
+                    ℹ️ Aspect ratio locked to 1:1 when using reference images
+                  </p>
+                )}
               </div>
 
               {/* Seed Input */}

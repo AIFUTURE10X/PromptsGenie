@@ -68,6 +68,16 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
   console.log(`🎨 Using model: ${modelVersion} (Imagen ${useImagen3 ? '3' : '2'}${forceImagen2 ? ' - FALLBACK MODE' : ''}${useCustomization ? ' - WITH CUSTOMIZATION' : ''})`);
   console.log(`📐 Requested aspect ratio: ${aspectRatio}`);
 
+  // IMPORTANT: imagen-3.0-capability-001 (customization model) does NOT support aspectRatio parameter
+  // It always generates square (1:1) images. Force to 1:1 to avoid letterboxing.
+  let finalAspectRatio = aspectRatio;
+  if (useCustomization && aspectRatio !== '1:1') {
+    console.log(`⚠️ ASPECT RATIO OVERRIDE: Capability model doesn't support aspect ratios`);
+    console.log(`   Requested: ${aspectRatio} → Forcing to: 1:1 (square)`);
+    console.log(`   Reason: imagen-3.0-capability-001 ignores aspectRatio, always returns 1:1`);
+    finalAspectRatio = '1:1';
+  }
+
   // Map aspect ratios to Imagen format (only Imagen-supported ratios)
   const aspectRatioMap = {
     '1:1': '1:1',
@@ -77,7 +87,7 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
     '3:4': '3:4'
   };
 
-  console.log(`📐 Mapped aspect ratio: ${aspectRatioMap[aspectRatio] || '1:1'}`);
+  console.log(`📐 Final aspect ratio to use: ${aspectRatioMap[finalAspectRatio] || '1:1'}`);
 
   const imagePromises = [];
 
@@ -211,7 +221,7 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
           }],
           parameters: {
             sampleCount: 1,
-            aspectRatio: aspectRatioMap[aspectRatio] || '1:1',
+            aspectRatio: aspectRatioMap[finalAspectRatio] || '1:1',
             safetyFilterLevel: 'block_only_high',
             personGeneration: 'allow_adult',
             languageCode: 'en',
@@ -224,7 +234,7 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
         instances: [instance],
         parameters: {
           sampleCount: 1,
-          aspectRatio: aspectRatioMap[aspectRatio] || '1:1',
+          aspectRatio: aspectRatioMap[finalAspectRatio] || '1:1',
           safetyFilterLevel: 'block_only_high',
           personGeneration: 'allow_adult',
           languageCode: 'en',
@@ -261,7 +271,7 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
         }],
         parameters: {
           sampleCount: 1,
-          aspectRatio: aspectRatioMap[aspectRatio] || '1:1',
+          aspectRatio: aspectRatioMap[finalAspectRatio] || '1:1',
           safetyFilterLevel: 'block_only_high',
           personGeneration: 'allow_adult',
           languageCode: 'en',
@@ -276,7 +286,7 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
         }],
         parameters: {
           sampleCount: 1,
-          aspectRatio: aspectRatioMap[aspectRatio] || '1:1',
+          aspectRatio: aspectRatioMap[finalAspectRatio] || '1:1',
           safetyFilterLevel: 'block_only_high',
           languageCode: 'en'
         }
