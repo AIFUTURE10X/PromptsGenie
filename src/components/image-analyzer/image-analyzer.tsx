@@ -433,7 +433,6 @@ export function ImageAnalyzer({
                     <CardContent className="flex-1 flex flex-col pt-2 px-3 sm:px-6">
                       <div className="relative flex-1">
                         <textarea
-                          ref={combinedTextareaRef}
                           readOnly
                           value={combinedPrompt}
                           style={{
