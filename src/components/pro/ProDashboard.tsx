@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { Card } from '../ui/card';
+
+// Lazy load tool components
+const MoodBoardCreator = lazy(() => import('./concept-exploration/MoodBoardCreator').then(m => ({ default: m.MoodBoardCreator })));
 
 // Tool category types
 type ToolCategory = 'brand' | 'concept' | 'campaign' | 'production' | 'all';
@@ -158,6 +161,7 @@ const proTools: ProTool[] = [
 const ProDashboard: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<ToolCategory>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentTool, setCurrentTool] = useState<string | null>(null);
 
   // Filter tools based on category and search
   const filteredTools = proTools.filter((tool) => {
@@ -177,11 +181,36 @@ const ProDashboard: React.FC = () => {
   ];
 
   const handleToolClick = (toolId: string) => {
-    // TODO: Navigate to the specific tool
-    console.log('Opening tool:', toolId);
-    alert(`Tool "${toolId}" coming soon! This will open the ${proTools.find(t => t.id === toolId)?.name} interface.`);
+    // Check if tool is implemented
+    const implementedTools = ['mood-board']; // Add more as they're built
+    if (implementedTools.includes(toolId)) {
+      setCurrentTool(toolId);
+    } else {
+      alert(`Tool "${toolId}" coming soon! This will open the ${proTools.find(t => t.id === toolId)?.name} interface.`);
+    }
   };
 
+  const handleBackToDashboard = () => {
+    setCurrentTool(null);
+  };
+
+  // Render specific tool if selected
+  if (currentTool === 'mood-board') {
+    return (
+      <Suspense fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-brand-accent"></div>
+            <p className="mt-4 text-gray-400">Loading tool...</p>
+          </div>
+        </div>
+      }>
+        <MoodBoardCreator onBack={handleBackToDashboard} />
+      </Suspense>
+    );
+  }
+
+  // Otherwise render dashboard
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
