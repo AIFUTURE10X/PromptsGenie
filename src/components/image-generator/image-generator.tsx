@@ -41,6 +41,42 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
   const [styleIntensity, setStyleIntensity] = useState<'subtle' | 'moderate' | 'strong'>('moderate');
   const [preciseReference, setPreciseReference] = useState(false);
 
+  // Style preset state
+  type StylePreset = 'custom' | 'ghibli' | 'photorealistic' | 'anime';
+  const [stylePreset, setStylePreset] = useState<StylePreset>('custom');
+
+  // Style preset configurations
+  const STYLE_PRESETS = {
+    ghibli: {
+      styleIntensity: 'strong' as const,
+      preciseReference: false,
+      description: 'Studio Ghibli style - Hand-drawn watercolor aesthetic with soft edges and whimsical atmosphere'
+    },
+    photorealistic: {
+      styleIntensity: 'subtle' as const,
+      preciseReference: true,
+      description: 'Photorealistic - Preserves subject accuracy with minimal style application'
+    },
+    anime: {
+      styleIntensity: 'strong' as const,
+      preciseReference: false,
+      description: 'Modern Anime - Sharp cel-shading with vibrant colors and clean line art'
+    },
+    custom: {
+      styleIntensity: 'moderate' as const,
+      preciseReference: false,
+      description: 'Custom - Manual control of all settings'
+    }
+  };
+
+  // Apply preset configuration
+  const applyStylePreset = (preset: StylePreset) => {
+    setStylePreset(preset);
+    const config = STYLE_PRESETS[preset];
+    setStyleIntensity(config.styleIntensity);
+    setPreciseReference(config.preciseReference);
+  };
+
   // Tab and modal states
   const [activeTab, setActiveTab] = useState<'combined' | 'enhanced'>('combined');
   const [showEnhancementModal, setShowEnhancementModal] = useState(false);
@@ -342,6 +378,29 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
           {/* Single Row Settings */}
           <div className="space-y-2">
             <label className="text-xs sm:text-sm font-semibold text-white uppercase">Settings</label>
+
+            {/* Style Preset Dropdown - Full Width */}
+            <div className="flex flex-col">
+              <label className="text-xs text-white/80 mb-1">Style Preset</label>
+              <select
+                value={stylePreset}
+                onChange={(e) => applyStylePreset(e.target.value as StylePreset)}
+                className="px-3 py-2 rounded-md bg-white border border-black/30 text-black text-sm focus:outline-none focus:ring-2 focus:ring-black/50 font-medium"
+              >
+                <option value="ghibli">🎨 Studio Ghibli - Hand-drawn watercolor aesthetic</option>
+                <option value="anime">✨ Modern Anime - Sharp cel-shading style</option>
+                <option value="photorealistic">📸 Photorealistic - Preserves subject accuracy</option>
+                <option value="custom">⚙️ Custom - Manual control</option>
+              </select>
+            </div>
+
+            {/* Preset Description */}
+            <div className="p-2 rounded bg-white/10 border border-white/20">
+              <p className="text-xs text-white/90">
+                {STYLE_PRESETS[stylePreset].description}
+              </p>
+            </div>
+
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
               {/* Number of Images Dropdown */}
               <div className="flex flex-col">
@@ -388,7 +447,10 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
               <div className="flex flex-col justify-end">
                 <label className="text-xs text-white/80 mb-1">Precise Reference</label>
                 <button
-                  onClick={() => setPreciseReference(!preciseReference)}
+                  onClick={() => {
+                    setPreciseReference(!preciseReference);
+                    if (stylePreset !== 'custom') setStylePreset('custom');
+                  }}
                   className={`px-3 py-2 rounded-md text-sm font-medium transition-all flex items-center justify-center gap-2 ${
                     preciseReference
                       ? 'bg-white text-black'
@@ -424,7 +486,10 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
                 {(['subtle', 'moderate', 'strong'] as const).map((intensity) => (
                   <button
                     key={intensity}
-                    onClick={() => setStyleIntensity(intensity)}
+                    onClick={() => {
+                      setStyleIntensity(intensity);
+                      if (stylePreset !== 'custom') setStylePreset('custom');
+                    }}
                     className={`px-3 py-2.5 sm:px-4 sm:py-3 rounded-md font-bold text-xs sm:text-sm transition-all capitalize ${
                       styleIntensity === intensity
                         ? 'bg-black text-white shadow-lg'
