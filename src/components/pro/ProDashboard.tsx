@@ -3,7 +3,29 @@ import { motion } from 'framer-motion';
 import { Card } from '../ui/card';
 
 // Lazy load tool components
+// Brand & Identity
+const StyleTileGenerator = lazy(() => import('./brand-identity/StyleTileGenerator').then(m => ({ default: m.StyleTileGenerator })));
+const ColorStoryBuilder = lazy(() => import('./brand-identity/ColorStoryBuilder').then(m => ({ default: m.ColorStoryBuilder })));
+const TypographySpecimen = lazy(() => import('./brand-identity/TypographySpecimen').then(m => ({ default: m.TypographySpecimen })));
+const VisualStyleGuide = lazy(() => import('./brand-identity/VisualStyleGuide').then(m => ({ default: m.VisualStyleGuide })));
+
+// Concept Exploration
+const InspirationCollage = lazy(() => import('./concept-exploration/InspirationCollage').then(m => ({ default: m.InspirationCollage })));
 const MoodBoardCreator = lazy(() => import('./concept-exploration/MoodBoardCreator').then(m => ({ default: m.MoodBoardCreator })));
+const ConceptBoards = lazy(() => import('./concept-exploration/ConceptBoards').then(m => ({ default: m.ConceptBoards })));
+const WireframeMoodBoard = lazy(() => import('./concept-exploration/WireframeMoodBoard').then(m => ({ default: m.WireframeMoodBoard })));
+
+// Campaign & Marketing
+const LookbookCreator = lazy(() => import('./campaign-marketing/LookbookCreator').then(m => ({ default: m.LookbookCreator })));
+const ReferenceDeckBuilder = lazy(() => import('./campaign-marketing/ReferenceDeckBuilder').then(m => ({ default: m.ReferenceDeckBuilder })));
+const NarrativeToneBoard = lazy(() => import('./campaign-marketing/NarrativeToneBoard').then(m => ({ default: m.NarrativeToneBoard })));
+const CompetitiveVisualAudit = lazy(() => import('./campaign-marketing/CompetitiveVisualAudit').then(m => ({ default: m.CompetitiveVisualAudit })));
+
+// Production Planning
+const ShotList = lazy(() => import('./production-planning/ShotList').then(m => ({ default: m.ShotList })));
+const LightingLookDev = lazy(() => import('./production-planning/LightingLookDev').then(m => ({ default: m.LightingLookDev })));
+const TextureMaterialBoard = lazy(() => import('./production-planning/TextureMaterialBoard').then(m => ({ default: m.TextureMaterialBoard })));
+const StoryboardPro = lazy(() => import('./production-planning/StoryboardPro').then(m => ({ default: m.StoryboardPro })));
 
 // Tool category types
 type ToolCategory = 'brand' | 'concept' | 'campaign' | 'production' | 'all';
@@ -181,8 +203,13 @@ const ProDashboard: React.FC = () => {
   ];
 
   const handleToolClick = (toolId: string) => {
-    // Check if tool is implemented
-    const implementedTools = ['mood-board']; // Add more as they're built
+    // All tools are now implemented!
+    const implementedTools = [
+      'style-tile', 'color-story', 'typography-specimen', 'visual-style-guide',
+      'inspiration-collage', 'mood-board', 'concept-boards', 'wireframe-mood',
+      'lookbook', 'reference-deck', 'narrative-tone', 'competitive-audit',
+      'shot-list', 'lighting-lookdev', 'texture-material', 'storyboard-pro'
+    ];
     if (implementedTools.includes(toolId)) {
       setCurrentTool(toolId);
     } else {
@@ -194,18 +221,39 @@ const ProDashboard: React.FC = () => {
     setCurrentTool(null);
   };
 
+  // Loading fallback component
+  const LoadingFallback = (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-brand-accent"></div>
+        <p className="mt-4 text-gray-400">Loading tool...</p>
+      </div>
+    </div>
+  );
+
   // Render specific tool if selected
-  if (currentTool === 'mood-board') {
+  if (currentTool) {
     return (
-      <Suspense fallback={
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-brand-accent"></div>
-            <p className="mt-4 text-gray-400">Loading tool...</p>
-          </div>
-        </div>
-      }>
-        <MoodBoardCreator onBack={handleBackToDashboard} />
+      <Suspense fallback={LoadingFallback}>
+        {currentTool === 'style-tile' && <StyleTileGenerator onBack={handleBackToDashboard} />}
+        {currentTool === 'color-story' && <ColorStoryBuilder onBack={handleBackToDashboard} />}
+        {currentTool === 'typography-specimen' && <TypographySpecimen onBack={handleBackToDashboard} />}
+        {currentTool === 'visual-style-guide' && <VisualStyleGuide onBack={handleBackToDashboard} />}
+
+        {currentTool === 'inspiration-collage' && <InspirationCollage onBack={handleBackToDashboard} />}
+        {currentTool === 'mood-board' && <MoodBoardCreator onBack={handleBackToDashboard} />}
+        {currentTool === 'concept-boards' && <ConceptBoards onBack={handleBackToDashboard} />}
+        {currentTool === 'wireframe-mood' && <WireframeMoodBoard onBack={handleBackToDashboard} />}
+
+        {currentTool === 'lookbook' && <LookbookCreator onBack={handleBackToDashboard} />}
+        {currentTool === 'reference-deck' && <ReferenceDeckBuilder onBack={handleBackToDashboard} />}
+        {currentTool === 'narrative-tone' && <NarrativeToneBoard onBack={handleBackToDashboard} />}
+        {currentTool === 'competitive-audit' && <CompetitiveVisualAudit onBack={handleBackToDashboard} />}
+
+        {currentTool === 'shot-list' && <ShotList onBack={handleBackToDashboard} />}
+        {currentTool === 'lighting-lookdev' && <LightingLookDev onBack={handleBackToDashboard} />}
+        {currentTool === 'texture-material' && <TextureMaterialBoard onBack={handleBackToDashboard} />}
+        {currentTool === 'storyboard-pro' && <StoryboardPro onBack={handleBackToDashboard} />}
       </Suspense>
     );
   }
