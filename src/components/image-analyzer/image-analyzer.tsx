@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Zap, Sparkles, User, ImageIcon, Palette, Copy, Check, ChevronDown, ChevronUp, Plus, X } from 'lucide-react';
+import { Zap, Sparkles, User, ImageIcon, Palette, Copy, Check, ChevronDown, ChevronUp, Plus, X, GripVertical } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ImageUpload } from './image-upload';
 import { AnalyzerCard } from './analyzer-card';
@@ -308,33 +308,43 @@ export function ImageAnalyzer({
                   className="h-full min-h-[200px] sm:min-h-[250px]"
                 >
                   <Card className="h-full flex flex-col bg-[#F77000] backdrop-blur-sm border-[#F77000]">
-                    <CardHeader className="pb-2 px-3 sm:px-6">
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                        <div>
-                          <CardTitle className="text-sm sm:text-base text-white">Combined Prompt</CardTitle>
-                          <p className="text-xs text-white/80 mt-0.5">
-                            {showSubject2 ? 'All analyses combined' : 'All three analyses combined'}
-                          </p>
+                    <CardHeader className="pb-2 px-3 sm:px-6 cursor-grab active:cursor-grabbing">
+                      <motion.div
+                        drag
+                        dragMomentum={false}
+                        dragElastic={0}
+                        whileDrag={{ scale: 1.02 }}
+                      >
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <GripVertical className="w-4 h-4 text-white/60" />
+                            <div>
+                              <CardTitle className="text-sm sm:text-base text-white">Combined Prompt</CardTitle>
+                              <p className="text-xs text-white/80 mt-0.5">
+                                {showSubject2 ? 'All analyses combined' : 'All three analyses combined'}
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            onClick={handleCopyCombined}
+                            variant="secondary"
+                            size="sm"
+                            className="flex items-center gap-1.5 text-xs sm:text-sm w-full sm:w-auto"
+                          >
+                            {copiedCombined ? (
+                              <>
+                                <Check className="w-3.5 h-3.5" />
+                                Copied!
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3.5 h-3.5" />
+                                Copy All
+                              </>
+                            )}
+                          </Button>
                         </div>
-                        <Button
-                          onClick={handleCopyCombined}
-                          variant="secondary"
-                          size="sm"
-                          className="flex items-center gap-1.5 text-xs sm:text-sm w-full sm:w-auto"
-                        >
-                          {copiedCombined ? (
-                            <>
-                              <Check className="w-3.5 h-3.5" />
-                              Copied!
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-3.5 h-3.5" />
-                              Copy All
-                            </>
-                          )}
-                        </Button>
-                      </div>
+                      </motion.div>
                     </CardHeader>
                     <CardContent className="flex-1 flex flex-col pt-2 px-3 sm:px-6">
                       <textarea

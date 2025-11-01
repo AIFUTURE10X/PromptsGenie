@@ -324,62 +324,63 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
           )}
 
           {/* Prompt Display - Draggable */}
-          <motion.div
-            className="space-y-2"
-            drag
-            dragConstraints={{ top: 0, left: 0, right: 0, bottom: 0 }}
-            dragElastic={0.1}
-            dragMomentum={false}
-            whileDrag={{ scale: 1.02, cursor: 'grabbing' }}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <GripVertical className="w-4 h-4 text-white/60 cursor-grab active:cursor-grabbing" />
-                <label className="text-xs sm:text-sm font-semibold text-white uppercase">
-                  {useEnhancement && enhancedPrompt ? 'Enhanced Prompt' : 'Current Prompt'}
-                </label>
-              </div>
-              {useEnhancement && enhancedPrompt && (
-                <button
-                  onClick={() => setIsEditingEnhanced(!isEditingEnhanced)}
-                  className="text-xs text-white/80 hover:text-white flex items-center gap-1"
-                >
-                  <Edit3 className="w-3 h-3" />
-                  {isEditingEnhanced ? 'Done' : 'Edit'}
-                </button>
-              )}
-            </div>
-
-            {isEnhancing ? (
-              <div className="p-3 rounded-lg bg-black/20 border border-black/30 flex items-center gap-2">
-                <Wand2 className="w-4 h-4 text-white animate-spin flex-shrink-0" />
-                <p className="text-xs sm:text-sm text-white">Enhancing prompt with Gemini Flash 2.5...</p>
-              </div>
-            ) : isEditingEnhanced && useEnhancement && enhancedPrompt ? (
-              <textarea
-                value={enhancedPrompt}
-                onChange={(e) => setEnhancedPrompt(e.target.value)}
-                className="w-full p-2.5 sm:p-3 rounded-lg bg-black/20 border border-black/30 text-white resize-none focus:outline-none focus:ring-2 focus:ring-white/50 text-xs sm:text-sm"
-                rows={4}
-              />
-            ) : (
-              <div className="p-2.5 sm:p-3 rounded-lg bg-black/20 border border-black/30">
-                <p className="text-xs sm:text-sm text-white whitespace-pre-wrap break-words">{displayPrompt}</p>
-              </div>
-            )}
-
-            {/* Show original prompt if enhancement is active */}
-            {useEnhancement && enhancedPrompt && !isEditingEnhanced && (
-              <details className="text-xs">
-                <summary className="cursor-pointer text-white/60 hover:text-white/80">
-                  Show original prompt
-                </summary>
-                <div className="mt-2 p-2 rounded bg-black/10 text-white/80 break-words">
-                  {prompt}
+          <div className="space-y-2">
+            <motion.div
+              drag
+              dragMomentum={false}
+              dragElastic={0}
+              whileDrag={{ scale: 1.02 }}
+              className="cursor-grab active:cursor-grabbing"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <GripVertical className="w-4 h-4 text-white/60" />
+                  <label className="text-xs sm:text-sm font-semibold text-white uppercase">
+                    {useEnhancement && enhancedPrompt ? 'Enhanced Prompt' : 'Current Prompt'}
+                  </label>
                 </div>
-              </details>
-            )}
-          </motion.div>
+                {useEnhancement && enhancedPrompt && (
+                  <button
+                    onClick={() => setIsEditingEnhanced(!isEditingEnhanced)}
+                    className="text-xs text-white/80 hover:text-white flex items-center gap-1"
+                  >
+                    <Edit3 className="w-3 h-3" />
+                    {isEditingEnhanced ? 'Done' : 'Edit'}
+                  </button>
+                )}
+              </div>
+
+              {isEnhancing ? (
+                <div className="p-3 rounded-lg bg-black/20 border border-black/30 flex items-center gap-2">
+                  <Wand2 className="w-4 h-4 text-white animate-spin flex-shrink-0" />
+                  <p className="text-xs sm:text-sm text-white">Enhancing prompt with Gemini Flash 2.5...</p>
+                </div>
+              ) : isEditingEnhanced && useEnhancement && enhancedPrompt ? (
+                <textarea
+                  value={enhancedPrompt}
+                  onChange={(e) => setEnhancedPrompt(e.target.value)}
+                  className="w-full p-2.5 sm:p-3 rounded-lg bg-black/20 border border-black/30 text-white resize-none focus:outline-none focus:ring-2 focus:ring-white/50 text-xs sm:text-sm"
+                  rows={4}
+                />
+              ) : (
+                <div className="p-2.5 sm:p-3 rounded-lg bg-black/20 border border-black/30">
+                  <p className="text-xs sm:text-sm text-white whitespace-pre-wrap break-words">{displayPrompt}</p>
+                </div>
+              )}
+
+              {/* Show original prompt if enhancement is active */}
+              {useEnhancement && enhancedPrompt && !isEditingEnhanced && (
+                <details className="text-xs">
+                  <summary className="cursor-pointer text-white/60 hover:text-white/80">
+                    Show original prompt
+                  </summary>
+                  <div className="mt-2 p-2 rounded bg-black/10 text-white/80 break-words">
+                    {prompt}
+                  </div>
+                </details>
+              )}
+            </motion.div>
+          </div>
 
           {/* Re-enhance Button */}
           {useEnhancement && !isEnhancing && (
