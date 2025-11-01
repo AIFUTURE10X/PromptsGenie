@@ -1,6 +1,18 @@
 // PromptsGenie Pro - Complete Knowledge Base
 // All 16 tools with detailed documentation for AI assistant
 
+export interface ToolWindow {
+  name: string;
+  function: string;
+  controls: {
+    name: string;
+    type: string;
+    purpose: string;
+    examples: string[];
+  }[];
+  impact: string;
+}
+
 export interface ToolKnowledge {
   id: string;
   name: string;
@@ -14,6 +26,7 @@ export interface ToolKnowledge {
     description: string;
     examples?: string[];
   }[];
+  windows?: ToolWindow[]; // Detailed window-level information
   outputs: string[];
   bestPractices: string[];
   tips: string[];
@@ -63,6 +76,119 @@ export const toolsKnowledge: Record<string, ToolKnowledge> = {
         examples: ['modern', 'bold', 'minimalist', 'professional', 'innovative'],
       },
     ],
+    windows: [
+      {
+        name: 'Brand Information Panel',
+        function: 'Define core brand identity and personality attributes',
+        controls: [
+          {
+            name: 'Brand Name',
+            type: 'Text input',
+            purpose: 'Specify the project or brand name that will appear on the style tile',
+            examples: ['TechFlow', 'Organic Harvest', 'Urban Loft', 'Coastal Living'],
+          },
+          {
+            name: 'Brand Description',
+            type: 'Textarea',
+            purpose: 'Describe brand values, target audience, and aesthetic direction',
+            examples: [
+              'A modern tech startup focused on AI-powered productivity tools for creative professionals',
+              'A sustainable fashion brand celebrating natural materials and ethical production',
+              'Luxury real estate showcasing contemporary urban living spaces',
+            ],
+          },
+          {
+            name: 'Brand Adjectives',
+            type: 'Tag input (3-5 tags)',
+            purpose: 'Define personality traits that guide visual direction',
+            examples: ['modern, bold, minimalist, professional, innovative', 'warm, organic, authentic, sustainable', 'luxurious, clean, sophisticated, timeless'],
+          },
+        ],
+        impact: 'Directly influences all visual elements generated - color palette mood, typography selection, button style formality, and texture choices. More specific adjectives result in more targeted design elements.',
+      },
+      {
+        name: 'Color Palette Generator',
+        function: 'Create a harmonious 5-color brand palette based on personality',
+        controls: [
+          {
+            name: 'Auto-generate Button',
+            type: 'Button',
+            purpose: 'Trigger AI generation of cohesive color palette from brand attributes',
+            examples: ['Click after entering brand info to generate palette'],
+          },
+          {
+            name: 'Color Swatches',
+            type: 'Color previews with HEX codes',
+            purpose: 'Display generated colors: primary, secondary, accent, neutral, background',
+            examples: ['#2563EB (primary blue)', '#F59E0B (accent orange)', '#1F2937 (dark neutral)'],
+          },
+        ],
+        impact: 'Establishes the foundational color system used in buttons, typography accents, and texture overlays. This palette becomes the visual language of the brand.',
+      },
+      {
+        name: 'Typography Section',
+        function: 'Define heading and body font pairings with hierarchy',
+        controls: [
+          {
+            name: 'Heading Font',
+            type: 'Font selector with preview',
+            purpose: 'Choose display/heading typeface that matches brand personality',
+            examples: ['Inter Bold', 'Playfair Display', 'Montserrat SemiBold', 'Raleway ExtraBold'],
+          },
+          {
+            name: 'Body Font',
+            type: 'Font selector with preview',
+            purpose: 'Choose readable body text font that pairs with heading',
+            examples: ['Inter Regular', 'Source Sans Pro', 'Open Sans', 'Lato'],
+          },
+          {
+            name: 'Type Scale Preview',
+            type: 'Text samples at different sizes',
+            purpose: 'Show hierarchy from H1 to body text',
+            examples: ['H1: 48px, H2: 36px, Body: 16px'],
+          },
+        ],
+        impact: 'Sets typographic voice and readability standards. Font pairing directly affects brand personality - serif vs sans-serif, condensed vs wide, traditional vs modern.',
+      },
+      {
+        name: 'Button Styles Configurator',
+        function: 'Design 3 button variations (primary, secondary, ghost)',
+        controls: [
+          {
+            name: 'Button Style Presets',
+            type: 'Style selector',
+            purpose: 'Choose button approach based on brand formality',
+            examples: ['Rounded (friendly)', 'Sharp (modern)', 'Soft (approachable)', 'Outlined (minimal)'],
+          },
+          {
+            name: 'Button Previews',
+            type: 'Interactive button samples',
+            purpose: 'Show hover states and color applications',
+            examples: ['Primary: Solid color', 'Secondary: Outlined', 'Ghost: Text only with underline'],
+          },
+        ],
+        impact: 'Defines interaction design language. Rounded buttons feel friendly and consumer-facing, sharp buttons feel corporate and modern, ghost buttons feel minimal and elegant.',
+      },
+      {
+        name: 'Texture & Material Library',
+        function: 'Select textures and materials that reinforce brand feel',
+        controls: [
+          {
+            name: 'Material Category',
+            type: 'Dropdown menu',
+            purpose: 'Filter textures by type',
+            examples: ['Natural (wood, stone, fabric)', 'Industrial (metal, concrete)', 'Digital (gradients, patterns)', 'Organic (paper, watercolor)'],
+          },
+          {
+            name: 'Texture Thumbnails',
+            type: 'Image grid',
+            purpose: 'Browse and select textures that match brand aesthetic',
+            examples: ['Linen fabric for organic brand', 'Brushed metal for tech brand', 'Handmade paper for artisan brand'],
+          },
+        ],
+        impact: 'Adds depth and tactility to brand visual system. Natural textures convey authenticity, industrial textures convey strength, digital patterns convey innovation.',
+      },
+    ],
     outputs: ['Color palette (5 colors)', 'Typography samples (heading & body)', 'Button styles (3 variations)', 'Texture/material suggestions'],
     bestPractices: [
       'Use 3-5 descriptive adjectives that capture brand personality',
@@ -105,6 +231,113 @@ export const toolsKnowledge: Record<string, ToolKnowledge> = {
         type: 'textarea',
         required: false,
         description: 'What inspires this color direction',
+      },
+    ],
+    windows: [
+      {
+        name: 'Mood & Inspiration Input',
+        function: 'Define the emotional and conceptual foundation for the color story',
+        controls: [
+          {
+            name: 'Mood Field',
+            type: 'Text input',
+            purpose: 'Specify the core mood, theme, or atmosphere',
+            examples: ['Ocean sunset', 'Modern tech', 'Vintage warmth', 'Nordic minimalism', 'Tropical paradise', 'Industrial chic'],
+          },
+          {
+            name: 'Inspiration Description',
+            type: 'Textarea',
+            purpose: 'Elaborate on visual references, emotions, or environments',
+            examples: [
+              'Inspired by Santorini sunsets with warm oranges fading into deep blues',
+              'Clean Scandinavian interiors with whites, greys, and natural wood tones',
+              'Retro 1970s kitchens with avocado green, harvest gold, and burnt orange',
+            ],
+          },
+        ],
+        impact: 'Determines the entire color palette generation - warm vs cool tones, saturation levels, and color harmony approach (analogous, complementary, triadic).',
+      },
+      {
+        name: 'Color Proportion Slider',
+        function: 'Define specific color proportions and visual weighting (60-30-10 rule)',
+        controls: [
+          {
+            name: 'Primary Color Percentage',
+            type: 'Slider (0-100%)',
+            purpose: 'Set how much of the design uses the primary color',
+            examples: ['60% - Dominant color', '40% - Balanced with secondary', '80% - Monochromatic approach'],
+          },
+          {
+            name: 'Secondary Color Percentage',
+            type: 'Slider (0-100%)',
+            purpose: 'Set supporting color weight',
+            examples: ['30% - Standard complement', '20% - Subtle accent', '50% - Equal weight'],
+          },
+          {
+            name: 'Accent Color Percentage',
+            type: 'Slider (0-100%)',
+            purpose: 'Set pop/highlight color usage',
+            examples: ['10% - Subtle highlights', '15% - Bold accents', '5% - Minimal touches'],
+          },
+        ],
+        impact: 'Directly controls the visual weighting of colors in all brand applications. Altering these proportions dramatically shifts the overall feel - 60% bright yellow feels energetic, 10% yellow feels elegant.',
+      },
+      {
+        name: 'Color Harmony Selector',
+        function: 'Choose the color theory approach for palette generation',
+        controls: [
+          {
+            name: 'Harmony Type',
+            type: 'Radio buttons / Dropdown',
+            purpose: 'Select color relationship strategy',
+            examples: ['Analogous (neighbors on color wheel)', 'Complementary (opposites)', 'Triadic (3 equidistant)', 'Split-complementary', 'Monochromatic (single hue variations)'],
+          },
+        ],
+        impact: 'Determines color relationships and visual energy. Complementary creates vibrant contrast, analogous creates harmony, monochromatic creates sophistication.',
+      },
+      {
+        name: 'Material Application Preview',
+        function: 'Show how colors appear on different materials and surfaces',
+        controls: [
+          {
+            name: 'Material Swatches',
+            type: 'Visual grid with material examples',
+            purpose: 'Display colors on fabric, metal, wood, glass, paper',
+            examples: ['Primary blue on brushed metal', 'Accent yellow on linen fabric', 'Neutral gray on matte paper'],
+          },
+          {
+            name: 'Texture Overlay Toggle',
+            type: 'Checkbox / Toggle',
+            purpose: 'Show color with and without material texture',
+            examples: ['ON: Color with wood grain', 'OFF: Flat color swatch'],
+          },
+        ],
+        impact: 'Helps visualize real-world color applications. Colors look different on matte vs glossy, fabric vs metal. Essential for product design and packaging.',
+      },
+      {
+        name: 'Accessibility Checker',
+        function: 'Test color contrast ratios for WCAG compliance',
+        controls: [
+          {
+            name: 'Text Color',
+            type: 'Color picker',
+            purpose: 'Choose foreground text color',
+            examples: ['#FFFFFF (white)', '#1F2937 (dark gray)', '#000000 (black)'],
+          },
+          {
+            name: 'Background Color',
+            type: 'Color picker',
+            purpose: 'Choose background color',
+            examples: ['#2563EB (primary blue)', '#F3F4F6 (light gray)'],
+          },
+          {
+            name: 'Contrast Ratio Display',
+            type: 'Read-only text with pass/fail indicator',
+            purpose: 'Show WCAG AA/AAA compliance',
+            examples: ['4.5:1 (WCAG AA Pass)', '7:1 (WCAG AAA Pass)', '2.8:1 (Fail)'],
+          },
+        ],
+        impact: 'Ensures color combinations are readable and accessible. Failing combinations must be adjusted before use in UI or typography.',
       },
     ],
     outputs: ['Primary colors', 'Secondary colors', 'Accent colors', 'Color proportions', 'Material applications'],
@@ -683,6 +916,139 @@ export const toolsKnowledge: Record<string, ToolKnowledge> = {
         type: 'number',
         required: false,
         description: 'Number of frames (3-12 typical)',
+      },
+    ],
+    windows: [
+      {
+        name: 'Project Setup Panel',
+        function: 'Define storyboard project details and overall structure',
+        controls: [
+          {
+            name: 'Title Field',
+            type: 'Text input',
+            purpose: 'Name the storyboard project',
+            examples: ['Product Launch Commercial 30s', '"Summer Collection" Instagram Story', 'How-To Tutorial: Coffee Brewing'],
+          },
+          {
+            name: 'Description',
+            type: 'Textarea',
+            purpose: 'Outline the overall story, concept, or message',
+            examples: [
+              'A 30-second commercial showing our new smartwatch seamlessly integrating into daily life - morning jog, work meeting, evening cooking',
+              'Tutorial showing pour-over coffee technique in 6 steps, warm and inviting aesthetic',
+            ],
+          },
+          {
+            name: 'Frame Count',
+            type: 'Number input (3-12)',
+            purpose: 'Set how many frames/scenes to include',
+            examples: ['6 frames for social media story', '12 frames for full 30s commercial', '4 frames for quick concept'],
+          },
+        ],
+        impact: 'Sets the scope and structure of the entire storyboard. More frames = more detailed narrative, fewer frames = quick concept sketch.',
+      },
+      {
+        name: 'Frame Editor',
+        function: 'Create individual frames with visuals, timing, and action notes',
+        controls: [
+          {
+            name: 'Frame Visual',
+            type: 'Image upload or AI generation',
+            purpose: 'Add the visual representation for this frame',
+            examples: ['Upload reference photo', 'Generate "wide shot of person jogging in park, golden hour"', 'Sketch thumbnail'],
+          },
+          {
+            name: 'Action Description',
+            type: 'Textarea',
+            purpose: 'Describe what happens in this frame - camera movements, subject actions',
+            examples: [
+              'Camera starts on close-up of smartwatch, then pulls out to reveal runner checking pace',
+              'Cut to overhead shot of coffee being poured into mug, steam rising',
+              'Zoom in on product as hand reaches to grab it from shelf',
+            ],
+          },
+          {
+            name: 'Duration/Timing',
+            type: 'Number input (seconds)',
+            purpose: 'Specify how long this frame appears on screen',
+            examples: ['2s - Quick product shot', '5s - Establishing shot', '1.5s - Fast-cut montage'],
+          },
+          {
+            name: 'Voiceover/Dialogue',
+            type: 'Textarea',
+            purpose: 'Add narration, dialogue, or sound notes',
+            examples: [
+              'VO: "Your day, optimized."',
+              'SFX: Upbeat music fade in',
+              'Character: "This changed everything for me."',
+              '[No dialogue - music only]',
+            ],
+          },
+        ],
+        impact: 'Each frame builds the narrative sequence. Action descriptions guide the production team, timing ensures pacing fits duration limits, voiceover aligns audio with visuals.',
+      },
+      {
+        name: 'Camera & Movement Controls',
+        function: 'Specify camera angles, movements, and framing for each shot',
+        controls: [
+          {
+            name: 'Shot Type',
+            type: 'Dropdown selector',
+            purpose: 'Define framing and distance',
+            examples: ['Wide Shot (WS)', 'Medium Shot (MS)', 'Close-Up (CU)', 'Extreme Close-Up (ECU)', 'Over-the-Shoulder (OTS)'],
+          },
+          {
+            name: 'Camera Movement',
+            type: 'Dropdown selector',
+            purpose: 'Specify camera motion',
+            examples: ['Static', 'Pan (left/right)', 'Tilt (up/down)', 'Zoom In', 'Zoom Out', 'Dolly', 'Tracking Shot'],
+          },
+          {
+            name: 'Angle',
+            type: 'Dropdown selector',
+            purpose: 'Set camera perspective',
+            examples: ['Eye Level', 'High Angle (looking down)', 'Low Angle (looking up)', 'Bird\'s Eye View', 'Dutch Angle (tilted)'],
+          },
+        ],
+        impact: 'Camera choices dramatically affect emotional impact - low angles make subjects powerful, high angles make them vulnerable, close-ups create intimacy, wide shots establish context.',
+      },
+      {
+        name: 'Transition Manager',
+        function: 'Define how frames connect to each other',
+        controls: [
+          {
+            name: 'Transition Type',
+            type: 'Dropdown per frame',
+            purpose: 'Choose how this frame transitions to the next',
+            examples: ['Cut (instant)', 'Fade to Black', 'Cross Dissolve', 'Wipe', 'Match Cut', 'Jump Cut'],
+          },
+          {
+            name: 'Transition Duration',
+            type: 'Number input (seconds)',
+            purpose: 'Set how long the transition takes',
+            examples: ['0s - Hard cut', '0.5s - Quick dissolve', '1.5s - Slow fade'],
+          },
+        ],
+        impact: 'Transitions control pacing and emotional flow. Quick cuts create energy and urgency, slow fades create reflection and passage of time, match cuts create visual poetry.',
+      },
+      {
+        name: 'Sequence Timeline',
+        function: 'View and adjust the overall timing and flow of all frames',
+        controls: [
+          {
+            name: 'Timeline Scrubber',
+            type: 'Interactive timeline',
+            purpose: 'Visualize total duration and frame sequence',
+            examples: ['Frame 1: 0-3s', 'Frame 2: 3-6s', 'Frame 3: 6-10s', 'Total: 30s'],
+          },
+          {
+            name: 'Reorder Frames',
+            type: 'Drag-and-drop',
+            purpose: 'Rearrange frame order to test different narrative sequences',
+            examples: ['Drag Frame 3 before Frame 2 to change story flow'],
+          },
+        ],
+        impact: 'Ensures total duration matches required length (e.g., 30s commercial, 60s explainer). Reordering can dramatically change narrative impact and emotional arc.',
       },
     ],
     outputs: ['Frame-by-frame visuals', 'Action descriptions', 'Voiceover/dialogue notes', 'Timing information', 'Transition notes'],

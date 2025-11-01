@@ -142,6 +142,29 @@ export const getContextPrompt = (context: ChatContext): string => {
     contextPrompt += `\n`;
   }
 
+  // Add window/section information for detailed guidance
+  if (tool.windows && tool.windows.length > 0) {
+    contextPrompt += `**Tool Windows & Controls:**\n\n`;
+    contextPrompt += `The ${tool.name} has ${tool.windows.length} main sections:\n\n`;
+    tool.windows.forEach((window, index) => {
+      contextPrompt += `${index + 1}. **${window.name}**\n`;
+      contextPrompt += `   - Function: ${window.function}\n`;
+      contextPrompt += `   - Key Controls: ${window.controls.map(c => c.name).join(', ')}\n`;
+      contextPrompt += `   - Impact: ${window.impact}\n`;
+
+      // Add example usage for first 2 controls
+      if (window.controls.length > 0) {
+        contextPrompt += `   - Examples:\n`;
+        window.controls.slice(0, 2).forEach(control => {
+          if (control.examples && control.examples.length > 0) {
+            contextPrompt += `     • ${control.name}: "${control.examples[0]}"\n`;
+          }
+        });
+      }
+      contextPrompt += `\n`;
+    });
+  }
+
   // Add related tools
   if (tool.relatedTools.length > 0) {
     const relatedToolNames = tool.relatedTools
@@ -153,7 +176,7 @@ export const getContextPrompt = (context: ChatContext): string => {
     }
   }
 
-  contextPrompt += `Provide context-aware guidance for this tool. If the user asks a general question, answer it. If they need help with inputs, guide them specifically for ${tool.name}.`;
+  contextPrompt += `Provide context-aware guidance for this tool. If the user asks about specific windows, controls, or sections, reference the window information above. If they need help with inputs, provide concrete examples. If they're stuck, suggest specific values they could enter in each control.`;
 
   return contextPrompt;
 };
