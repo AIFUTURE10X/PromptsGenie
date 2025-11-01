@@ -280,6 +280,41 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
       requestBody.parameters.seed = seed + i;
     }
 
+    // CRITICAL FINAL VALIDATION: Check requestBody BEFORE sending to API
+    // This is the last line of defense to prevent "Reference image should have image field" error
+    if (requestBody.instances[0].referenceImages && requestBody.instances[0].referenceImages.length > 0) {
+      console.log(`🛡️ FINAL VALIDATION: Checking ${requestBody.instances[0].referenceImages.length} reference images before API call`);
+
+      const invalidReferences = requestBody.instances[0].referenceImages.filter(ref => {
+        const hasImageField = ref && ref.image && typeof ref.image === 'object';
+        const hasBytesField = hasImageField && ref.image.bytesBase64Encoded && typeof ref.image.bytesBase64Encoded === 'string';
+        const hasValidData = hasBytesField && ref.image.bytesBase64Encoded.length > 0;
+
+        if (!hasValidData) {
+          console.error(`❌ INVALID REFERENCE DETECTED:`, {
+            referenceId: ref?.referenceId,
+            hasImageField,
+            hasBytesField,
+            hasValidData,
+            bytesLength: ref?.image?.bytesBase64Encoded?.length || 0
+          });
+          return true; // This reference is invalid
+        }
+        return false; // This reference is valid
+      });
+
+      if (invalidReferences.length > 0) {
+        console.error(`🚨 CRITICAL: Found ${invalidReferences.length} invalid reference images at final validation!`);
+        console.error('🚨 Removing ALL reference images to prevent API error');
+
+        // Remove the entire referenceImages field to prevent API error
+        delete requestBody.instances[0].referenceImages;
+        console.log('✅ Reference images removed - request will proceed without customization');
+      } else {
+        console.log(`✅ All ${requestBody.instances[0].referenceImages.length} reference images passed final validation`);
+      }
+    }
+
     // Serialize and log the actual JSON being sent
     const requestBodyJSON = JSON.stringify(requestBody);
     console.log(`🌐 Request ${i + 1} JSON length:`, requestBodyJSON.length);
