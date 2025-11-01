@@ -9,6 +9,30 @@ async function enhancePromptWithGemini(originalPrompt, subjectPrompt, scenePromp
   const model = 'gemini-2.0-flash-exp';
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
+  // Detect artistic styles and override intensity to 'strong'
+  const artisticStyleKeywords = [
+    'anime', 'studio ghibli', 'ghibli', 'manga', 'cartoon', 'animated',
+    'comic book', 'cel shaded', 'hand drawn', 'illustration', 'illustrated',
+    'pixar', 'disney', 'dreamworks', 'comic', 'graphic novel',
+    'watercolor', 'oil painting', 'acrylic', 'impressionist', 'expressionist',
+    'cubist', 'abstract', 'pop art', 'art deco', 'art nouveau',
+    '2d animation', '3d animation', 'cgi', 'stylized', 'fantasy art',
+    'concept art', 'digital art', 'painted', 'sketched', 'drawn'
+  ];
+
+  // Check if style prompt contains artistic style keywords
+  const hasArtisticStyle = stylePrompt && artisticStyleKeywords.some(keyword =>
+    stylePrompt.toLowerCase().includes(keyword)
+  );
+
+  // Override intensity if artistic style detected
+  const effectiveIntensity = hasArtisticStyle ? 'strong' : styleIntensity;
+
+  if (hasArtisticStyle && styleIntensity !== 'strong') {
+    console.log(`🎨 Artistic style detected in: "${stylePrompt}"`);
+    console.log(`📊 Overriding intensity from "${styleIntensity}" to "strong" for proper artistic rendering`);
+  }
+
   // Build structured instruction based on available components
   let enhancementInstruction;
 
@@ -23,7 +47,7 @@ async function enhancePromptWithGemini(originalPrompt, subjectPrompt, scenePromp
         subtle: ' (apply as SUBTLE aesthetic hints only - photorealistic base required)',
         moderate: ' (balance style with realism - render subject and scene realistically in style)',
         strong: ' (full artistic interpretation allowed - style takes priority)'
-      }[styleIntensity] || '';
+      }[effectiveIntensity] || '';
       components.push(`STYLE (apply without distorting subject or scene${intensityNote}): ${stylePrompt}`);
     }
 
@@ -63,23 +87,26 @@ SCENE (START THE PROMPT WITH THESE):
 - List all key environmental elements explicitly (background, foreground, props, architecture, landscape features)
 
 SUBJECT (ADD AFTER SCENE):
-- Include "maintaining exact facial proportions and features"
+${effectiveIntensity === 'strong' ? `- Include "maintaining core subject identity and recognizable features"
+- Allow artistic interpretation while preserving essential characteristics
+- Adapt proportions and anatomy to match the artistic style
+- Phrase as "subject rendered in [style]"` : `- Include "maintaining exact facial proportions and features"
 - Include "preserving realistic human anatomy and body structure"
 - Include "keeping subject's physical appearance unchanged"
-- Add "photorealistic rendering of subject" before any artistic style modifiers
+- Add "photorealistic rendering of subject" before any artistic style modifiers`}
 
 AVOID (Negative Prompt Simulation):
 SCENE (HIGHEST PRIORITY): wrong lighting direction, different lighting quality, altered color temperature, changed location type, modified atmospheric conditions, different weather, altered spatial relationships, missing environmental elements, changed background, substituted location
-SUBJECT: distorted anatomy, unrealistic proportions, exaggerated facial features, anime-style eyes (unless explicitly requested), stylized body shapes, altered facial structure, morphed features
+SUBJECT: ${effectiveIntensity === 'strong' ? 'completely altered subject identity, unrecognizable features from original description' : 'distorted anatomy, unrealistic proportions, exaggerated facial features (unless style requires it), overly stylized body shapes, altered facial structure, morphed features'}
 
-STYLE INTENSITY RULES (currently set to: ${styleIntensity.toUpperCase()}):
-${styleIntensity === 'subtle' ? `- Add "photorealistic rendering with subtle [style] aesthetic"
+STYLE INTENSITY RULES (currently set to: ${effectiveIntensity.toUpperCase()}):
+${effectiveIntensity === 'subtle' ? `- Add "photorealistic rendering with subtle [style] aesthetic"
 - Apply style ONLY to color palette, lighting mood, and minimal artistic flourishes
 - Emphasize "maintaining photorealistic subject accuracy"
-- Keep subject completely realistic and anatomically accurate` : ''}${styleIntensity === 'moderate' ? `- Add "rendered in [style], maintaining realistic subject proportions"
+- Keep subject completely realistic and anatomically accurate` : ''}${effectiveIntensity === 'moderate' ? `- Add "rendered in [style], maintaining realistic subject proportions"
 - Apply style to lighting, atmosphere, color grading, and artistic medium
 - Balance artistic interpretation with anatomical accuracy
-- Phrase as "realistically depicted in [style] aesthetic"` : ''}${styleIntensity === 'strong' ? `- Add "full [style] artistic interpretation"
+- Phrase as "realistically depicted in [style] aesthetic"` : ''}${effectiveIntensity === 'strong' ? `- Add "full [style] artistic interpretation"
 - Allow style to influence overall composition and rendering
 - Still preserve core subject identity and basic proportions
 - Phrase as "artistic [style] rendering" or "complete [style] stylization"` : ''}
@@ -89,7 +116,7 @@ Enhance the prompt by:
 - Making scene details EXTREMELY specific and spatially accurate (without changing ANY environmental characteristics)
 - Ensuring lighting direction, lighting quality, lighting color, atmosphere, and spatial layout from scene are explicitly stated and repeated for emphasis
 - THEN adding subject details, making them more specific and visually descriptive (without changing any core features)
-- THEN applying style as appropriate for ${styleIntensity} intensity level to rendering technique only
+- THEN applying style as appropriate for ${effectiveIntensity} intensity level to rendering technique only
 - Including quality modifiers (highly detailed, professional quality, 8k resolution, sharp focus)
 - Ensuring the scene description takes up at least 40-50% of the prompt length
 
