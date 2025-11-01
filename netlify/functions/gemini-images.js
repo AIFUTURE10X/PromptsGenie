@@ -135,21 +135,21 @@ Focus on MEASURABLE, SPECIFIC details that preserve the subject's exact appearan
       },
       scene: {
         Fast: {
-          instruction: 'Describe the scene in 15-30 words: location, lighting, atmosphere.',
+          instruction: 'Describe ONLY the environment in 15-30 words: location, lighting, atmosphere. IGNORE any people or characters - focus exclusively on the setting.',
           maxOutputTokens: 400,
           temperature: 0.3
         },
         Quality: {
-          instruction: `Analyze the scene in comprehensive detail (60-100 words):
+          instruction: `Analyze the ENVIRONMENT ONLY in comprehensive detail (60-100 words). CRITICAL: IGNORE and DO NOT MENTION any people, characters, or subjects - describe ONLY the setting:
 - LOCATION & SETTING: exact type of environment (indoor/outdoor, specific location type like office, park, street, etc.), spatial layout and depth
 - ARCHITECTURE/LANDSCAPE: building structures, natural features, terrain, background elements, foreground objects
 - LIGHTING: light source direction (front/back/side lit), quality (soft/harsh/diffused), color temperature (warm/cool/neutral), time of day indicators, shadows and highlights
 - ATMOSPHERIC CONDITIONS: weather, sky appearance, air quality (clear/hazy/foggy), environmental mood
-- KEY ELEMENTS: prominent objects, furniture, vegetation, props, structural features
+- KEY ELEMENTS: prominent objects, furniture, vegetation, props, structural features (NOT people)
 - SPATIAL RELATIONSHIPS: positioning of elements, distance and depth cues, perspective and scale
 - COLOR PALETTE: dominant colors in the environment, color harmonies, saturation levels
 - ENVIRONMENTAL DETAILS: textures, materials, surfaces, patterns in the surroundings
-Focus on PRECISE, SPECIFIC details that would allow exact scene recreation.`,
+Focus EXCLUSIVELY on the environment and setting. Do NOT describe people, faces, clothing, or characters.`,
           maxOutputTokens: 800,
           temperature: 0.4
         }
