@@ -38,10 +38,9 @@ export function AnalyzerCard({
     if (imageData && autoAnalyze) {
       console.log(`🔄 Auto-analyzing ${type} with ${speedMode} mode...`);
       mutate(imageData);
-    } else if (!imageData) {
-      reset();
     }
-  }, [imageData, speedMode, type, autoAnalyze, mutate, reset]);
+    // Don't reset when imageData is removed - keep the analyzed prompt visible
+  }, [imageData, speedMode, type, autoAnalyze, mutate]);
 
   // Notify parent when prompt changes
   useEffect(() => {
@@ -87,7 +86,7 @@ export function AnalyzerCard({
 
         <CardContent className="flex-1 pt-2 px-3 sm:px-6">
           <div className="h-full flex items-center justify-center">
-            {!imageData ? (
+            {!imageData && (!data?.success || !data?.prompt) ? (
               <div className="text-center text-black">
                 <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 opacity-50" />
                 <p className="text-xs sm:text-sm">Upload an image to analyze</p>
@@ -148,7 +147,7 @@ export function AnalyzerCard({
                     Quality analysis complete
                   </p>
                 )}
-                {!autoAnalyze && (
+                {!autoAnalyze && imageData && (
                   <div className="mt-3 text-center">
                     <Button
                       onClick={handleManualAnalyze}
@@ -161,6 +160,11 @@ export function AnalyzerCard({
                       Re-analyze
                     </Button>
                   </div>
+                )}
+                {!imageData && data?.success && data?.prompt && (
+                  <p className="text-xs text-black/60 mt-2 text-center italic">
+                    Image removed - prompt preserved
+                  </p>
                 )}
               </motion.div>
             ) : !autoAnalyze && imageData ? (
