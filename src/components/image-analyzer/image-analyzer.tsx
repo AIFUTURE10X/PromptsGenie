@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Zap, Sparkles, User, ImageIcon, Palette, Copy, Check, ChevronDown, ChevronUp, Plus, X, GripVertical } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ImageUpload } from './image-upload';
@@ -51,6 +51,30 @@ export function ImageAnalyzer({
   // Collapsible state for upload sections
   const [isExpanded, setIsExpanded] = useState(true);
 
+  // Combined Prompt textarea customization state
+  const [combinedFontSize, setCombinedFontSize] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('combinedPrompt_fontSize');
+      return saved ? parseInt(saved) : 14;
+    } catch {
+      return 14;
+    }
+  });
+  const [combinedHeight, setCombinedHeight] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('combinedPrompt_height');
+      return saved ? parseInt(saved) : 150;
+    } catch {
+      return 150;
+    }
+  });
+  const combinedTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const isResizingCombined = useRef(false);
+  const resizeStartXCombined = useRef(0);
+  const resizeStartYCombined = useRef(0);
+  const resizeStartWidthCombined = useRef(0);
+  const resizeStartHeightCombined = useRef(0);
+
   // Combine prompts - merge both subject prompts if both exist
   const combinedSubjectPrompt = [subjectPrompt, subjectPrompt2]
     .filter(Boolean)
@@ -88,6 +112,79 @@ export function ImageAnalyzer({
       setTimeout(() => setCopiedCombined(false), 2000);
     }
   };
+
+  // Combined Prompt font size handler
+  const handleCombinedFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newSize = parseInt(e.target.value);
+    setCombinedFontSize(newSize);
+    try {
+      localStorage.setItem('combinedPrompt_fontSize', newSize.toString());
+    } catch {
+      // Silently fail if localStorage unavailable
+    }
+  };
+
+  const getCombinedFontSizeLabel = (size: number) => {
+    if (size <= 12) return 'Small';
+    if (size <= 16) return 'Medium';
+    return 'Large';
+  };
+
+  // Combined Prompt resize handlers
+  const handleCombinedResizeStart = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    isResizingCombined.current = true;
+    document.body.style.userSelect = 'none';
+
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
+    resizeStartXCombined.current = clientX;
+    resizeStartYCombined.current = clientY;
+    resizeStartWidthCombined.current = combinedTextareaRef.current?.offsetWidth || 0;
+    resizeStartHeightCombined.current = combinedTextareaRef.current?.offsetHeight || 0;
+  };
+
+  // Add resize event listeners
+  useEffect(() => {
+    const handleResizeMove = (e: MouseEvent | TouchEvent) => {
+      if (!isResizingCombined.current || !combinedTextareaRef.current) return;
+
+      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
+      const deltaY = clientY - resizeStartYCombined.current;
+      const newHeight = Math.max(96, resizeStartHeightCombined.current + deltaY);
+
+      setCombinedHeight(newHeight);
+    };
+
+    const handleResizeEnd = () => {
+      if (isResizingCombined.current) {
+        isResizingCombined.current = false;
+        document.body.style.userSelect = '';
+
+        try {
+          localStorage.setItem('combinedPrompt_height', combinedHeight.toString());
+        } catch {
+          // Silently fail if localStorage unavailable
+        }
+      }
+    };
+
+    document.addEventListener('mousemove', handleResizeMove);
+    document.addEventListener('mouseup', handleResizeEnd);
+    document.addEventListener('touchmove', handleResizeMove);
+    document.addEventListener('touchend', handleResizeEnd);
+
+    return () => {
+      document.removeEventListener('mousemove', handleResizeMove);
+      document.removeEventListener('mouseup', handleResizeEnd);
+      document.removeEventListener('touchmove', handleResizeMove);
+      document.removeEventListener('touchend', handleResizeEnd);
+    };
+  }, [combinedHeight]);
 
   return (
     <div className="w-full">
@@ -347,11 +444,72 @@ export function ImageAnalyzer({
                       </motion.div>
                     </CardHeader>
                     <CardContent className="flex-1 flex flex-col pt-2 px-3 sm:px-6">
-                      <textarea
-                        readOnly
-                        value={combinedPrompt}
-                        className="w-full flex-1 p-2 sm:p-2.5 rounded-lg bg-black/20 border border-black/30 text-white resize-none focus:outline-none focus:ring-2 focus:ring-white/50 text-xs sm:text-sm"
-                      />
+                      <div className="relative flex-1">
+                        <textarea
+                          ref={combinedTextareaRef}
+                          readOnly
+                          value={combinedPrompt}
+                          style={{
+                            fontSize: `${combinedFontSize}px`,
+                            height: `${combinedHeight}px`,
+                            minHeight: '96px',
+                          }}
+                          className="w-full p-2 sm:p-2.5 rounded-lg bg-black/20 border border-black/30 text-white resize-none focus:outline-none focus:ring-2 focus:ring-white/50"
+                        />
+
+                        {/* Bottom-right control group */}
+                        <div className="absolute bottom-2 right-2 flex items-center gap-2 bg-black/40 rounded-lg p-1.5 backdrop-blur-sm">
+                          {/* Font size slider */}
+                          <div className="flex items-center gap-1.5">
+                            <label
+                              htmlFor="combinedFontSize"
+                              className="text-xs text-white/80 font-semibold"
+                              aria-label="Font size control"
+                            >
+                              A
+                            </label>
+                            <input
+                              id="combinedFontSize"
+                              type="range"
+                              min="12"
+                              max="20"
+                              step="2"
+                              value={combinedFontSize}
+                              onChange={handleCombinedFontSizeChange}
+                              className="w-16 h-1 bg-white/30 rounded-lg cursor-pointer"
+                              aria-label="Adjust font size"
+                              aria-valuemin={12}
+                              aria-valuemax={20}
+                              aria-valuenow={combinedFontSize}
+                              aria-valuetext={getCombinedFontSizeLabel(combinedFontSize)}
+                            />
+                            <span className="text-xs text-white/60 min-w-[3rem] text-right">
+                              {getCombinedFontSizeLabel(combinedFontSize)}
+                            </span>
+                          </div>
+
+                          {/* Resize handle */}
+                          <div
+                            onMouseDown={handleCombinedResizeStart}
+                            onTouchStart={handleCombinedResizeStart}
+                            className="cursor-nwse-resize p-1 hover:bg-white/10 rounded transition-colors touch-none"
+                            aria-label="Resize textarea"
+                            role="button"
+                            tabIndex={0}
+                          >
+                            <svg
+                              className="w-4 h-4 text-white/60"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                            >
+                              <path d="M10 14l4-4M14 14l-4-4" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 </motion.div>

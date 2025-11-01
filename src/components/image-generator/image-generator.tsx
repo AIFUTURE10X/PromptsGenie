@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, Trash2, Wand2, Edit3, GripVertical } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
@@ -40,6 +40,50 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
   // Tab and modal states
   const [activeTab, setActiveTab] = useState<'combined' | 'enhanced'>('combined');
   const [showEnhancementModal, setShowEnhancementModal] = useState(false);
+
+  // Combined Prompt textarea customization state
+  const [combinedFontSize, setCombinedFontSize] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('combinedPrompt_gen_fontSize');
+      return saved ? parseInt(saved) : 14;
+    } catch {
+      return 14;
+    }
+  });
+  const [combinedHeight, setCombinedHeight] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('combinedPrompt_gen_height');
+      return saved ? parseInt(saved) : 150;
+    } catch {
+      return 150;
+    }
+  });
+  const combinedTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const isResizingCombined = useRef(false);
+  const resizeStartYCombined = useRef(0);
+  const resizeStartHeightCombined = useRef(0);
+
+  // Enhanced Prompt textarea customization state
+  const [enhancedFontSize, setEnhancedFontSize] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('enhancedPrompt_fontSize');
+      return saved ? parseInt(saved) : 14;
+    } catch {
+      return 14;
+    }
+  });
+  const [enhancedHeight, setEnhancedHeight] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('enhancedPrompt_height');
+      return saved ? parseInt(saved) : 200;
+    } catch {
+      return 200;
+    }
+  });
+  const enhancedTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const isResizingEnhanced = useRef(false);
+  const resizeStartYEnhanced = useRef(0);
+  const resizeStartHeightEnhanced = useRef(0);
 
   const handleEnhancePrompt = async () => {
     if (!prompt || prompt.trim().length === 0) {
@@ -166,6 +210,115 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
   const handleDeleteImage = (index: number) => {
     setGeneratedImages(prevImages => prevImages.filter(img => img.index !== index));
   };
+
+  // Combined Prompt (in generator) font size & resize handlers
+  const handleCombinedFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newSize = parseInt(e.target.value);
+    setCombinedFontSize(newSize);
+    try {
+      localStorage.setItem('combinedPrompt_gen_fontSize', newSize.toString());
+    } catch {
+      // Silently fail
+    }
+  };
+
+  const getCombinedFontSizeLabel = (size: number) => {
+    if (size <= 12) return 'Small';
+    if (size <= 16) return 'Medium';
+    return 'Large';
+  };
+
+  const handleCombinedResizeStart = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    isResizingCombined.current = true;
+    document.body.style.userSelect = 'none';
+
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    resizeStartYCombined.current = clientY;
+    resizeStartHeightCombined.current = combinedTextareaRef.current?.offsetHeight || 0;
+  };
+
+  // Enhanced Prompt font size & resize handlers
+  const handleEnhancedFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newSize = parseInt(e.target.value);
+    setEnhancedFontSize(newSize);
+    try {
+      localStorage.setItem('enhancedPrompt_fontSize', newSize.toString());
+    } catch {
+      // Silently fail
+    }
+  };
+
+  const getEnhancedFontSizeLabel = (size: number) => {
+    if (size <= 12) return 'Small';
+    if (size <= 16) return 'Medium';
+    return 'Large';
+  };
+
+  const handleEnhancedResizeStart = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    isResizingEnhanced.current = true;
+    document.body.style.userSelect = 'none';
+
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    resizeStartYEnhanced.current = clientY;
+    resizeStartHeightEnhanced.current = enhancedTextareaRef.current?.offsetHeight || 0;
+  };
+
+  // Resize event listeners
+  useEffect(() => {
+    const handleResizeMove = (e: MouseEvent | TouchEvent) => {
+      if (isResizingCombined.current && combinedTextareaRef.current) {
+        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+        const deltaY = clientY - resizeStartYCombined.current;
+        const newHeight = Math.max(96, resizeStartHeightCombined.current + deltaY);
+        setCombinedHeight(newHeight);
+      }
+
+      if (isResizingEnhanced.current && enhancedTextareaRef.current) {
+        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+        const deltaY = clientY - resizeStartYEnhanced.current;
+        const newHeight = Math.max(96, resizeStartHeightEnhanced.current + deltaY);
+        setEnhancedHeight(newHeight);
+      }
+    };
+
+    const handleResizeEnd = () => {
+      if (isResizingCombined.current) {
+        isResizingCombined.current = false;
+        document.body.style.userSelect = '';
+        try {
+          localStorage.setItem('combinedPrompt_gen_height', combinedHeight.toString());
+        } catch {
+          // Silently fail
+        }
+      }
+
+      if (isResizingEnhanced.current) {
+        isResizingEnhanced.current = false;
+        document.body.style.userSelect = '';
+        try {
+          localStorage.setItem('enhancedPrompt_height', enhancedHeight.toString());
+        } catch {
+          // Silently fail
+        }
+      }
+    };
+
+    document.addEventListener('mousemove', handleResizeMove);
+    document.addEventListener('mouseup', handleResizeEnd);
+    document.addEventListener('touchmove', handleResizeMove);
+    document.addEventListener('touchend', handleResizeEnd);
+
+    return () => {
+      document.removeEventListener('mousemove', handleResizeMove);
+      document.removeEventListener('mouseup', handleResizeEnd);
+      document.removeEventListener('touchmove', handleResizeMove);
+      document.removeEventListener('touchend', handleResizeEnd);
+    };
+  }, [combinedHeight, enhancedHeight]);
 
   if (!prompt) {
     return null; // Don't show generator if there's no prompt
@@ -382,18 +535,74 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
                       {isEditingEnhanced ? 'Done' : 'Edit'}
                     </button>
                   </div>
-                  {isEditingEnhanced ? (
-                    <textarea
-                      value={enhancedPrompt}
-                      onChange={(e) => setEnhancedPrompt(e.target.value)}
-                      className="w-full p-2.5 sm:p-3 rounded-lg bg-black/20 border border-black/30 text-white resize-none focus:outline-none focus:ring-2 focus:ring-white/50 text-xs sm:text-sm"
-                      rows={6}
-                    />
-                  ) : (
-                    <div className="p-2.5 sm:p-3 rounded-lg bg-black/20 border border-black/30">
-                      <p className="text-xs sm:text-sm text-white whitespace-pre-wrap break-words">{enhancedPrompt}</p>
+                  <div className="relative">
+                    {isEditingEnhanced ? (
+                      <textarea
+                        ref={enhancedTextareaRef}
+                        value={enhancedPrompt}
+                        onChange={(e) => setEnhancedPrompt(e.target.value)}
+                        style={{
+                          fontSize: `${enhancedFontSize}px`,
+                          height: `${enhancedHeight}px`,
+                          minHeight: '96px',
+                        }}
+                        className="w-full p-2.5 sm:p-3 rounded-lg bg-black/20 border border-black/30 text-white resize-none focus:outline-none focus:ring-2 focus:ring-white/50"
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          fontSize: `${enhancedFontSize}px`,
+                          height: `${enhancedHeight}px`,
+                          minHeight: '96px',
+                        }}
+                        className="p-2.5 sm:p-3 rounded-lg bg-black/20 border border-black/30 overflow-y-auto"
+                      >
+                        <p className="text-white whitespace-pre-wrap break-words">{enhancedPrompt}</p>
+                      </div>
+                    )}
+
+                    {/* Bottom-right control group */}
+                    <div className="absolute bottom-2 right-2 flex items-center gap-2 bg-black/40 rounded-lg p-1.5 backdrop-blur-sm">
+                      {/* Font size slider */}
+                      <div className="flex items-center gap-1.5">
+                        <label htmlFor="enhancedFontSize" className="text-xs text-white/80 font-semibold" aria-label="Font size control">
+                          A
+                        </label>
+                        <input
+                          id="enhancedFontSize"
+                          type="range"
+                          min="12"
+                          max="20"
+                          step="2"
+                          value={enhancedFontSize}
+                          onChange={handleEnhancedFontSizeChange}
+                          className="w-16 h-1 bg-white/30 rounded-lg cursor-pointer"
+                          aria-label="Adjust font size"
+                          aria-valuemin={12}
+                          aria-valuemax={20}
+                          aria-valuenow={enhancedFontSize}
+                          aria-valuetext={getEnhancedFontSizeLabel(enhancedFontSize)}
+                        />
+                        <span className="text-xs text-white/60 min-w-[3rem] text-right">
+                          {getEnhancedFontSizeLabel(enhancedFontSize)}
+                        </span>
+                      </div>
+
+                      {/* Resize handle */}
+                      <div
+                        onMouseDown={handleEnhancedResizeStart}
+                        onTouchStart={handleEnhancedResizeStart}
+                        className="cursor-nwse-resize p-1 hover:bg-white/10 rounded transition-colors touch-none"
+                        aria-label="Resize textarea"
+                        role="button"
+                        tabIndex={0}
+                      >
+                        <svg className="w-4 h-4 text-white/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                          <path d="M10 14l4-4M14 14l-4-4" />
+                        </svg>
+                      </div>
                     </div>
-                  )}
+                  </div>
                   <Button
                     onClick={handleEnhancePrompt}
                     variant="secondary"
