@@ -42,14 +42,6 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
   const [showEnhancementModal, setShowEnhancementModal] = useState(false);
 
   // Combined Prompt textarea customization state
-  const [combinedFontSize, setCombinedFontSize] = useState<number>(() => {
-    try {
-      const saved = localStorage.getItem('combinedPrompt_gen_fontSize');
-      return saved ? parseInt(saved) : 14;
-    } catch {
-      return 14;
-    }
-  });
   const [combinedHeight, setCombinedHeight] = useState<number>(() => {
     try {
       const saved = localStorage.getItem('combinedPrompt_gen_height');
@@ -64,14 +56,6 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
   const resizeStartHeightCombined = useRef(0);
 
   // Enhanced Prompt textarea customization state
-  const [enhancedFontSize, setEnhancedFontSize] = useState<number>(() => {
-    try {
-      const saved = localStorage.getItem('enhancedPrompt_fontSize');
-      return saved ? parseInt(saved) : 14;
-    } catch {
-      return 14;
-    }
-  });
   const [enhancedHeight, setEnhancedHeight] = useState<number>(() => {
     try {
       const saved = localStorage.getItem('enhancedPrompt_height');
@@ -211,23 +195,7 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
     setGeneratedImages(prevImages => prevImages.filter(img => img.index !== index));
   };
 
-  // Combined Prompt (in generator) font size & resize handlers
-  const handleCombinedFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newSize = parseInt(e.target.value);
-    setCombinedFontSize(newSize);
-    try {
-      localStorage.setItem('combinedPrompt_gen_fontSize', newSize.toString());
-    } catch {
-      // Silently fail
-    }
-  };
-
-  const getCombinedFontSizeLabel = (size: number) => {
-    if (size <= 12) return 'Small';
-    if (size <= 16) return 'Medium';
-    return 'Large';
-  };
-
+  // Combined Prompt (in generator) resize handlers
   const handleCombinedResizeStart = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -239,23 +207,7 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
     resizeStartHeightCombined.current = combinedTextareaRef.current?.offsetHeight || 0;
   };
 
-  // Enhanced Prompt font size & resize handlers
-  const handleEnhancedFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newSize = parseInt(e.target.value);
-    setEnhancedFontSize(newSize);
-    try {
-      localStorage.setItem('enhancedPrompt_fontSize', newSize.toString());
-    } catch {
-      // Silently fail
-    }
-  };
-
-  const getEnhancedFontSizeLabel = (size: number) => {
-    if (size <= 12) return 'Small';
-    if (size <= 16) return 'Medium';
-    return 'Large';
-  };
-
+  // Enhanced Prompt resize handlers
   const handleEnhancedResizeStart = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -499,6 +451,9 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2 }}
+              drag
+              dragMomentum={false}
+              dragElastic={0}
             >
               {activeTab === 'combined' ? (
                 <div className="space-y-2">
@@ -542,50 +497,33 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
                         value={enhancedPrompt}
                         onChange={(e) => setEnhancedPrompt(e.target.value)}
                         style={{
-                          fontSize: `${enhancedFontSize}px`,
                           height: `${enhancedHeight}px`,
                           minHeight: '96px',
                         }}
-                        className="w-full p-2.5 sm:p-3 rounded-lg bg-black/20 border border-black/30 text-white resize-none focus:outline-none focus:ring-2 focus:ring-white/50"
+                        className="w-full p-2.5 sm:p-3 rounded-lg bg-black/20 border border-black/30 text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-white/50"
                       />
                     ) : (
                       <div
                         style={{
-                          fontSize: `${enhancedFontSize}px`,
                           height: `${enhancedHeight}px`,
                           minHeight: '96px',
                         }}
                         className="p-2.5 sm:p-3 rounded-lg bg-black/20 border border-black/30 overflow-y-auto"
                       >
-                        <p className="text-white whitespace-pre-wrap break-words">{enhancedPrompt}</p>
+                        <p className="text-sm text-white whitespace-pre-wrap break-words">{enhancedPrompt}</p>
                       </div>
                     )}
 
                     {/* Bottom-right control group */}
                     <div className="absolute bottom-2 right-2 flex items-center gap-2 bg-black/40 rounded-lg p-1.5 backdrop-blur-sm">
-                      {/* Font size slider */}
-                      <div className="flex items-center gap-1.5">
-                        <label htmlFor="enhancedFontSize" className="text-xs text-white/80 font-semibold" aria-label="Font size control">
-                          A
-                        </label>
-                        <input
-                          id="enhancedFontSize"
-                          type="range"
-                          min="12"
-                          max="20"
-                          step="2"
-                          value={enhancedFontSize}
-                          onChange={handleEnhancedFontSizeChange}
-                          className="w-16 h-1 bg-white/30 rounded-lg cursor-pointer"
-                          aria-label="Adjust font size"
-                          aria-valuemin={12}
-                          aria-valuemax={20}
-                          aria-valuenow={enhancedFontSize}
-                          aria-valuetext={getEnhancedFontSizeLabel(enhancedFontSize)}
-                        />
-                        <span className="text-xs text-white/60 min-w-[3rem] text-right">
-                          {getEnhancedFontSizeLabel(enhancedFontSize)}
-                        </span>
+                      {/* Drag handle */}
+                      <div
+                        className="cursor-move p-1 hover:bg-white/10 rounded transition-colors"
+                        aria-label="Drag to reposition card"
+                        role="button"
+                        tabIndex={0}
+                      >
+                        <GripVertical className="w-4 h-4 text-white/60" />
                       </div>
 
                       {/* Resize handle */}

@@ -52,14 +52,6 @@ export function ImageAnalyzer({
   const [isExpanded, setIsExpanded] = useState(true);
 
   // Combined Prompt textarea customization state
-  const [combinedFontSize, setCombinedFontSize] = useState<number>(() => {
-    try {
-      const saved = localStorage.getItem('combinedPrompt_fontSize');
-      return saved ? parseInt(saved) : 14;
-    } catch {
-      return 14;
-    }
-  });
   const [combinedHeight, setCombinedHeight] = useState<number>(() => {
     try {
       const saved = localStorage.getItem('combinedPrompt_height');
@@ -111,23 +103,6 @@ export function ImageAnalyzer({
       setCopiedCombined(true);
       setTimeout(() => setCopiedCombined(false), 2000);
     }
-  };
-
-  // Combined Prompt font size handler
-  const handleCombinedFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newSize = parseInt(e.target.value);
-    setCombinedFontSize(newSize);
-    try {
-      localStorage.setItem('combinedPrompt_fontSize', newSize.toString());
-    } catch {
-      // Silently fail if localStorage unavailable
-    }
-  };
-
-  const getCombinedFontSizeLabel = (size: number) => {
-    if (size <= 12) return 'Small';
-    if (size <= 16) return 'Medium';
-    return 'Large';
   };
 
   // Combined Prompt resize handlers
@@ -402,26 +377,22 @@ export function ImageAnalyzer({
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.3 }}
+                  drag
+                  dragMomentum={false}
+                  dragElastic={0}
                   className="h-full min-h-[200px] sm:min-h-[250px]"
                 >
                   <Card className="h-full flex flex-col bg-[#F77000] backdrop-blur-sm border-[#F77000]">
-                    <CardHeader className="pb-2 px-3 sm:px-6 cursor-grab active:cursor-grabbing">
-                      <motion.div
-                        drag
-                        dragMomentum={false}
-                        dragElastic={0}
-                        whileDrag={{ scale: 1.02 }}
-                      >
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <GripVertical className="w-4 h-4 text-white/60" />
-                            <div>
-                              <CardTitle className="text-sm sm:text-base text-white">Combined Prompt</CardTitle>
-                              <p className="text-xs text-white/80 mt-0.5">
-                                {showSubject2 ? 'All analyses combined' : 'All three analyses combined'}
-                              </p>
-                            </div>
+                    <CardHeader className="pb-2 px-3 sm:px-6">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <div>
+                            <CardTitle className="text-sm sm:text-base text-white">Combined Prompt</CardTitle>
+                            <p className="text-xs text-white/80 mt-0.5">
+                              {showSubject2 ? 'All analyses combined' : 'All three analyses combined'}
+                            </p>
                           </div>
+                        </div>
                           <Button
                             onClick={handleCopyCombined}
                             variant="secondary"
@@ -440,8 +411,7 @@ export function ImageAnalyzer({
                               </>
                             )}
                           </Button>
-                        </div>
-                      </motion.div>
+                      </div>
                     </CardHeader>
                     <CardContent className="flex-1 flex flex-col pt-2 px-3 sm:px-6">
                       <div className="relative flex-1">
@@ -450,42 +420,22 @@ export function ImageAnalyzer({
                           readOnly
                           value={combinedPrompt}
                           style={{
-                            fontSize: `${combinedFontSize}px`,
                             height: `${combinedHeight}px`,
                             minHeight: '96px',
                           }}
-                          className="w-full p-2 sm:p-2.5 rounded-lg bg-black/20 border border-black/30 text-white resize-none focus:outline-none focus:ring-2 focus:ring-white/50"
+                          className="w-full p-2 sm:p-2.5 rounded-lg bg-black/20 border border-black/30 text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-white/50"
                         />
 
                         {/* Bottom-right control group */}
                         <div className="absolute bottom-2 right-2 flex items-center gap-2 bg-black/40 rounded-lg p-1.5 backdrop-blur-sm">
-                          {/* Font size slider */}
-                          <div className="flex items-center gap-1.5">
-                            <label
-                              htmlFor="combinedFontSize"
-                              className="text-xs text-white/80 font-semibold"
-                              aria-label="Font size control"
-                            >
-                              A
-                            </label>
-                            <input
-                              id="combinedFontSize"
-                              type="range"
-                              min="12"
-                              max="20"
-                              step="2"
-                              value={combinedFontSize}
-                              onChange={handleCombinedFontSizeChange}
-                              className="w-16 h-1 bg-white/30 rounded-lg cursor-pointer"
-                              aria-label="Adjust font size"
-                              aria-valuemin={12}
-                              aria-valuemax={20}
-                              aria-valuenow={combinedFontSize}
-                              aria-valuetext={getCombinedFontSizeLabel(combinedFontSize)}
-                            />
-                            <span className="text-xs text-white/60 min-w-[3rem] text-right">
-                              {getCombinedFontSizeLabel(combinedFontSize)}
-                            </span>
+                          {/* Drag handle */}
+                          <div
+                            className="cursor-move p-1 hover:bg-white/10 rounded transition-colors"
+                            aria-label="Drag to reposition card"
+                            role="button"
+                            tabIndex={0}
+                          >
+                            <GripVertical className="w-4 h-4 text-white/60" />
                           </div>
 
                           {/* Resize handle */}
