@@ -152,6 +152,21 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
             return refImage;
           });
 
+        // CRITICAL: Final validation - ensure every reference image has an image field
+        const invalidRefs = instance.referenceImages.filter(ref => !ref.image || !ref.image.bytesBase64Encoded);
+        if (invalidRefs.length > 0) {
+          console.error(`❌ CRITICAL: Found ${invalidRefs.length} reference images without image field!`);
+          invalidRefs.forEach((ref, idx) => {
+            console.error(`  Invalid ref ${idx}:`, {
+              referenceId: ref.referenceId,
+              referenceType: ref.referenceType,
+              hasImage: !!ref.image,
+              hasBytes: !!ref.image?.bytesBase64Encoded
+            });
+          });
+          throw new Error(`Reference images validation failed: ${invalidRefs.length} images missing image field`);
+        }
+
         // If all reference images were filtered out, don't include the field at all
         if (instance.referenceImages.length === 0) {
           console.log(`⚠️ All reference images were filtered out - removing referenceImages field`);
@@ -172,6 +187,27 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
           addWatermark: false
         }
       };
+
+      // DEBUG: Log the exact structure being sent to API
+      console.log('🔍 REQUEST BODY STRUCTURE:');
+      console.log('  - instances count:', requestBody.instances.length);
+      console.log('  - instance.prompt length:', requestBody.instances[0].prompt?.length || 0);
+      console.log('  - instance.referenceImages:', requestBody.instances[0].referenceImages ? 'EXISTS' : 'MISSING');
+      if (requestBody.instances[0].referenceImages) {
+        console.log('  - referenceImages count:', requestBody.instances[0].referenceImages.length);
+        requestBody.instances[0].referenceImages.forEach((ref, idx) => {
+          console.log(`    [${idx}] referenceId: ${ref.referenceId}`);
+          console.log(`    [${idx}] referenceType: ${ref.referenceType}`);
+          console.log(`    [${idx}] image field: ${ref.image ? 'EXISTS' : 'MISSING'}`);
+          if (ref.image) {
+            console.log(`    [${idx}] image.bytesBase64Encoded length: ${ref.image.bytesBase64Encoded?.length || 0}`);
+            console.log(`    [${idx}] image.bytesBase64Encoded preview: ${ref.image.bytesBase64Encoded?.substring(0, 50) || 'EMPTY'}...`);
+          }
+          if (ref.subjectType) console.log(`    [${idx}] subjectType: ${ref.subjectType}`);
+          if (ref.styleDescription) console.log(`    [${idx}] styleDescription: ${ref.styleDescription}`);
+        });
+      }
+      console.log('  - parameters:', JSON.stringify(requestBody.parameters));
     } else if (useImagen3) {
       // Standard Imagen 3 generate model format (no customization)
       requestBody = {
@@ -207,6 +243,25 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
       requestBody.parameters.seed = seed + i;
     }
 
+    // Serialize and log the actual JSON being sent
+    const requestBodyJSON = JSON.stringify(requestBody);
+    console.log(`🌐 Request ${i + 1} JSON length:`, requestBodyJSON.length);
+
+    // Verify the JSON can be parsed back correctly
+    try {
+      const parsed = JSON.parse(requestBodyJSON);
+      if (parsed.instances[0].referenceImages) {
+        console.log(`🔍 Parsed JSON has ${parsed.instances[0].referenceImages.length} reference images`);
+        parsed.instances[0].referenceImages.forEach((ref, idx) => {
+          if (!ref.image) {
+            console.error(`❌ SERIALIZATION ERROR: Reference ${idx} lost image field during JSON.stringify!`);
+          }
+        });
+      }
+    } catch (e) {
+      console.error(`❌ JSON parse error:`, e);
+    }
+
     imagePromises.push(
       fetch(endpoint, {
         method: 'POST',
@@ -214,7 +269,7 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`,
         },
-        body: JSON.stringify(requestBody)
+        body: requestBodyJSON
       })
     );
   }
@@ -229,6 +284,16 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`❌ Image ${i + 1} generation failed (${response.status}):`, errorText);
+
+        // Try to parse error as JSON for better debugging
+        let errorDetails;
+        try {
+          errorDetails = JSON.parse(errorText);
+          console.error('❌ ERROR DETAILS (parsed):', JSON.stringify(errorDetails, null, 2));
+        } catch (e) {
+          console.error('❌ ERROR TEXT (raw):', errorText);
+        }
+
         throw new Error(`Image generation failed: ${response.status} ${errorText}`);
       }
 
