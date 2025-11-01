@@ -194,7 +194,7 @@ export function ImageCard({ imageData, mimeType, aspectRatio, isGenerating, inde
             className="glightbox-image w-full h-full flex items-center justify-center p-2"
             data-type="image"
             data-title={`Generated Image ${index + 1}`}
-            data-description={prompt ? `<div style="max-height: 200px; overflow-y: auto; padding: 10px; background: rgba(255,255,255,0.95); color: #000000; border-radius: 8px;"><strong style="color: #000000;">Aspect Ratio:</strong> ${aspectRatio}<br/><br/><strong style="color: #000000;">Prompt:</strong><br/>${prompt.replace(/\n/g, '<br/>')}</div>` : `${aspectRatio} aspect ratio`}
+            data-description={prompt ? `<div style="max-height: 400px; overflow-y: auto; padding: 10px; background: rgba(255,255,255,0.95); color: #000000; border-radius: 8px;"><strong style="color: #000000;">Aspect Ratio:</strong> ${aspectRatio}<br/><br/><strong style="color: #000000;">Prompt:</strong><br/>${prompt.replace(/\n/g, '<br/>')}</div>` : `${aspectRatio} aspect ratio`}
             data-gallery="generated-images"
           >
             <img
