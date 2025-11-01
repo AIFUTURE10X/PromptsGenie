@@ -255,7 +255,8 @@ export function ImageAnalyzer({
                           onClear={() => {
                             setSubjectImage(null);
                             setSubjectFile(null);
-                            setSubjectPrompt(null);
+                            // Keep the prompt even after removing image
+                            // setSubjectPrompt(null);
                           }}
                           label="Upload Subject 1"
                         />
@@ -266,7 +267,8 @@ export function ImageAnalyzer({
                             onClear={() => {
                               setSubjectImage2(null);
                               setSubjectFile2(null);
-                              setSubjectPrompt2(null);
+                              // Keep the prompt even after removing image
+                              // setSubjectPrompt2(null);
                             }}
                             label="Upload Subject 2"
                           />
@@ -298,7 +300,8 @@ export function ImageAnalyzer({
                         onClear={() => {
                           setSceneImage(null);
                           setSceneFile(null);
-                          setScenePrompt(null);
+                          // Keep the prompt even after removing image
+                          // setScenePrompt(null);
                         }}
                         label="Upload Scene"
                       />
@@ -328,7 +331,8 @@ export function ImageAnalyzer({
                         onClear={() => {
                           setStyleImage(null);
                           setStyleFile(null);
-                          setStylePrompt(null);
+                          // Keep the prompt even after removing image
+                          // setStylePrompt(null);
                         }}
                         label="Upload Style"
                       />
