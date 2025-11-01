@@ -89,8 +89,13 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
       };
 
       // Add reference images to instance
+      // Wrap in try-catch to gracefully handle reference image processing errors
+      let referenceImageProcessingFailed = false;
+
       if (referenceImages && referenceImages.length > 0) {
         console.log(`📥 Received ${referenceImages.length} reference image(s) from frontend`);
+
+        try {
 
         instance.referenceImages = referenceImages
           .filter(ref => {
@@ -167,14 +172,45 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
           throw new Error(`Reference images validation failed: ${invalidRefs.length} images missing image field`);
         }
 
-        // If all reference images were filtered out, don't include the field at all
-        if (instance.referenceImages.length === 0) {
-          console.log(`⚠️ All reference images were filtered out - removing referenceImages field`);
+          // If all reference images were filtered out, don't include the field at all
+          if (instance.referenceImages.length === 0) {
+            console.log(`⚠️ All reference images were filtered out - removing referenceImages field`);
+            delete instance.referenceImages;
+          } else {
+            console.log(`📸 Prepared ${instance.referenceImages.length} valid reference image(s) for API`);
+          }
+
+        } catch (refError) {
+          console.error('❌ Reference image processing failed:', refError);
+          console.error('❌ Error details:', refError.message, refError.stack);
+          console.warn('⚠️ Falling back to standard Imagen 3 generation without reference images');
+
+          // Set flag to use standard generation instead
+          referenceImageProcessingFailed = true;
+
+          // Ensure no partial referenceImages field exists
           delete instance.referenceImages;
-        } else {
-          console.log(`📸 Prepared ${instance.referenceImages.length} valid reference image(s) for API`);
         }
       }
+
+      // If reference image processing failed, fall back to standard Imagen 3
+      if (referenceImageProcessingFailed) {
+        console.log('🔄 Using standard Imagen 3 generation (fallback mode)');
+
+        requestBody = {
+          instances: [{
+            prompt: prompt,
+          }],
+          parameters: {
+            sampleCount: 1,
+            aspectRatio: aspectRatioMap[aspectRatio] || '1:1',
+            safetyFilterLevel: 'block_only_high',
+            personGeneration: 'allow_adult',
+            languageCode: 'en',
+            addWatermark: false
+          }
+        };
+      } else {
 
       requestBody = {
         instances: [instance],
@@ -208,6 +244,7 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
         });
       }
       console.log('  - parameters:', JSON.stringify(requestBody.parameters));
+      }
     } else if (useImagen3) {
       // Standard Imagen 3 generate model format (no customization)
       requestBody = {
