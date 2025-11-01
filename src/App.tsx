@@ -8,6 +8,7 @@ import { composePrompt, applyRewriteStyle } from "./lib/utils";
 // Lazy load heavy components for better initial load performance
 const ImageAnalyzer = lazy(() => import("./components/image-analyzer/image-analyzer").then(module => ({ default: module.ImageAnalyzer })));
 const StoryboardPanel = lazy(() => import("./components/StoryboardPanel"));
+const ProDashboard = lazy(() => import("./components/pro/ProDashboard"));
 const DM2PromptEditor = lazy(() => import("./components/DM2PromptEditor"));
 const CurrentPromptPanel = lazy(() => import("./components/CurrentPromptPanel"));
 const ImageDropZone = lazy(() => import("./components/ImageDropZone"));
@@ -30,7 +31,7 @@ function App() {
   const [lastSource, setLastSource] = useState<"edge" | "gemini-mm" | "gemini-text" | "subject" | "scene" | "style" | undefined>(undefined);
 
   // New state for UI mode management
-  const [currentMode, setCurrentMode] = useState<'analyzer' | 'storyboard'>('analyzer');
+  const [currentMode, setCurrentMode] = useState<'analyzer' | 'storyboard' | 'pro'>('analyzer');
 
   // Missing state variables that are referenced but not declared
   const [useStyle, setUseStyle] = useState(true);
@@ -1058,6 +1059,17 @@ function App() {
                 <span className="hidden sm:inline">Storyboard Creator</span>
                 <span className="sm:hidden">Storyboard</span>
               </button>
+              <button
+                onClick={() => setCurrentMode('pro')}
+                className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-md font-medium text-xs sm:text-sm transition-all ${
+                  currentMode === 'pro'
+                    ? 'bg-gradient-to-r from-brand-accent to-yellow-500 text-white shadow-lg'
+                    : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                }`}
+              >
+                <span className="hidden sm:inline">PromptsGenie Pro</span>
+                <span className="sm:hidden">Pro</span>
+              </button>
             </div>
           </div>
         </div>
@@ -1083,13 +1095,18 @@ function App() {
                 onAutoAnalyzeChange={setAutoAnalyzeImageAnalyzer}
               />
             </div>
-          ) : (
+          ) : currentMode === 'storyboard' ? (
             /* Storyboard Mode */
             <div className="min-h-storyboard bg-gray-900/50 border border-gray-700 rounded-xl">
               <StoryboardPanel
                 initialPrompt={prompt}
                 onBackToPrompts={() => setCurrentMode('analyzer')}
               />
+            </div>
+          ) : (
+            /* PromptsGenie Pro Mode */
+            <div className="min-h-screen">
+              <ProDashboard />
             </div>
           )}
         </Suspense>
