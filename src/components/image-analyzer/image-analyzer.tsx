@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Zap, Sparkles, User, ImageIcon, Palette, Copy, Check, ChevronDown, ChevronUp, Plus, X, GripVertical } from 'lucide-react';
+import { Zap, Sparkles, User, ImageIcon, Palette, Copy, Check, ChevronDown, ChevronUp, Plus, X, GripVertical, Edit3, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ImageUpload } from './image-upload';
 import { AnalyzerCard } from './analyzer-card';
@@ -44,6 +44,11 @@ export function ImageAnalyzer({
   const [subjectPrompt2, setSubjectPrompt2] = useState<string | null>(null);
   const [scenePrompt, setScenePrompt] = useState<string | null>(null);
   const [stylePrompt, setStylePrompt] = useState<string | null>(null);
+
+  // Combined Prompt editing state
+  const [isEditingCombinedCard, setIsEditingCombinedCard] = useState(false);
+  const [manualCombinedPrompt, setManualCombinedPrompt] = useState<string>('');
+  const [hasManualPrompt, setHasManualPrompt] = useState(false);
 
   // Combined prompt copy state
   const [copiedCombined, setCopiedCombined] = useState(false);
@@ -106,8 +111,9 @@ export function ImageAnalyzer({
   };
 
   const handleCopyCombined = async () => {
-    if (combinedPrompt) {
-      await navigator.clipboard.writeText(combinedPrompt);
+    const textToCopy = hasManualPrompt ? manualCombinedPrompt : combinedPrompt;
+    if (textToCopy) {
+      await navigator.clipboard.writeText(textToCopy);
       setCopiedCombined(true);
       setTimeout(() => setCopiedCombined(false), 2000);
     }
@@ -392,33 +398,58 @@ export function ImageAnalyzer({
               onPromptChange={setStylePrompt}
             />
 
-            {/* Combined Prompt Card */}
+            {/* Combined Prompt Card - Always Visible */}
             <AnimatePresence>
-              {combinedPrompt && (
-                <motion.div
-                  ref={combinedCardRef}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.3 }}
-                  style={{ width: `${combinedWidth}%` }}
-                  className="h-full min-h-[200px] sm:min-h-[250px]"
-                >
+              <motion.div
+                ref={combinedCardRef}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                style={{ width: `${combinedWidth}%` }}
+                className="h-full min-h-[200px] sm:min-h-[250px]"
+              >
                   <Card className="h-full flex flex-col bg-[#F77000] backdrop-blur-sm border-[#F77000]">
                     <CardHeader className="pb-2 px-3 sm:px-6">
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <div>
-                            <CardTitle className="text-sm sm:text-base text-white">Combined Prompt</CardTitle>
-                            <p className="text-xs text-white/80 mt-0.5">
-                              {showSubject2 ? 'All analyses combined' : 'All three analyses combined'}
-                            </p>
-                          </div>
+                        <div>
+                          <CardTitle className="text-sm sm:text-base text-white">Combined Prompt</CardTitle>
+                          <p className="text-xs text-white/80 mt-0.5">
+                            {hasManualPrompt
+                              ? 'Manually edited prompt'
+                              : combinedPrompt
+                                ? (showSubject2 ? 'All analyses combined' : 'All three analyses combined')
+                                : 'No images analyzed - type manually or upload images'
+                            }
+                          </p>
                         </div>
+                        <div className="flex items-center gap-2">
+                          {hasManualPrompt && (
+                            <button
+                              onClick={() => {
+                                setHasManualPrompt(false);
+                                setManualCombinedPrompt('');
+                                setIsEditingCombinedCard(false);
+                              }}
+                              className="text-xs text-white/80 hover:text-white flex items-center gap-1"
+                              title="Reset to auto-generated"
+                            >
+                              <RotateCcw className="w-3 h-3" />
+                              Reset
+                            </button>
+                          )}
+                          <button
+                            onClick={() => setIsEditingCombinedCard(!isEditingCombinedCard)}
+                            className="text-xs text-white/80 hover:text-white flex items-center gap-1"
+                          >
+                            <Edit3 className="w-3 h-3" />
+                            {isEditingCombinedCard ? 'Done' : 'Edit'}
+                          </button>
                           <Button
                             onClick={handleCopyCombined}
                             variant="secondary"
                             size="sm"
+                            disabled={!combinedPrompt && !manualCombinedPrompt}
                             className="flex items-center gap-1.5 text-xs sm:text-sm w-full sm:w-auto"
                           >
                             {copiedCombined ? (
@@ -433,19 +464,37 @@ export function ImageAnalyzer({
                               </>
                             )}
                           </Button>
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent className="flex-1 flex flex-col pt-2 px-3 sm:px-6">
                       <div className="relative flex-1">
-                        <textarea
-                          readOnly
-                          value={combinedPrompt}
-                          style={{
-                            height: `${combinedHeight}px`,
-                            minHeight: '96px',
-                          }}
-                          className="w-full p-2 sm:p-2.5 rounded-lg bg-black/20 border border-black/30 text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-white/50"
-                        />
+                        {isEditingCombinedCard ? (
+                          <textarea
+                            value={hasManualPrompt ? manualCombinedPrompt : combinedPrompt}
+                            onChange={(e) => {
+                              setManualCombinedPrompt(e.target.value);
+                              setHasManualPrompt(true);
+                            }}
+                            placeholder="Type your prompt here, or upload images above to auto-generate..."
+                            style={{
+                              height: `${combinedHeight}px`,
+                              minHeight: '96px',
+                            }}
+                            className="w-full p-2 sm:p-2.5 rounded-lg bg-black/20 border border-black/30 text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-white/50 placeholder:text-white/40"
+                          />
+                        ) : (
+                          <textarea
+                            readOnly
+                            value={hasManualPrompt ? manualCombinedPrompt : combinedPrompt}
+                            placeholder="Upload images to auto-generate prompts, or click Edit to type manually..."
+                            style={{
+                              height: `${combinedHeight}px`,
+                              minHeight: '96px',
+                            }}
+                            className="w-full p-2 sm:p-2.5 rounded-lg bg-black/20 border border-black/30 text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-white/50 placeholder:text-white/40"
+                          />
+                        )}
 
                         {/* Bottom-right expand handle */}
                         <div className="absolute bottom-2 right-2 bg-black/40 rounded-lg p-1.5 backdrop-blur-sm">
@@ -465,13 +514,12 @@ export function ImageAnalyzer({
                     </CardContent>
                   </Card>
                 </motion.div>
-              )}
             </AnimatePresence>
           </div>
 
           {/* Image Generator Section - Full Width Below Analyzer Cards */}
           <ImageGenerator
-            prompt={combinedPrompt}
+            prompt={hasManualPrompt ? manualCombinedPrompt : combinedPrompt}
             subjectPrompt={combinedSubjectPrompt}
             scenePrompt={scenePrompt}
             stylePrompt={stylePrompt}
