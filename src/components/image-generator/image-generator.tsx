@@ -45,33 +45,29 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
   const [activeTab, setActiveTab] = useState<'combined' | 'enhanced'>('combined');
   const [showEnhancementModal, setShowEnhancementModal] = useState(false);
 
-  // Combined Prompt textarea customization state
-  const [combinedHeight, setCombinedHeight] = useState<number>(() => {
+  // Prompt card expansion state
+  const [promptCardHeight, setPromptCardHeight] = useState<number>(() => {
     try {
-      const saved = localStorage.getItem('combinedPrompt_gen_height');
-      return saved ? parseInt(saved) : 150;
-    } catch {
-      return 150;
-    }
-  });
-  const combinedTextareaRef = useRef<HTMLTextAreaElement>(null);
-  const isResizingCombined = useRef(false);
-  const resizeStartYCombined = useRef(0);
-  const resizeStartHeightCombined = useRef(0);
-
-  // Enhanced Prompt textarea customization state
-  const [enhancedHeight, setEnhancedHeight] = useState<number>(() => {
-    try {
-      const saved = localStorage.getItem('enhancedPrompt_height');
+      const saved = localStorage.getItem('promptCard_height');
       return saved ? parseInt(saved) : 200;
     } catch {
       return 200;
     }
   });
-  const enhancedTextareaRef = useRef<HTMLTextAreaElement>(null);
-  const isResizingEnhanced = useRef(false);
-  const resizeStartYEnhanced = useRef(0);
-  const resizeStartHeightEnhanced = useRef(0);
+  const [promptCardWidth, setPromptCardWidth] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('promptCard_width');
+      return saved ? parseInt(saved) : 100; // Percentage
+    } catch {
+      return 100;
+    }
+  });
+  const promptCardRef = useRef<HTMLDivElement>(null);
+  const isExpandingPromptCard = useRef(false);
+  const expandStartXPrompt = useRef(0);
+  const expandStartYPrompt = useRef(0);
+  const expandStartWidthPrompt = useRef(0);
+  const expandStartHeightPrompt = useRef(0);
 
   const handleEnhancePrompt = async () => {
     if (!prompt || prompt.trim().length === 0) {
@@ -234,82 +230,70 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
     setGeneratedImages(prevImages => prevImages.filter(img => img.index !== index));
   };
 
-  // Combined Prompt (in generator) resize handlers
-  const handleCombinedResizeStart = (e: React.MouseEvent | React.TouchEvent) => {
+  // Prompt card expansion handlers (drag to expand width and height)
+  const handlePromptExpandStart = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    isResizingCombined.current = true;
+    isExpandingPromptCard.current = true;
     document.body.style.userSelect = 'none';
 
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    resizeStartYCombined.current = clientY;
-    resizeStartHeightCombined.current = combinedTextareaRef.current?.offsetHeight || 0;
+
+    expandStartXPrompt.current = clientX;
+    expandStartYPrompt.current = clientY;
+    expandStartWidthPrompt.current = promptCardRef.current?.offsetWidth || 0;
+    expandStartHeightPrompt.current = promptCardHeight;
   };
 
-  // Enhanced Prompt resize handlers
-  const handleEnhancedResizeStart = (e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    isResizingEnhanced.current = true;
-    document.body.style.userSelect = 'none';
-
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    resizeStartYEnhanced.current = clientY;
-    resizeStartHeightEnhanced.current = enhancedTextareaRef.current?.offsetHeight || 0;
-  };
-
-  // Resize event listeners
+  // Expansion event listeners
   useEffect(() => {
-    const handleResizeMove = (e: MouseEvent | TouchEvent) => {
-      if (isResizingCombined.current && combinedTextareaRef.current) {
-        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-        const deltaY = clientY - resizeStartYCombined.current;
-        const newHeight = Math.max(96, resizeStartHeightCombined.current + deltaY);
-        setCombinedHeight(newHeight);
-      }
+    const handleExpandMove = (e: MouseEvent | TouchEvent) => {
+      if (!isExpandingPromptCard.current || !promptCardRef.current) return;
 
-      if (isResizingEnhanced.current && enhancedTextareaRef.current) {
-        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-        const deltaY = clientY - resizeStartYEnhanced.current;
-        const newHeight = Math.max(96, resizeStartHeightEnhanced.current + deltaY);
-        setEnhancedHeight(newHeight);
-      }
+      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
+      const deltaX = clientX - expandStartXPrompt.current;
+      const deltaY = clientY - expandStartYPrompt.current;
+
+      // Calculate new width as percentage of parent container
+      const parentWidth = promptCardRef.current.parentElement?.offsetWidth || 1;
+      const newWidthPx = Math.max(300, expandStartWidthPrompt.current + deltaX);
+      const newWidthPercent = Math.min(100, Math.max(50, (newWidthPx / parentWidth) * 100));
+
+      // Calculate new height
+      const newHeight = Math.max(150, expandStartHeightPrompt.current + deltaY);
+
+      setPromptCardWidth(newWidthPercent);
+      setPromptCardHeight(newHeight);
     };
 
-    const handleResizeEnd = () => {
-      if (isResizingCombined.current) {
-        isResizingCombined.current = false;
+    const handleExpandEnd = () => {
+      if (isExpandingPromptCard.current) {
+        isExpandingPromptCard.current = false;
         document.body.style.userSelect = '';
         try {
-          localStorage.setItem('combinedPrompt_gen_height', combinedHeight.toString());
-        } catch {
-          // Silently fail
-        }
-      }
-
-      if (isResizingEnhanced.current) {
-        isResizingEnhanced.current = false;
-        document.body.style.userSelect = '';
-        try {
-          localStorage.setItem('enhancedPrompt_height', enhancedHeight.toString());
+          localStorage.setItem('promptCard_height', promptCardHeight.toString());
+          localStorage.setItem('promptCard_width', promptCardWidth.toString());
         } catch {
           // Silently fail
         }
       }
     };
 
-    document.addEventListener('mousemove', handleResizeMove);
-    document.addEventListener('mouseup', handleResizeEnd);
-    document.addEventListener('touchmove', handleResizeMove);
-    document.addEventListener('touchend', handleResizeEnd);
+    document.addEventListener('mousemove', handleExpandMove);
+    document.addEventListener('mouseup', handleExpandEnd);
+    document.addEventListener('touchmove', handleExpandMove);
+    document.addEventListener('touchend', handleExpandEnd);
 
     return () => {
-      document.removeEventListener('mousemove', handleResizeMove);
-      document.removeEventListener('mouseup', handleResizeEnd);
-      document.removeEventListener('touchmove', handleResizeMove);
-      document.removeEventListener('touchend', handleResizeEnd);
+      document.removeEventListener('mousemove', handleExpandMove);
+      document.removeEventListener('mouseup', handleExpandEnd);
+      document.removeEventListener('touchmove', handleExpandMove);
+      document.removeEventListener('touchend', handleExpandEnd);
     };
-  }, [combinedHeight, enhancedHeight]);
+  }, [promptCardHeight, promptCardWidth]);
 
   if (!prompt) {
     return null; // Don't show generator if there's no prompt
@@ -486,13 +470,15 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
 
             {/* Tab Content */}
             <motion.div
+              ref={promptCardRef}
               key={activeTab}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2 }}
-              drag
-              dragMomentum={false}
-              dragElastic={0}
+              style={{
+                width: `${promptCardWidth}%`,
+                minHeight: `${promptCardHeight}px`
+              }}
             >
               {activeTab === 'combined' ? (
                 <div className="space-y-2">
@@ -532,51 +518,28 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
                   <div className="relative">
                     {isEditingEnhanced ? (
                       <textarea
-                        ref={enhancedTextareaRef}
                         value={enhancedPrompt}
                         onChange={(e) => setEnhancedPrompt(e.target.value)}
-                        style={{
-                          height: `${enhancedHeight}px`,
-                          minHeight: '96px',
-                        }}
-                        className="w-full p-2.5 sm:p-3 rounded-lg bg-black/20 border border-black/30 text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-white/50"
+                        className="w-full h-full min-h-[150px] p-2.5 sm:p-3 rounded-lg bg-black/20 border border-black/30 text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-white/50"
                       />
                     ) : (
-                      <div
-                        style={{
-                          height: `${enhancedHeight}px`,
-                          minHeight: '96px',
-                        }}
-                        className="p-2.5 sm:p-3 rounded-lg bg-black/20 border border-black/30 overflow-y-auto"
-                      >
+                      <div className="p-2.5 sm:p-3 rounded-lg bg-black/20 border border-black/30 overflow-y-auto h-full min-h-[150px]">
                         <p className="text-sm text-white whitespace-pre-wrap break-words">{enhancedPrompt}</p>
                       </div>
                     )}
 
-                    {/* Bottom-right control group */}
-                    <div className="absolute bottom-2 right-2 flex items-center gap-2 bg-black/40 rounded-lg p-1.5 backdrop-blur-sm">
-                      {/* Drag handle */}
+                    {/* Bottom-right expand handle */}
+                    <div className="absolute bottom-2 right-2 bg-black/40 rounded-lg p-1.5 backdrop-blur-sm">
+                      {/* Drag to expand handle */}
                       <div
-                        className="cursor-move p-1 hover:bg-white/10 rounded transition-colors"
-                        aria-label="Drag to reposition card"
+                        onMouseDown={handlePromptExpandStart}
+                        onTouchStart={handlePromptExpandStart}
+                        className="cursor-nwse-resize p-1 hover:bg-white/10 rounded transition-colors touch-none"
+                        aria-label="Drag to expand card (width and height)"
                         role="button"
                         tabIndex={0}
                       >
                         <GripVertical className="w-4 h-4 text-white/60" />
-                      </div>
-
-                      {/* Resize handle */}
-                      <div
-                        onMouseDown={handleEnhancedResizeStart}
-                        onTouchStart={handleEnhancedResizeStart}
-                        className="cursor-nwse-resize p-1 hover:bg-white/10 rounded transition-colors touch-none"
-                        aria-label="Resize textarea"
-                        role="button"
-                        tabIndex={0}
-                      >
-                        <svg className="w-4 h-4 text-white/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                          <path d="M10 14l4-4M14 14l-4-4" />
-                        </svg>
                       </div>
                     </div>
                   </div>

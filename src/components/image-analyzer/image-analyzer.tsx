@@ -51,7 +51,7 @@ export function ImageAnalyzer({
   // Collapsible state for upload sections
   const [isExpanded, setIsExpanded] = useState(true);
 
-  // Combined Prompt textarea customization state
+  // Combined Prompt card expansion state (width and height)
   const [combinedHeight, setCombinedHeight] = useState<number>(() => {
     try {
       const saved = localStorage.getItem('combinedPrompt_height');
@@ -60,12 +60,20 @@ export function ImageAnalyzer({
       return 150;
     }
   });
-  const combinedTextareaRef = useRef<HTMLTextAreaElement>(null);
-  const isResizingCombined = useRef(false);
-  const resizeStartXCombined = useRef(0);
-  const resizeStartYCombined = useRef(0);
-  const resizeStartWidthCombined = useRef(0);
-  const resizeStartHeightCombined = useRef(0);
+  const [combinedWidth, setCombinedWidth] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('combinedPrompt_width');
+      return saved ? parseInt(saved) : 100; // Percentage
+    } catch {
+      return 100;
+    }
+  });
+  const combinedCardRef = useRef<HTMLDivElement>(null);
+  const isExpandingCombined = useRef(false);
+  const expandStartXCombined = useRef(0);
+  const expandStartYCombined = useRef(0);
+  const expandStartWidthCombined = useRef(0);
+  const expandStartHeightCombined = useRef(0);
 
   // Combine prompts - merge both subject prompts if both exist
   const combinedSubjectPrompt = [subjectPrompt, subjectPrompt2]
@@ -105,61 +113,71 @@ export function ImageAnalyzer({
     }
   };
 
-  // Combined Prompt resize handlers
-  const handleCombinedResizeStart = (e: React.MouseEvent | React.TouchEvent) => {
+  // Combined Prompt expansion handlers (drag to expand width and height)
+  const handleCombinedExpandStart = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    isResizingCombined.current = true;
+    isExpandingCombined.current = true;
     document.body.style.userSelect = 'none';
 
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
 
-    resizeStartXCombined.current = clientX;
-    resizeStartYCombined.current = clientY;
-    resizeStartWidthCombined.current = combinedTextareaRef.current?.offsetWidth || 0;
-    resizeStartHeightCombined.current = combinedTextareaRef.current?.offsetHeight || 0;
+    expandStartXCombined.current = clientX;
+    expandStartYCombined.current = clientY;
+    expandStartWidthCombined.current = combinedCardRef.current?.offsetWidth || 0;
+    expandStartHeightCombined.current = combinedHeight;
   };
 
-  // Add resize event listeners
+  // Add expansion event listeners
   useEffect(() => {
-    const handleResizeMove = (e: MouseEvent | TouchEvent) => {
-      if (!isResizingCombined.current || !combinedTextareaRef.current) return;
+    const handleExpandMove = (e: MouseEvent | TouchEvent) => {
+      if (!isExpandingCombined.current || !combinedCardRef.current) return;
 
       const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
       const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
 
-      const deltaY = clientY - resizeStartYCombined.current;
-      const newHeight = Math.max(96, resizeStartHeightCombined.current + deltaY);
+      const deltaX = clientX - expandStartXCombined.current;
+      const deltaY = clientY - expandStartYCombined.current;
 
+      // Calculate new width as percentage of parent container
+      const parentWidth = combinedCardRef.current.parentElement?.offsetWidth || 1;
+      const newWidthPx = Math.max(200, expandStartWidthCombined.current + deltaX);
+      const newWidthPercent = Math.min(100, Math.max(50, (newWidthPx / parentWidth) * 100));
+
+      // Calculate new height
+      const newHeight = Math.max(96, expandStartHeightCombined.current + deltaY);
+
+      setCombinedWidth(newWidthPercent);
       setCombinedHeight(newHeight);
     };
 
-    const handleResizeEnd = () => {
-      if (isResizingCombined.current) {
-        isResizingCombined.current = false;
+    const handleExpandEnd = () => {
+      if (isExpandingCombined.current) {
+        isExpandingCombined.current = false;
         document.body.style.userSelect = '';
 
         try {
           localStorage.setItem('combinedPrompt_height', combinedHeight.toString());
+          localStorage.setItem('combinedPrompt_width', combinedWidth.toString());
         } catch {
           // Silently fail if localStorage unavailable
         }
       }
     };
 
-    document.addEventListener('mousemove', handleResizeMove);
-    document.addEventListener('mouseup', handleResizeEnd);
-    document.addEventListener('touchmove', handleResizeMove);
-    document.addEventListener('touchend', handleResizeEnd);
+    document.addEventListener('mousemove', handleExpandMove);
+    document.addEventListener('mouseup', handleExpandEnd);
+    document.addEventListener('touchmove', handleExpandMove);
+    document.addEventListener('touchend', handleExpandEnd);
 
     return () => {
-      document.removeEventListener('mousemove', handleResizeMove);
-      document.removeEventListener('mouseup', handleResizeEnd);
-      document.removeEventListener('touchmove', handleResizeMove);
-      document.removeEventListener('touchend', handleResizeEnd);
+      document.removeEventListener('mousemove', handleExpandMove);
+      document.removeEventListener('mouseup', handleExpandEnd);
+      document.removeEventListener('touchmove', handleExpandMove);
+      document.removeEventListener('touchend', handleExpandEnd);
     };
-  }, [combinedHeight]);
+  }, [combinedHeight, combinedWidth]);
 
   return (
     <div className="w-full">
@@ -373,13 +391,12 @@ export function ImageAnalyzer({
             <AnimatePresence>
               {combinedPrompt && (
                 <motion.div
+                  ref={combinedCardRef}
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.3 }}
-                  drag
-                  dragMomentum={false}
-                  dragElastic={0}
+                  style={{ width: `${combinedWidth}%` }}
                   className="h-full min-h-[200px] sm:min-h-[250px]"
                 >
                   <Card className="h-full flex flex-col bg-[#F77000] backdrop-blur-sm border-[#F77000]">
@@ -426,37 +443,18 @@ export function ImageAnalyzer({
                           className="w-full p-2 sm:p-2.5 rounded-lg bg-black/20 border border-black/30 text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-white/50"
                         />
 
-                        {/* Bottom-right control group */}
-                        <div className="absolute bottom-2 right-2 flex items-center gap-2 bg-black/40 rounded-lg p-1.5 backdrop-blur-sm">
-                          {/* Drag handle */}
+                        {/* Bottom-right expand handle */}
+                        <div className="absolute bottom-2 right-2 bg-black/40 rounded-lg p-1.5 backdrop-blur-sm">
+                          {/* Drag to expand handle */}
                           <div
-                            className="cursor-move p-1 hover:bg-white/10 rounded transition-colors"
-                            aria-label="Drag to reposition card"
+                            onMouseDown={handleCombinedExpandStart}
+                            onTouchStart={handleCombinedExpandStart}
+                            className="cursor-nwse-resize p-1 hover:bg-white/10 rounded transition-colors touch-none"
+                            aria-label="Drag to expand card (width and height)"
                             role="button"
                             tabIndex={0}
                           >
                             <GripVertical className="w-4 h-4 text-white/60" />
-                          </div>
-
-                          {/* Resize handle */}
-                          <div
-                            onMouseDown={handleCombinedResizeStart}
-                            onTouchStart={handleCombinedResizeStart}
-                            className="cursor-nwse-resize p-1 hover:bg-white/10 rounded transition-colors touch-none"
-                            aria-label="Resize textarea"
-                            role="button"
-                            tabIndex={0}
-                          >
-                            <svg
-                              className="w-4 h-4 text-white/60"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                            >
-                              <path d="M10 14l4-4M14 14l-4-4" />
-                            </svg>
                           </div>
                         </div>
                       </div>
