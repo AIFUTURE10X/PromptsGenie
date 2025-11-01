@@ -380,6 +380,21 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
       const result = await response.json();
       console.log(`✅ Image ${i + 1} generated successfully`);
 
+      // DEBUG: Log full API response structure to see what we actually got
+      console.log('📦 API RESPONSE STRUCTURE:');
+      console.log('  - predictions count:', result.predictions?.length);
+      if (result.predictions?.[0]) {
+        const pred = result.predictions[0];
+        console.log('  - prediction keys:', Object.keys(pred));
+        // Log any dimension-related metadata
+        if (pred.mimeType) console.log('  - mimeType:', pred.mimeType);
+        if (pred.imageSize) console.log('  - imageSize:', pred.imageSize);
+        if (pred.width) console.log('  - width:', pred.width);
+        if (pred.height) console.log('  - height:', pred.height);
+        if (pred.aspectRatio) console.log('  - aspectRatio:', pred.aspectRatio);
+        console.log('  - bytesBase64Encoded length:', pred.bytesBase64Encoded?.length || 0);
+      }
+
       // Extract image data from Vertex AI response
       // Imagen 3 uses 'bytesBase64Encoded', Imagen 2 uses 'bytesBase64Encoded' or 'image'
       if (result.predictions && result.predictions[0]) {
