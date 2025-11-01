@@ -1,16 +1,35 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+// Self-hosted fonts for better performance
+import '@fontsource/corinthia/400.css';
+import '@fontsource/corinthia/700.css';
+
+// Web vitals monitoring (development only)
+import { onCLS, onFID, onLCP, onFCP, onTTFB } from 'web-vitals';
+
 import './index.css';
 import App from './App';
 
-// Create a React Query client
+// Monitor web vitals in development
+if (import.meta.env.DEV) {
+  onCLS(console.log);
+  onFID(console.log);
+  onLCP(console.log);
+  onFCP(console.log);
+  onTTFB(console.log);
+}
+
+// Create a React Query client with optimized settings
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60 * 1000, // 1 minute
+      staleTime: 5 * 60 * 1000, // 5 minutes (reduced refetches)
+      gcTime: 10 * 60 * 1000, // 10 minutes garbage collection
       retry: 1,
       refetchOnWindowFocus: false,
+      refetchOnReconnect: false, // Don't refetch on reconnect
     },
     mutations: {
       retry: 0,

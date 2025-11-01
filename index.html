@@ -8,18 +8,11 @@
     <meta name="theme-color" content="#1a1a1a" />
     <title>PromptsGenie - AI Prompt Generator &amp; Image Analyzer</title>
 
-    <!-- Preconnect to external domains for faster loading -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- DNS prefetch for API endpoints (faster API calls) -->
+    <link rel="dns-prefetch" href="https://generativelanguage.googleapis.com" />
 
-    <!-- Load fonts asynchronously for better performance -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Corinthia:wght@400;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Alumni+Sans+Pinstripe:ital@0;1&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
-    <!-- Fallback for JS disabled -->
-    <noscript>
-      <link href="https://fonts.googleapis.com/css2?family=Corinthia:wght@400;700&display=swap" rel="stylesheet" />
-      <link href="https://fonts.googleapis.com/css2?family=Alumni+Sans+Pinstripe:ital@0;1&display=swap" rel="stylesheet" />
-    </noscript>
+    <!-- Resource hints for critical assets -->
+    <link rel="preconnect" href="https://generativelanguage.googleapis.com" crossorigin />
     
     <script type="text/javascript">
       // Aggressive error suppression - runs before extensions load

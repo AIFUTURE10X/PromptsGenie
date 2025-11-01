@@ -12,6 +12,7 @@
     "start:clean": "concurrently \"npm run server\" \"npm run dev:vite\" --kill-others-on-fail --restart-tries 3",
     "build": "vite build",
     "build:prod": "vite build --mode production",
+    "build:analyze": "vite build && open dist/stats.html",
     "preview": "vite preview --port 8085 --open",
     "preview:build": "npm run build && npm run preview",
     "clean": "rimraf dist",
@@ -20,6 +21,7 @@
     "check-secrets": "echo 'Secret check passed'"
   },
   "dependencies": {
+    "@fontsource/corinthia": "^5.0.0",
     "@radix-ui/react-collapsible": "^1.0.3",
     "@radix-ui/react-popover": "^1.0.7",
     "@radix-ui/react-slot": "^1.0.2",
@@ -41,6 +43,7 @@
     "react-dropzone": "^14.3.8",
     "tailwind-merge": "^2.3.0",
     "uuid": "^13.0.0",
+    "web-vitals": "^3.5.0",
     "zod": "^4.1.12"
   },
   "devDependencies": {
@@ -49,15 +52,23 @@
     "@vitejs/plugin-react": "^5.0.4",
     "autoprefixer": "^10.4.19",
     "concurrently": "^9.2.1",
+    "imagemin": "^8.0.1",
+    "imagemin-mozjpeg": "^10.0.0",
+    "imagemin-pngquant": "^9.0.2",
+    "imagemin-webp": "^8.0.0",
+    "lightningcss": "^1.21.0",
     "netlify-cli": "^23.9.5",
     "postcss": "^8.4.41",
     "rimraf": "^6.0.1",
+    "rollup-plugin-visualizer": "^5.12.0",
     "supertest": "^7.1.4",
     "tailwindcss": "^3.4.9",
     "tailwindcss-animate": "^1.0.7",
     "terser": "^5.44.0",
     "typescript": "^5.4.5",
     "vite": "^5.4.8",
+    "vite-plugin-compression": "^0.5.1",
+    "vite-plugin-imagemin": "^0.6.1",
     "vitest": "^4.0.4"
   }
 }
