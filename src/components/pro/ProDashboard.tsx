@@ -27,6 +27,9 @@ const LightingLookDev = lazy(() => import('./production-planning/LightingLookDev
 const TextureMaterialBoard = lazy(() => import('./production-planning/TextureMaterialBoard').then(m => ({ default: m.TextureMaterialBoard })));
 const StoryboardPro = lazy(() => import('./production-planning/StoryboardPro').then(m => ({ default: m.StoryboardPro })));
 
+// AI Assistant
+import { ProAIAssistant } from './shared/ProAIAssistant';
+
 // Tool category types
 type ToolCategory = 'brand' | 'concept' | 'campaign' | 'production' | 'all';
 
@@ -424,6 +427,9 @@ const ProDashboard: React.FC = () => {
           </div>
         </div>
       </motion.div>
+
+      {/* AI Assistant - Available globally across all Pro tools */}
+      <ProAIAssistant currentTool={currentTool || undefined} />
     </div>
   );
 };
