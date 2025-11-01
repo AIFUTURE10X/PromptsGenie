@@ -228,7 +228,8 @@ export function ImageAnalyzer({
                           setShowSubject2(false);
                           setSubjectImage2(null);
                           setSubjectFile2(null);
-                          setSubjectPrompt2(null);
+                          // Keep the prompt even after removing Subject 2 entirely
+                          // setSubjectPrompt2(null);
                         }}
                         className="p-1 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
                         title="Remove second subject"

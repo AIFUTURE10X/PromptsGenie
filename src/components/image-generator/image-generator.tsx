@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Trash2, Wand2, Edit3, GripVertical } from 'lucide-react';
+import { Sparkles, Trash2, Wand2, Edit3, GripVertical, RotateCcw } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { AspectRatioSelector } from './aspect-ratio-selector';
@@ -38,6 +38,12 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [enhancedPrompt, setEnhancedPrompt] = useState<string>('');
   const [isEditingEnhanced, setIsEditingEnhanced] = useState(false);
+
+  // Combined prompt editing states
+  const [isEditingCombined, setIsEditingCombined] = useState(false);
+  const [editedCombinedPrompt, setEditedCombinedPrompt] = useState<string>('');
+  const [hasEditedCombined, setHasEditedCombined] = useState(false);
+
   const [styleIntensity, setStyleIntensity] = useState<'subtle' | 'moderate' | 'strong'>('moderate');
   const [preciseReference, setPreciseReference] = useState(false);
 
@@ -169,7 +175,9 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
   };
 
   const handleGenerate = async () => {
-    const finalPrompt = activeTab === 'enhanced' ? enhancedPrompt : prompt;
+    // Use edited combined prompt if user has edited it, otherwise use auto-generated
+    const combinedPromptToUse = hasEditedCombined ? editedCombinedPrompt : prompt;
+    const finalPrompt = activeTab === 'enhanced' ? enhancedPrompt : combinedPromptToUse;
 
     if (!finalPrompt || finalPrompt.trim().length === 0) {
       setError('Please provide a prompt from the image analyzer above');
@@ -553,8 +561,51 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
             >
               {activeTab === 'combined' ? (
                 <div className="space-y-2">
-                  <div className="p-2.5 sm:p-3 rounded-lg bg-black/20 border border-black/30">
-                    <p className="text-xs sm:text-sm text-white whitespace-pre-wrap break-words">{prompt}</p>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs text-white/60">
+                      {hasEditedCombined ? 'Manually edited prompt' : 'Auto-generated from image analysis'}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      {hasEditedCombined && (
+                        <button
+                          onClick={() => {
+                            setHasEditedCombined(false);
+                            setEditedCombinedPrompt('');
+                            setIsEditingCombined(false);
+                          }}
+                          className="text-xs text-white/80 hover:text-white flex items-center gap-1"
+                          title="Reset to auto-generated prompt"
+                        >
+                          <RotateCcw className="w-3 h-3" />
+                          Reset
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setIsEditingCombined(!isEditingCombined)}
+                        className="text-xs text-white/80 hover:text-white flex items-center gap-1"
+                      >
+                        <Edit3 className="w-3 h-3" />
+                        {isEditingCombined ? 'Done' : 'Edit'}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="relative">
+                    {isEditingCombined ? (
+                      <textarea
+                        value={hasEditedCombined ? editedCombinedPrompt : prompt}
+                        onChange={(e) => {
+                          setEditedCombinedPrompt(e.target.value);
+                          setHasEditedCombined(true);
+                        }}
+                        className="w-full h-full min-h-[150px] p-2.5 sm:p-3 rounded-lg bg-black/20 border border-black/30 text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-white/50"
+                      />
+                    ) : (
+                      <div className="p-2.5 sm:p-3 rounded-lg bg-black/20 border border-black/30 overflow-y-auto h-full min-h-[150px]">
+                        <p className="text-sm text-white whitespace-pre-wrap break-words">
+                          {hasEditedCombined ? editedCombinedPrompt : prompt}
+                        </p>
+                      </div>
+                    )}
                   </div>
                   {!enhancedPrompt && !isEnhancing && (
                     <Button
