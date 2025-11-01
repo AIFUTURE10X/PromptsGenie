@@ -90,32 +90,49 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
 
       // Add reference images to instance
       if (referenceImages && referenceImages.length > 0) {
-        instance.referenceImages = referenceImages.map(ref => {
-          const refImage = {
-            referenceId: ref.referenceId,
-            referenceType: ref.referenceType,
-          };
+        instance.referenceImages = referenceImages
+          .filter(ref => {
+            // Filter out any reference images without valid image data
+            if (!ref.imageData || ref.imageData.trim().length === 0) {
+              console.warn(`⚠️ Skipping reference image ${ref.referenceId} - missing imageData`);
+              return false;
+            }
+            return true;
+          })
+          .map(ref => {
+            const refImage = {
+              referenceId: ref.referenceId,
+              referenceType: ref.referenceType,
+            };
 
-          // Add image data - remove data:image/... prefix if present
-          const imageData = ref.imageData.includes(',')
-            ? ref.imageData.split(',')[1]
-            : ref.imageData;
+            // Add image data - remove data:image/... prefix if present
+            const imageData = ref.imageData.includes(',')
+              ? ref.imageData.split(',')[1]
+              : ref.imageData;
 
-          // Image field should be an object containing bytesBase64Encoded
-          refImage.image = {
-            bytesBase64Encoded: imageData
-          };
+            // Validate that we have actual base64 data
+            if (!imageData || imageData.trim().length === 0) {
+              throw new Error(`Reference image ${ref.referenceId} has empty image data after processing`);
+            }
 
-          // Add optional fields based on reference type
-          if (ref.referenceType === 'REFERENCE_TYPE_SUBJECT' && ref.subjectType) {
-            refImage.subjectType = ref.subjectType;
-          }
-          if (ref.referenceType === 'REFERENCE_TYPE_STYLE' && ref.styleDescription) {
-            refImage.styleDescription = ref.styleDescription;
-          }
+            // Image field should be an object containing bytesBase64Encoded
+            refImage.image = {
+              bytesBase64Encoded: imageData
+            };
 
-          return refImage;
-        });
+            // Add optional fields based on reference type
+            if (ref.referenceType === 'REFERENCE_TYPE_SUBJECT' && ref.subjectType) {
+              refImage.subjectType = ref.subjectType;
+            }
+            if (ref.referenceType === 'REFERENCE_TYPE_STYLE' && ref.styleDescription) {
+              refImage.styleDescription = ref.styleDescription;
+            }
+
+            return refImage;
+          });
+
+        // Log how many valid reference images we have
+        console.log(`📸 Prepared ${instance.referenceImages.length} valid reference image(s)`);
       }
 
       requestBody = {
