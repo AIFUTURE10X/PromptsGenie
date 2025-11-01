@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Trash2, Wand2, Edit3 } from 'lucide-react';
+import { Sparkles, Trash2, Wand2, Edit3, GripVertical } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { AspectRatioSelector } from './aspect-ratio-selector';
@@ -323,12 +323,22 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
             </div>
           )}
 
-          {/* Prompt Display */}
-          <div className="space-y-2">
+          {/* Prompt Display - Draggable */}
+          <motion.div
+            className="space-y-2"
+            drag
+            dragConstraints={{ top: 0, left: 0, right: 0, bottom: 0 }}
+            dragElastic={0.1}
+            dragMomentum={false}
+            whileDrag={{ scale: 1.02, cursor: 'grabbing' }}
+          >
             <div className="flex items-center justify-between">
-              <label className="text-xs sm:text-sm font-semibold text-white uppercase">
-                {useEnhancement && enhancedPrompt ? 'Enhanced Prompt' : 'Current Prompt'}
-              </label>
+              <div className="flex items-center gap-2">
+                <GripVertical className="w-4 h-4 text-white/60 cursor-grab active:cursor-grabbing" />
+                <label className="text-xs sm:text-sm font-semibold text-white uppercase">
+                  {useEnhancement && enhancedPrompt ? 'Enhanced Prompt' : 'Current Prompt'}
+                </label>
+              </div>
               {useEnhancement && enhancedPrompt && (
                 <button
                   onClick={() => setIsEditingEnhanced(!isEditingEnhanced)}
@@ -369,7 +379,7 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
                 </div>
               </details>
             )}
-          </div>
+          </motion.div>
 
           {/* Re-enhance Button */}
           {useEnhancement && !isEnhancing && (
