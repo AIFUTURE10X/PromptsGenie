@@ -150,7 +150,8 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
       const referenceImages = [];
 
       // Add subject image(s) as REFERENCE_TYPE_SUBJECT
-      if (subjectImage) {
+      // Validate that imageData exists and is not empty
+      if (subjectImage && subjectImage.trim().length > 0) {
         referenceImages.push({
           referenceId: 1,
           referenceType: 'REFERENCE_TYPE_SUBJECT',
@@ -158,7 +159,7 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
           imageData: subjectImage
         });
       }
-      if (subjectImage2) {
+      if (subjectImage2 && subjectImage2.trim().length > 0) {
         referenceImages.push({
           referenceId: 1, // Same ID as first subject to group them together
           referenceType: 'REFERENCE_TYPE_SUBJECT',
@@ -168,7 +169,7 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
       }
 
       // Add style image as REFERENCE_TYPE_STYLE
-      if (styleImage) {
+      if (styleImage && styleImage.trim().length > 0) {
         referenceImages.push({
           referenceId: 2,
           referenceType: 'REFERENCE_TYPE_STYLE',
@@ -176,6 +177,11 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
           imageData: styleImage
         });
       }
+
+      console.log(`📸 Frontend: Prepared ${referenceImages.length} reference image(s) for API`);
+      referenceImages.forEach((ref, idx) => {
+        console.log(`  ${idx + 1}. Type: ${ref.referenceType}, ID: ${ref.referenceId}, Data length: ${ref.imageData?.length || 0}`);
+      });
 
       // Note: Imagen 3 doesn't have REFERENCE_TYPE_SCENE, so we'll use scene info in the prompt only
 

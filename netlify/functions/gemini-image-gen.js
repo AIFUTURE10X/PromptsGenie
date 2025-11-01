@@ -90,13 +90,26 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
 
       // Add reference images to instance
       if (referenceImages && referenceImages.length > 0) {
+        console.log(`📥 Received ${referenceImages.length} reference image(s) from frontend`);
+
         instance.referenceImages = referenceImages
           .filter(ref => {
             // Filter out any reference images without valid image data
-            if (!ref.imageData || ref.imageData.trim().length === 0) {
-              console.warn(`⚠️ Skipping reference image ${ref.referenceId} - missing imageData`);
+            if (!ref || !ref.imageData) {
+              console.warn(`⚠️ Skipping null/undefined reference image`);
               return false;
             }
+
+            if (typeof ref.imageData !== 'string') {
+              console.warn(`⚠️ Skipping reference image ${ref.referenceId} - imageData is not a string (type: ${typeof ref.imageData})`);
+              return false;
+            }
+
+            if (ref.imageData.trim().length === 0) {
+              console.warn(`⚠️ Skipping reference image ${ref.referenceId} - empty imageData string`);
+              return false;
+            }
+
             return true;
           })
           .map(ref => {
@@ -115,10 +128,18 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
               throw new Error(`Reference image ${ref.referenceId} has empty image data after processing`);
             }
 
+            // Validate base64 format (should only contain valid base64 characters)
+            const base64Regex = /^[A-Za-z0-9+/=]+$/;
+            if (!base64Regex.test(imageData.trim())) {
+              console.warn(`⚠️ Reference image ${ref.referenceId} has invalid base64 format. First 100 chars: ${imageData.substring(0, 100)}`);
+            }
+
             // Image field should be an object containing bytesBase64Encoded
             refImage.image = {
-              bytesBase64Encoded: imageData
+              bytesBase64Encoded: imageData.trim()
             };
+
+            console.log(`✅ Reference image ${ref.referenceId}: type=${ref.referenceType}, data_length=${imageData.length}`);
 
             // Add optional fields based on reference type
             if (ref.referenceType === 'REFERENCE_TYPE_SUBJECT' && ref.subjectType) {
@@ -131,8 +152,13 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
             return refImage;
           });
 
-        // Log how many valid reference images we have
-        console.log(`📸 Prepared ${instance.referenceImages.length} valid reference image(s)`);
+        // If all reference images were filtered out, don't include the field at all
+        if (instance.referenceImages.length === 0) {
+          console.log(`⚠️ All reference images were filtered out - removing referenceImages field`);
+          delete instance.referenceImages;
+        } else {
+          console.log(`📸 Prepared ${instance.referenceImages.length} valid reference image(s) for API`);
+        }
       }
 
       requestBody = {
