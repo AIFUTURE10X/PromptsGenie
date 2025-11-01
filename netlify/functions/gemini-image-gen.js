@@ -66,6 +66,7 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
   const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${modelVersion}:predict`;
 
   console.log(`🎨 Using model: ${modelVersion} (Imagen ${useImagen3 ? '3' : '2'}${forceImagen2 ? ' - FALLBACK MODE' : ''}${useCustomization ? ' - WITH CUSTOMIZATION' : ''})`);
+  console.log(`📐 Requested aspect ratio: ${aspectRatio}`);
 
   // Map aspect ratios to Imagen format (only Imagen-supported ratios)
   const aspectRatioMap = {
@@ -75,6 +76,8 @@ async function generateImagesWithVertexAI(prompt, count = 1, aspectRatio = '1:1'
     '4:3': '4:3',
     '3:4': '3:4'
   };
+
+  console.log(`📐 Mapped aspect ratio: ${aspectRatioMap[aspectRatio] || '1:1'}`);
 
   const imagePromises = [];
 
