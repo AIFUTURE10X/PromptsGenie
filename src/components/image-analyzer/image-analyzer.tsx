@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Zap, Sparkles, User, ImageIcon, Palette, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { Zap, Sparkles, User, ImageIcon, Palette, Copy, Check, ChevronDown, ChevronUp, Plus, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ImageUpload } from './image-upload';
 import { AnalyzerCard } from './analyzer-card';
@@ -24,6 +24,9 @@ export function ImageAnalyzer({
   // Image states for each analyzer
   const [subjectImage, setSubjectImage] = useState<string | null>(null);
   const [subjectFile, setSubjectFile] = useState<File | null>(null);
+  const [subjectImage2, setSubjectImage2] = useState<string | null>(null);
+  const [subjectFile2, setSubjectFile2] = useState<File | null>(null);
+  const [showSubject2, setShowSubject2] = useState(false);
   const [sceneImage, setSceneImage] = useState<string | null>(null);
   const [sceneFile, setSceneFile] = useState<File | null>(null);
   const [styleImage, setStyleImage] = useState<string | null>(null);
@@ -38,6 +41,7 @@ export function ImageAnalyzer({
 
   // Prompt states
   const [subjectPrompt, setSubjectPrompt] = useState<string | null>(null);
+  const [subjectPrompt2, setSubjectPrompt2] = useState<string | null>(null);
   const [scenePrompt, setScenePrompt] = useState<string | null>(null);
   const [stylePrompt, setStylePrompt] = useState<string | null>(null);
 
@@ -47,8 +51,12 @@ export function ImageAnalyzer({
   // Collapsible state for upload sections
   const [isExpanded, setIsExpanded] = useState(true);
 
-  // Combine prompts
-  const combinedPrompt = [subjectPrompt, scenePrompt, stylePrompt]
+  // Combine prompts - merge both subject prompts if both exist
+  const combinedSubjectPrompt = [subjectPrompt, subjectPrompt2]
+    .filter(Boolean)
+    .join(', ') || null;
+
+  const combinedPrompt = [combinedSubjectPrompt, scenePrompt, stylePrompt]
     .filter(Boolean)
     .join(' ') || '';
 
@@ -56,6 +64,11 @@ export function ImageAnalyzer({
   const handleSubjectImageSelect = (imageData: string, file: File) => {
     setSubjectImage(imageData);
     setSubjectFile(file);
+  };
+
+  const handleSubjectImage2Select = (imageData: string, file: File) => {
+    setSubjectImage2(imageData);
+    setSubjectFile2(file);
   };
 
   const handleSceneImageSelect = (imageData: string, file: File) => {
@@ -110,7 +123,31 @@ export function ImageAnalyzer({
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-xs sm:text-sm font-semibold uppercase text-white">Subject</h3>
-                  <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+                  <div className="flex items-center gap-2">
+                    {!showSubject2 ? (
+                      <button
+                        onClick={() => setShowSubject2(true)}
+                        className="p-1 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+                        title="Add second subject"
+                      >
+                        <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setShowSubject2(false);
+                          setSubjectImage2(null);
+                          setSubjectFile2(null);
+                          setSubjectPrompt2(null);
+                        }}
+                        className="p-1 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+                        title="Remove second subject"
+                      >
+                        <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+                      </button>
+                    )}
+                    <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+                  </div>
                 </div>
                 <AnimatePresence initial={false}>
                   {isExpanded && (
@@ -121,16 +158,30 @@ export function ImageAnalyzer({
                       transition={{ duration: 0.3, ease: 'easeInOut' }}
                       style={{ transformOrigin: 'right center', overflow: 'hidden' }}
                     >
-                      <ImageUpload
-                        onImageSelect={handleSubjectImageSelect}
-                        selectedImage={subjectImage}
-                        onClear={() => {
-                          setSubjectImage(null);
-                          setSubjectFile(null);
-                          setSubjectPrompt(null);
-                        }}
-                        label="Upload Subject"
-                      />
+                      <div className="space-y-2">
+                        <ImageUpload
+                          onImageSelect={handleSubjectImageSelect}
+                          selectedImage={subjectImage}
+                          onClear={() => {
+                            setSubjectImage(null);
+                            setSubjectFile(null);
+                            setSubjectPrompt(null);
+                          }}
+                          label="Upload Subject 1"
+                        />
+                        {showSubject2 && (
+                          <ImageUpload
+                            onImageSelect={handleSubjectImage2Select}
+                            selectedImage={subjectImage2}
+                            onClear={() => {
+                              setSubjectImage2(null);
+                              setSubjectFile2(null);
+                              setSubjectPrompt2(null);
+                            }}
+                            label="Upload Subject 2"
+                          />
+                        )}
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -205,7 +256,7 @@ export function ImageAnalyzer({
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 items-stretch">
             <AnalyzerCard
               type="subject"
-              title="Subject Analysis"
+              title="Subject 1 Analysis"
               description="Analyzes the main subject, appearance, and pose"
               imageData={subjectImage}
               speedMode={speedMode}
@@ -213,6 +264,18 @@ export function ImageAnalyzer({
               icon={<User className="w-5 h-5 text-primary" />}
               onPromptChange={setSubjectPrompt}
             />
+            {showSubject2 && (
+              <AnalyzerCard
+                type="subject"
+                title="Subject 2 Analysis"
+                description="Analyzes the second subject, appearance, and pose"
+                imageData={subjectImage2}
+                speedMode={speedMode}
+                autoAnalyze={autoAnalyze}
+                icon={<User className="w-5 h-5 text-primary" />}
+                onPromptChange={setSubjectPrompt2}
+              />
+            )}
             <AnalyzerCard
               type="scene"
               title="Scene Analysis"
@@ -250,7 +313,7 @@ export function ImageAnalyzer({
                         <div>
                           <CardTitle className="text-sm sm:text-base text-white">Combined Prompt</CardTitle>
                           <p className="text-xs text-white/80 mt-0.5">
-                            All three analyses combined
+                            {showSubject2 ? 'All analyses combined' : 'All three analyses combined'}
                           </p>
                         </div>
                         <Button
@@ -289,7 +352,7 @@ export function ImageAnalyzer({
           {/* Image Generator Section - Full Width Below Analyzer Cards */}
           <ImageGenerator
             prompt={combinedPrompt}
-            subjectPrompt={subjectPrompt}
+            subjectPrompt={combinedSubjectPrompt}
             scenePrompt={scenePrompt}
             stylePrompt={stylePrompt}
           />
