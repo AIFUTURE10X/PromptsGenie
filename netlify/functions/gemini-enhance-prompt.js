@@ -41,30 +41,36 @@ You MUST use the uploaded image analysis EXACTLY as provided. Minimize creative 
 - This is for precise output matching the uploaded reference images
 ` : ''}
 
-CRITICAL RULES - SUBJECT & SCENE PRESERVATION:
-1. **SUBJECT INTEGRITY**: The subject's anatomical features, proportions, and identity MUST remain EXACTLY as described - no alterations, no artistic interpretation
-2. **SCENE ACCURACY**: The scene/environment MUST be recreated EXACTLY as described - location, lighting, spatial layout, atmospheric conditions, and all environmental details are mandatory
-3. **HIERARCHY**: Subject = Scene > Style. Style should enhance the presentation, NEVER modify the subject's physical appearance OR the scene's environmental characteristics
-4. **SEPARATION**: Keep subject description complete, integrate scene details as critical environment, then apply style ONLY to rendering technique
-5. **ANATOMICAL & ENVIRONMENTAL ACCURACY**: Preserve facial features, body proportions, realistic human anatomy AND preserve lighting direction, spatial relationships, environmental elements exactly as specified
-6. **STYLE APPLICATION**: Apply style ONLY to: artistic medium/rendering technique, color grading, visual treatment - NEVER to subject anatomy OR scene composition/layout
+CRITICAL RULES - SCENE IS THE FOUNDATION:
+1. **SCENE COMES FIRST**: The scene/environment establishes the FOUNDATION and CONTEXT for everything else. It MUST be described FIRST and in complete detail.
+2. **SCENE IS NON-NEGOTIABLE**: Every scene element is MANDATORY - location type, lighting direction, lighting quality, lighting color, atmospheric conditions, weather, time of day, spatial layout, background elements, foreground elements, environmental colors, and textures.
+3. **SCENE ACCURACY OVER EVERYTHING**: The scene/environment MUST be recreated EXACTLY as described - location, lighting, spatial layout, atmospheric conditions, and all environmental details are ABSOLUTE REQUIREMENTS
+4. **LIGHTING IS CRITICAL**: Lighting direction (front-lit, back-lit, side-lit), lighting quality (soft, harsh, diffused), and lighting color temperature (warm, cool, neutral) must be stated explicitly and repeated for emphasis
+5. **NO SCENE SUBSTITUTION**: Do NOT replace, modify, or "improve" the scene. Use the exact location type, exact lighting conditions, exact atmospheric details provided.
+6. **SUBJECT INTEGRITY**: The subject's anatomical features, proportions, and identity MUST remain EXACTLY as described - no alterations, no artistic interpretation
+7. **HIERARCHY**: Scene = Subject > Style. The scene establishes the environment, the subject exists within it, and style only affects rendering technique
+8. **SEPARATION**: Start with complete scene/environment description, then add subject within that environment, then apply style ONLY to rendering technique
+9. **STYLE APPLICATION**: Apply style ONLY to: artistic medium/rendering technique, color grading, visual treatment - NEVER to scene environment OR subject anatomy
 
-MANDATORY PRESERVATION PHRASES:
-SUBJECT:
+MANDATORY PRESERVATION PHRASES - SCENE MUST COME FIRST:
+SCENE (START THE PROMPT WITH THESE):
+- Begin with the exact location type from the scene analysis
+- Include "with [exact lighting direction] lighting" (e.g., "with front lighting", "with back lighting", "with side lighting")
+- Include "under [atmospheric condition]" (e.g., "under clear skies", "in foggy conditions", "during golden hour")
+- Include "[lighting quality] light" (e.g., "soft diffused light", "harsh directional light", "gentle ambient light")
+- Include "[color temperature] tones" (e.g., "warm golden tones", "cool blue tones", "neutral balanced tones")
+- State "maintaining the exact spatial layout as described"
+- List all key environmental elements explicitly (background, foreground, props, architecture, landscape features)
+
+SUBJECT (ADD AFTER SCENE):
 - Include "maintaining exact facial proportions and features"
 - Include "preserving realistic human anatomy and body structure"
 - Include "keeping subject's physical appearance unchanged"
 - Add "photorealistic rendering of subject" before any artistic style modifiers
 
-SCENE:
-- Include "recreating the exact lighting conditions and direction"
-- Include "preserving the spatial layout and environmental composition"
-- Include "maintaining the specified location and atmospheric conditions"
-- Add "accurate environmental details as described" to ensure scene fidelity
-
 AVOID (Negative Prompt Simulation):
+SCENE (HIGHEST PRIORITY): wrong lighting direction, different lighting quality, altered color temperature, changed location type, modified atmospheric conditions, different weather, altered spatial relationships, missing environmental elements, changed background, substituted location
 SUBJECT: distorted anatomy, unrealistic proportions, exaggerated facial features, anime-style eyes (unless explicitly requested), stylized body shapes, altered facial structure, morphed features
-SCENE: wrong lighting direction, altered spatial relationships, changed environmental layout, incorrect atmospheric conditions, missing key scene elements, modified location type
 
 STYLE INTENSITY RULES (currently set to: ${styleIntensity.toUpperCase()}):
 ${styleIntensity === 'subtle' ? `- Add "photorealistic rendering with subtle [style] aesthetic"
@@ -79,15 +85,21 @@ ${styleIntensity === 'subtle' ? `- Add "photorealistic rendering with subtle [st
 - Phrase as "artistic [style] rendering" or "complete [style] stylization"` : ''}
 
 Enhance the prompt by:
-- Making subject details more specific and visually descriptive (without changing any core features)
-- Making scene details more specific and spatially accurate (without changing environmental characteristics)
-- Ensuring lighting, atmosphere, and spatial layout from scene are explicitly stated
-- Applying style as appropriate for ${styleIntensity} intensity level
+- STARTING with complete scene/environment details (location, lighting direction, lighting quality, color temperature, atmospheric conditions, spatial layout, all environmental elements)
+- Making scene details EXTREMELY specific and spatially accurate (without changing ANY environmental characteristics)
+- Ensuring lighting direction, lighting quality, lighting color, atmosphere, and spatial layout from scene are explicitly stated and repeated for emphasis
+- THEN adding subject details, making them more specific and visually descriptive (without changing any core features)
+- THEN applying style as appropriate for ${styleIntensity} intensity level to rendering technique only
 - Including quality modifiers (highly detailed, professional quality, 8k resolution, sharp focus)
-- Specifying composition that honors the scene's spatial relationships
-- Integrating all scene elements (location, lighting, atmosphere) as mandatory requirements
+- Ensuring the scene description takes up at least 40-50% of the prompt length
 
-Structure the enhanced prompt as: [Subject details with preservation phrases] positioned in [Complete scene environment with lighting/spatial/atmospheric details], [Style treatment applied only to rendering technique], [Quality/composition modifiers]
+PROMPT STRUCTURE (STRICT ORDER - DO NOT DEVIATE):
+1. SCENE FOUNDATION (40-50% of prompt): [Complete scene/environment with exact location type], [with exact lighting direction and quality], [exact atmospheric conditions], [exact color temperature], [all spatial relationships], [all background elements], [all foreground elements], [all environmental details from scene analysis]
+2. SUBJECT IN SCENE (30-40% of prompt): [Subject details with preservation phrases] positioned within the established scene
+3. STYLE APPLICATION (10-15% of prompt): [Style treatment applied ONLY to rendering technique, NOT to scene or subject]
+4. QUALITY MODIFIERS (5-10% of prompt): [Technical quality terms]
+
+CRITICAL: The scene description MUST be the longest and most detailed section. Start every enhanced prompt with the scene environment.
 
 Keep it concise (120-200 words max). Return ONLY the enhanced prompt, nothing else.`;
   } else {
