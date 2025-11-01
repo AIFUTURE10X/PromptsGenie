@@ -56,7 +56,7 @@ export function ImageAnalyzer({
   // Collapsible state for upload sections
   const [isExpanded, setIsExpanded] = useState(true);
 
-  // Combined Prompt card expansion state (width and height)
+  // Combined Prompt card expansion state (height only)
   const [combinedHeight, setCombinedHeight] = useState<number>(() => {
     try {
       const saved = localStorage.getItem('combinedPrompt_height');
@@ -65,19 +65,9 @@ export function ImageAnalyzer({
       return 150;
     }
   });
-  const [combinedWidth, setCombinedWidth] = useState<number>(() => {
-    try {
-      const saved = localStorage.getItem('combinedPrompt_width');
-      return saved ? parseInt(saved) : 100; // Percentage
-    } catch {
-      return 100;
-    }
-  });
   const combinedCardRef = useRef<HTMLDivElement>(null);
   const isExpandingCombined = useRef(false);
-  const expandStartXCombined = useRef(0);
   const expandStartYCombined = useRef(0);
-  const expandStartWidthCombined = useRef(0);
   const expandStartHeightCombined = useRef(0);
 
   // Combine prompts - merge both subject prompts if both exist
@@ -119,19 +109,16 @@ export function ImageAnalyzer({
     }
   };
 
-  // Combined Prompt expansion handlers (drag to expand width and height)
+  // Combined Prompt expansion handlers (drag to expand height only)
   const handleCombinedExpandStart = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
     isExpandingCombined.current = true;
     document.body.style.userSelect = 'none';
 
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
 
-    expandStartXCombined.current = clientX;
     expandStartYCombined.current = clientY;
-    expandStartWidthCombined.current = combinedCardRef.current?.offsetWidth || 0;
     expandStartHeightCombined.current = combinedHeight;
   };
 
@@ -140,21 +127,11 @@ export function ImageAnalyzer({
     const handleExpandMove = (e: MouseEvent | TouchEvent) => {
       if (!isExpandingCombined.current || !combinedCardRef.current) return;
 
-      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
       const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-
-      const deltaX = clientX - expandStartXCombined.current;
       const deltaY = clientY - expandStartYCombined.current;
 
-      // Calculate new width as percentage of parent container
-      const parentWidth = combinedCardRef.current.parentElement?.offsetWidth || 1;
-      const newWidthPx = Math.max(200, expandStartWidthCombined.current + deltaX);
-      const newWidthPercent = Math.min(100, Math.max(50, (newWidthPx / parentWidth) * 100));
-
-      // Calculate new height
+      // Calculate new height only
       const newHeight = Math.max(96, expandStartHeightCombined.current + deltaY);
-
-      setCombinedWidth(newWidthPercent);
       setCombinedHeight(newHeight);
     };
 
@@ -165,7 +142,6 @@ export function ImageAnalyzer({
 
         try {
           localStorage.setItem('combinedPrompt_height', combinedHeight.toString());
-          localStorage.setItem('combinedPrompt_width', combinedWidth.toString());
         } catch {
           // Silently fail if localStorage unavailable
         }
@@ -183,7 +159,7 @@ export function ImageAnalyzer({
       document.removeEventListener('touchmove', handleExpandMove);
       document.removeEventListener('touchend', handleExpandEnd);
     };
-  }, [combinedHeight, combinedWidth]);
+  }, [combinedHeight]);
 
   return (
     <div className="w-full">
@@ -406,7 +382,6 @@ export function ImageAnalyzer({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.3 }}
-                style={{ width: `${combinedWidth}%` }}
                 className="h-full min-h-[200px] sm:min-h-[250px]"
               >
                   <Card className="h-full flex flex-col bg-[#F77000] backdrop-blur-sm border-[#F77000]">
@@ -502,8 +477,8 @@ export function ImageAnalyzer({
                           <div
                             onMouseDown={handleCombinedExpandStart}
                             onTouchStart={handleCombinedExpandStart}
-                            className="cursor-nwse-resize p-1 hover:bg-white/10 rounded transition-colors touch-none"
-                            aria-label="Drag to expand card (width and height)"
+                            className="cursor-ns-resize p-1 hover:bg-white/10 rounded transition-colors touch-none"
+                            aria-label="Drag to expand card height"
                             role="button"
                             tabIndex={0}
                           >
