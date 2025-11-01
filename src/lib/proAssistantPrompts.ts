@@ -106,7 +106,7 @@ export const getContextPrompt = (context: ChatContext): string => {
     return '';
   }
 
-  let contextPrompt = `\n\n# CURRENT CONTEXT\n\nThe user is currently in the **${tool.name}** tool.\n\n`;
+  let contextPrompt = `\n\n# CURRENT CONTEXT - IMPORTANT!\n\nThe user is currently inside the **${tool.name}** tool and asking about THIS SPECIFIC TOOL.\n\n**CRITICAL: Use the detailed information below to answer. Do NOT use generic knowledge about style tiles or design tools. Reference the SPECIFIC windows and controls listed here.**\n\n`;
 
   // Add tool-specific information
   contextPrompt += `**Tool Purpose:** ${tool.purpose}\n\n`;
@@ -144,25 +144,27 @@ export const getContextPrompt = (context: ChatContext): string => {
 
   // Add window/section information for detailed guidance
   if (tool.windows && tool.windows.length > 0) {
-    contextPrompt += `**Tool Windows & Controls:**\n\n`;
-    contextPrompt += `The ${tool.name} has ${tool.windows.length} main sections:\n\n`;
+    contextPrompt += `\n## TOOL STRUCTURE - USE THIS INFORMATION!\n\n`;
+    contextPrompt += `**IMPORTANT:** When the user asks about "${tool.name}", reference these ${tool.windows.length} SPECIFIC windows/sections. DO NOT give generic descriptions.\n\n`;
+    contextPrompt += `**The ${tool.name} has exactly ${tool.windows.length} windows:**\n\n`;
     tool.windows.forEach((window, index) => {
-      contextPrompt += `${index + 1}. **${window.name}**\n`;
-      contextPrompt += `   - Function: ${window.function}\n`;
-      contextPrompt += `   - Key Controls: ${window.controls.map(c => c.name).join(', ')}\n`;
-      contextPrompt += `   - Impact: ${window.impact}\n`;
+      contextPrompt += `### ${index + 1}. ${window.name}\n`;
+      contextPrompt += `**Function:** ${window.function}\n`;
+      contextPrompt += `**Controls:** ${window.controls.map(c => c.name).join(', ')}\n`;
+      contextPrompt += `**Impact:** ${window.impact}\n`;
 
-      // Add example usage for first 2 controls
+      // Add example usage for all controls with examples
       if (window.controls.length > 0) {
-        contextPrompt += `   - Examples:\n`;
-        window.controls.slice(0, 2).forEach(control => {
+        contextPrompt += `**Example Usage:**\n`;
+        window.controls.slice(0, 3).forEach(control => {
           if (control.examples && control.examples.length > 0) {
-            contextPrompt += `     • ${control.name}: "${control.examples[0]}"\n`;
+            contextPrompt += `  - ${control.name}: "${control.examples[0]}"\n`;
           }
         });
       }
       contextPrompt += `\n`;
     });
+    contextPrompt += `**YOU MUST reference these specific windows when answering questions about ${tool.name}.**\n\n`;
   }
 
   // Add related tools
@@ -176,7 +178,12 @@ export const getContextPrompt = (context: ChatContext): string => {
     }
   }
 
-  contextPrompt += `Provide context-aware guidance for this tool. If the user asks about specific windows, controls, or sections, reference the window information above. If they need help with inputs, provide concrete examples. If they're stuck, suggest specific values they could enter in each control.`;
+  contextPrompt += `\n---\n\n**INSTRUCTIONS FOR THIS RESPONSE:**\n`;
+  contextPrompt += `1. If asked "what windows" or "what sections", list the ${tool.windows?.length || 0} specific windows by name\n`;
+  contextPrompt += `2. Reference window names (e.g., "Brand Information Panel") not generic terms\n`;
+  contextPrompt += `3. Provide concrete examples from the controls listed above\n`;
+  contextPrompt += `4. Explain the impact/effect of each window's settings\n`;
+  contextPrompt += `5. Do NOT say "it doesn't have windows" - it has ${tool.windows?.length || 0} defined windows\n`;
 
   return contextPrompt;
 };
