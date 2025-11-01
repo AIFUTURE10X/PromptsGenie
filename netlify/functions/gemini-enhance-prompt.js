@@ -1,4 +1,4 @@
-async function enhancePromptWithGemini(originalPrompt, subjectPrompt, scenePrompt, stylePrompt, styleIntensity = 'moderate') {
+async function enhancePromptWithGemini(originalPrompt, subjectPrompt, scenePrompt, stylePrompt, styleIntensity = 'moderate', preciseReference = false) {
   const apiKey = process.env.GOOGLE_API_KEY;
 
   if (!apiKey) {
@@ -30,6 +30,16 @@ async function enhancePromptWithGemini(originalPrompt, subjectPrompt, scenePromp
     enhancementInstruction = `You are an expert prompt engineer for AI image generation (Imagen 3). Create an enhanced prompt from these components:
 
 ${components.join('\n')}
+
+${preciseReference ? `
+**PRECISE REFERENCE MODE ACTIVE**
+You MUST use the uploaded image analysis EXACTLY as provided. Minimize creative interpretation and enhancement:
+- Use the analyzed details verbatim without adding creative flourishes
+- Do NOT add speculative details not explicitly mentioned in the analysis
+- Prioritize pixel-perfect reproduction over artistic interpretation
+- Keep enhancements minimal - focus on quality and technical terms only
+- This is for precise output matching the uploaded reference images
+` : ''}
 
 CRITICAL RULES - SUBJECT & SCENE PRESERVATION:
 1. **SUBJECT INTEGRITY**: The subject's anatomical features, proportions, and identity MUST remain EXACTLY as described - no alterations, no artistic interpretation
@@ -191,7 +201,7 @@ exports.handler = async (event, context) => {
   try {
     console.log('🎨 Received prompt enhancement request');
     const requestBody = JSON.parse(event.body);
-    const { prompt, subjectPrompt, scenePrompt, stylePrompt, styleIntensity } = requestBody;
+    const { prompt, subjectPrompt, scenePrompt, stylePrompt, styleIntensity, preciseReference } = requestBody;
 
     if (!prompt || prompt.trim().length === 0) {
       return {
@@ -214,8 +224,9 @@ exports.handler = async (event, context) => {
       if (scenePrompt) console.log('  - Scene:', scenePrompt.substring(0, 50) + '...');
       if (stylePrompt) console.log('  - Style:', stylePrompt.substring(0, 50) + '...');
       if (styleIntensity) console.log('  - Style Intensity:', styleIntensity);
+      if (preciseReference !== undefined) console.log('  - Precise Reference:', preciseReference ? 'ON' : 'OFF');
     }
-    const enhancedPrompt = await enhancePromptWithGemini(prompt, subjectPrompt, scenePrompt, stylePrompt, styleIntensity);
+    const enhancedPrompt = await enhancePromptWithGemini(prompt, subjectPrompt, scenePrompt, stylePrompt, styleIntensity, preciseReference);
     console.log(`✅ Successfully enhanced prompt`);
 
     return {

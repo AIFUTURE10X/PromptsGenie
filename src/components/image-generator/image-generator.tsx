@@ -35,6 +35,7 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
   const [enhancedPrompt, setEnhancedPrompt] = useState<string>('');
   const [isEditingEnhanced, setIsEditingEnhanced] = useState(false);
   const [styleIntensity, setStyleIntensity] = useState<'subtle' | 'moderate' | 'strong'>('moderate');
+  const [preciseReference, setPreciseReference] = useState(false);
 
   // Auto-enhance when prompt changes and enhancement is enabled
   useEffect(() => {
@@ -62,7 +63,8 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
           subjectPrompt: subjectPrompt || null,
           scenePrompt: scenePrompt || null,
           stylePrompt: stylePrompt || null,
-          styleIntensity: styleIntensity
+          styleIntensity: styleIntensity,
+          preciseReference: preciseReference
         })
       });
 
@@ -217,48 +219,81 @@ export function ImageGenerator({ prompt, subjectPrompt, scenePrompt, stylePrompt
             </button>
           </div>
 
-          {/* Controls Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Image Count Selector */}
-            <div className="space-y-2">
-              <label className="text-xs sm:text-sm font-semibold text-white uppercase">Number of Images</label>
-              <div className="grid grid-cols-4 gap-2">
-                {[1, 2, 3, 4].map((count) => (
-                  <button
-                    key={count}
-                    onClick={() => setImageCount(count)}
-                    className={`px-3 py-2.5 sm:px-4 sm:py-3 rounded-md font-bold text-base sm:text-lg transition-all ${
-                      imageCount === count
-                        ? 'bg-black text-white shadow-lg'
-                        : 'bg-black/20 text-white hover:bg-black/30'
-                    }`}
-                  >
-                    {count}
-                  </button>
-                ))}
+          {/* Single Row Settings */}
+          <div className="space-y-2">
+            <label className="text-xs sm:text-sm font-semibold text-white uppercase">Settings</label>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+              {/* Number of Images Dropdown */}
+              <div className="flex flex-col">
+                <label className="text-xs text-white/80 mb-1">Images</label>
+                <select
+                  value={imageCount}
+                  onChange={(e) => setImageCount(parseInt(e.target.value))}
+                  className="px-3 py-2 rounded-md bg-black/20 border border-black/30 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+                >
+                  {[1, 2, 3, 4].map((count) => (
+                    <option key={count} value={count}>{count} {count === 1 ? 'Image' : 'Images'}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Aspect Ratio Dropdown */}
+              <div className="flex flex-col">
+                <label className="text-xs text-white/80 mb-1">Aspect Ratio</label>
+                <select
+                  value={aspectRatio}
+                  onChange={(e) => setAspectRatio(e.target.value)}
+                  className="px-3 py-2 rounded-md bg-black/20 border border-black/30 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+                >
+                  <option value="1:1">1:1 Square</option>
+                  <option value="16:9">16:9 Landscape</option>
+                  <option value="9:16">9:16 Portrait</option>
+                  <option value="4:3">4:3 Classic</option>
+                  <option value="3:4">3:4 Portrait</option>
+                </select>
+              </div>
+
+              {/* Seed Input */}
+              <div className="flex flex-col">
+                <label className="text-xs text-white/80 mb-1">Seed</label>
+                <input
+                  type="number"
+                  value={seed ?? ''}
+                  onChange={(e) => setSeed(e.target.value ? parseInt(e.target.value) : undefined)}
+                  placeholder="Random"
+                  className="px-3 py-2 rounded-md bg-black/20 border border-black/30 text-white text-sm placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50"
+                />
+              </div>
+
+              {/* Precise Reference Toggle */}
+              <div className="flex flex-col justify-end">
+                <label className="text-xs text-white/80 mb-1">Precise Reference</label>
+                <button
+                  onClick={() => setPreciseReference(!preciseReference)}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-all flex items-center justify-center gap-2 ${
+                    preciseReference
+                      ? 'bg-white text-black'
+                      : 'bg-black/20 text-white hover:bg-black/30'
+                  }`}
+                  title={preciseReference
+                    ? "Precise mode ON - Uses uploaded image for precise outputs"
+                    : "Precise mode OFF - Whisk will caption and interpret your image"}
+                >
+                  <span className={`w-2 h-2 rounded-full ${preciseReference ? 'bg-black' : 'bg-white'}`}></span>
+                  {preciseReference ? 'ON' : 'OFF'}
+                </button>
               </div>
             </div>
 
-            {/* Seed Input (Optional) */}
-            <div className="space-y-2">
-              <label className="text-xs sm:text-sm font-semibold text-white uppercase">
-                Seed (Optional)
-              </label>
-              <input
-                type="number"
-                value={seed ?? ''}
-                onChange={(e) => setSeed(e.target.value ? parseInt(e.target.value) : undefined)}
-                placeholder="Random"
-                className="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-md bg-black/20 border border-black/30 text-white text-sm sm:text-base placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50"
-              />
-            </div>
+            {/* Precise Reference Info */}
+            {preciseReference && (
+              <div className="p-2 rounded bg-yellow-500/20 border border-yellow-500/30">
+                <p className="text-xs text-yellow-100">
+                  Precise mode directly uses your uploaded image for more precise outputs. When turned off, Whisk will caption and interpret your image for a more creative output.
+                </p>
+              </div>
+            )}
           </div>
-
-          {/* Aspect Ratio Selector */}
-          <AspectRatioSelector
-            selectedRatio={aspectRatio}
-            onRatioChange={setAspectRatio}
-          />
 
           {/* Style Intensity Control */}
           {stylePrompt && (
