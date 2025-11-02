@@ -69,6 +69,15 @@ export const sendMessage = async (options: SendMessageOptions): Promise<Assistan
       : message;
     fullPrompt += `\n\n**User**: ${userMessageText}\n\n**Assistant**: `;
 
+    // DEBUG: Log the full prompt being sent to Gemini
+    if (import.meta.env.DEV) {
+      console.log('=== GEMINI PROMPT DEBUG ===');
+      console.log('Prompt length:', fullPrompt.length, 'characters');
+      console.log('Current tool:', context?.currentTool);
+      console.log('Full prompt:', fullPrompt);
+      console.log('=== END DEBUG ===');
+    }
+
     // Call Gemini API - use image model if images provided
     let response: string;
     if (images && images.length > 0) {
